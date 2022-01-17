@@ -9,7 +9,10 @@ authors = ["Circuit"]
 license = "MIT"
 
 [tool.poetry.dependencies]
-python = "^3.8"
+python = ">=3.8,<3.11"
+hikari = "^2.0.0-alpha.105"
+hikari-clusters = "^0.1.0-alpha.3"
+apgorm = "^0.1.0-beta.3"
 
 [tool.poetry.dev-dependencies]
 black = "^21.9b0"
