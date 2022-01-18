@@ -21,6 +21,7 @@
 # SOFTWARE.
 
 import json
+import secrets
 from dataclasses import asdict, dataclass
 from pathlib import Path
 from typing import List, Literal, Optional, Union
@@ -28,15 +29,23 @@ from typing import List, Literal, Optional, Union
 
 @dataclass
 class Config:
+    # ipc stuff
     host: str
     port: int
     total_servers: int
     clusters_per_server: int
     shards_per_cluster: int
     ipc_token: str
+    certificate_path: Optional[str]
+
+    # discord
     discord_token: str
-    testing_guilds: Union[List[int], Literal[False]] = False
-    certificate_path: Optional[str] = None
+    testing_guilds: Union[List[int], Literal[False]]
+
+    # database
+    db_name: str
+    db_user: Union[str, None]
+    db_password: Union[str, None]
 
     @classmethod
     def load(cls) -> "Config":
@@ -46,13 +55,18 @@ class Config:
             with pth.open("w+") as f:
                 ad = asdict(
                     Config(
-                        host="",
-                        port=0,
-                        total_servers=0,
-                        clusters_per_server=0,
-                        shards_per_cluster=0,
-                        ipc_token="",
-                        discord_token="",
+                        host="HOST OF BRAIN SERVER",
+                        port=8888,
+                        total_servers=1,
+                        clusters_per_server=1,
+                        shards_per_cluster=1,
+                        ipc_token=secrets.token_urlsafe(32),
+                        certificate_path=None,
+                        discord_token="DISCORD BOT TOKEN",
+                        testing_guilds=False,
+                        db_name="DATABASE NAME",
+                        db_user=None,
+                        db_password=None,
                     )
                 )
                 f.write(json.dumps(ad, indent=4))
