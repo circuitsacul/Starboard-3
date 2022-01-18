@@ -26,12 +26,14 @@ import tanjun
 from hikari_clusters import Brain, Cluster, ClusterLauncher, Server
 
 from .config import Config
+from .database import Database
 
 
 class Bot(Cluster):
     def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
 
+        self.database = Database()
         self.config = Config.load()
         self.tjbot = tanjun.Client.from_gateway_bot(
             self,
@@ -46,6 +48,19 @@ class Bot(Cluster):
 
         load_modules(Path("starboard/commands"))
         load_modules(Path("starboard/events"))
+
+    async def start(self, **kwargs) -> None:
+        await self.database.connect(
+            database=self.config.db_name,
+            user=self.config.db_user,
+            password=self.config.db_password,
+        )
+        await super().start(**kwargs)
+
+    async def close(self) -> None:
+        await super().close()
+        await self.database.cleanup()
+        self.logger.info("Cleaned up!")
 
 
 def get_brain(config: Config) -> Brain:
