@@ -51,8 +51,7 @@ class Bot(Cluster):
                 if module.name.startswith("_"):
                     continue
                 name = "{}.{}".format(
-                    ".".join([p.name for p in module.parents]),
-                    module.name,
+                    str(parent).replace("/", "."), module.name.strip(".py")
                 )
                 self.tjbot.load_modules(name)
 

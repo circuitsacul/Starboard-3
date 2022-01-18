@@ -20,7 +20,10 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-from starboard.database import Guild, Member, Message, User
+from .models.guild import Guild
+from .models.member import Member
+from .models.message import Message
+from .models.user import User
 
 
 async def goc_guild(guild_id: int) -> Guild:
