@@ -25,15 +25,16 @@ from __future__ import annotations
 import apgorm
 from apgorm import types
 
+from ._converters import DecimalC
 from .guild import Guild
 from .user import User
 
 
 class Message(apgorm.Model):
-    message_id = types.Numeric().field()
-    guild_id = types.Numeric().field()
-    channel_id = types.Numeric().field()
-    author_id = types.Numeric().field()
+    message_id = types.Numeric().field().with_converter(DecimalC)
+    guild_id = types.Numeric().field().with_converter(DecimalC)
+    channel_id = types.Numeric().field().with_converter(DecimalC)
+    author_id = types.Numeric().field().with_converter(DecimalC)
 
     is_nsfw = types.Boolean().field()
 

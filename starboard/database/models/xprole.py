@@ -25,12 +25,13 @@ from __future__ import annotations
 import apgorm
 from apgorm import types
 
+from ._converters import DecimalC
 from .guild import Guild
 
 
 class XPRole(apgorm.Model):
-    role_id = types.Numeric().field()
-    guild_id = types.Numeric().field()
+    role_id = types.Numeric().field().with_converter(DecimalC)
+    guild_id = types.Numeric().field().with_converter(DecimalC)
     required = types.SmallInt().field()
 
     guild_id_fk = apgorm.ForeignKey(guild_id, Guild.guild_id)

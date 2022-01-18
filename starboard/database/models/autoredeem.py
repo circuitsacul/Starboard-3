@@ -25,13 +25,14 @@ from datetime import datetime
 import apgorm
 from apgorm import types
 
+from ._converters import DecimalC
 from .guild import Guild
 from .user import User
 
 
 class AutoRedeem(apgorm.Model):
-    user_id = types.Numeric().field()
-    guild_id = types.Numeric().field()
+    user_id = types.Numeric().field().with_converter(DecimalC)
+    guild_id = types.Numeric().field().with_converter(DecimalC)
     enabled_on = types.Timestamp().field(default=datetime.now())
 
     userid_fk = apgorm.ForeignKey(user_id, User.user_id)

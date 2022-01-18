@@ -25,12 +25,13 @@ from __future__ import annotations
 import apgorm
 from apgorm import types
 
+from ._converters import DecimalC
 from .guild import Guild
 
 
 class AutoStarChannel(apgorm.Model):
-    channel_id = types.Numeric().field()
-    guild_id = types.Numeric().field()
+    channel_id = types.Numeric().field().with_converter(DecimalC)
+    guild_id = types.Numeric().field().with_converter(DecimalC)
 
     emojis = types.Array(types.Text()).field()
     min_chars = types.SmallInt().field(default=0)

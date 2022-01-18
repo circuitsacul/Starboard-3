@@ -25,15 +25,21 @@ from __future__ import annotations
 import apgorm
 from apgorm import types
 
+from ._converters import DecimalC, NullDecimalC
+
 
 class Guild(apgorm.Model):
-    guild_id = types.Numeric().field()
+    guild_id = types.Numeric().field().with_converter(DecimalC)
 
     # config options
     locale = types.VarChar(8).field(default="en_US")
 
-    log_channel_id = types.Numeric().nullablefield()
-    lvl_channel_id = types.Numeric().nullablefield()
+    log_channel_id = (
+        types.Numeric().nullablefield().with_converter(NullDecimalC)
+    )
+    lvl_channel_id = (
+        types.Numeric().nullablefield().with_converter(NullDecimalC)
+    )
     ping_on_lvlup = types.Boolean().field(default=False)
 
     premium_end = types.Timestamp().nullablefield()

@@ -25,6 +25,8 @@ from enum import IntEnum
 import apgorm
 from apgorm import types
 
+from ._converters import DecimalC
+
 
 class PatreonStatus(IntEnum):
     NO = 0
@@ -33,7 +35,7 @@ class PatreonStatus(IntEnum):
 
 
 class User(apgorm.Model):
-    user_id = types.Numeric().field()
+    user_id = types.Numeric().field().with_converter(DecimalC)
 
     is_bot = types.Boolean()
     locale = types.VarChar(16).field(default="en_US")

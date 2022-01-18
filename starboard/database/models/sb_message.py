@@ -25,14 +25,15 @@ from __future__ import annotations
 import apgorm
 from apgorm import types
 
+from ._converters import DecimalC
 from .message import Message
 from .starboard import Starboard
 
 
 class SBMessage(apgorm.Model):
-    message_id = types.Numeric().field()
-    orig_message_id = types.Numeric().field()
-    starboard_id = types.Numeric().field()
+    message_id = types.Numeric().field().with_converter(DecimalC)
+    orig_message_id = types.Numeric().field().with_converter(DecimalC)
+    starboard_id = types.Numeric().field().with_converter(DecimalC)
 
     last_known_star_count = types.SmallInt().field(default=0)
 

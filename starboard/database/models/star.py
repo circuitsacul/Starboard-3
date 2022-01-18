@@ -25,15 +25,16 @@ from __future__ import annotations
 import apgorm
 from apgorm import types
 
+from ._converters import DecimalC
 from .message import Message
 from .starboard import Starboard
 from .user import User
 
 
 class Star(apgorm.Model):
-    message_id = types.Numeric().field()
-    starboard_id = types.Numeric().field()
-    user_id = types.Numeric().field()
+    message_id = types.Numeric().field().with_converter(DecimalC)
+    starboard_id = types.Numeric().field().with_converter(DecimalC)
+    user_id = types.Numeric().field().with_converter(DecimalC)
 
     message_id_fk = apgorm.ForeignKey(message_id, Message.message_id)
     starboard_id_fk = apgorm.ForeignKey(starboard_id, Starboard.channel_id)

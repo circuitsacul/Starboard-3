@@ -20,41 +20,8 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-from __future__ import annotations
-
-import apgorm
-from apgorm import types
-
-from ._converters import DecimalC
-from .guild import Guild
-from .user import User
+from enum import Enum
 
 
-class PosRole(apgorm.Model):
-    role_id = types.Numeric().field().with_converter(DecimalC)
-    guild_id = types.Numeric().field().with_converter(DecimalC)
-    max_users = types.Numeric().field().with_converter(DecimalC)
-
-    users = apgorm.ManyToMany["User", "PosRoleMember"](
-        "role_id",
-        "posrole_members.role_id",
-        "posrole_members.user_id",
-        "users.user_id",
-    )
-
-    guild_id_fk = apgorm.ForeignKey(guild_id, Guild.guild_id)
-
-    primary_key = (role_id,)
-
-
-class PosRoleMember(apgorm.Model):
-    role_id = types.Numeric().field().with_converter(DecimalC)
-    user_id = types.Numeric().field().with_converter(DecimalC)
-
-    role_id_fk = apgorm.ForeignKey(role_id, PosRole.role_id)
-    user_id_fk = apgorm.ForeignKey(user_id, User.user_id)
-
-    primary_key = (
-        role_id,
-        user_id,
-    )
+class UNDEF(Enum):
+    UNDEF = "UNDEF"

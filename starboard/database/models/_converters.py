@@ -22,39 +22,31 @@
 
 from __future__ import annotations
 
+from decimal import Decimal
+
 import apgorm
-from apgorm import types
-
-from ._converters import DecimalC
-from .guild import Guild
-from .user import User
 
 
-class PosRole(apgorm.Model):
-    role_id = types.Numeric().field().with_converter(DecimalC)
-    guild_id = types.Numeric().field().with_converter(DecimalC)
-    max_users = types.Numeric().field().with_converter(DecimalC)
+class NullDecimalC(apgorm.Converter["Decimal | None", "int | None"]):
+    def from_stored(self, value: Decimal | None) -> int | None:
+        if value is None:
+            return value
+        return int(value)
 
-    users = apgorm.ManyToMany["User", "PosRoleMember"](
-        "role_id",
-        "posrole_members.role_id",
-        "posrole_members.user_id",
-        "users.user_id",
-    )
-
-    guild_id_fk = apgorm.ForeignKey(guild_id, Guild.guild_id)
-
-    primary_key = (role_id,)
+    def to_stored(self, value: int | None) -> Decimal | None:
+        if value is None:
+            return value
+        return Decimal(value)
 
 
-class PosRoleMember(apgorm.Model):
-    role_id = types.Numeric().field().with_converter(DecimalC)
-    user_id = types.Numeric().field().with_converter(DecimalC)
+DecimalC = apgorm.DecimalConverter
 
-    role_id_fk = apgorm.ForeignKey(role_id, PosRole.role_id)
-    user_id_fk = apgorm.ForeignKey(user_id, User.user_id)
 
-    primary_key = (
-        role_id,
-        user_id,
-    )
+class DecimalArrayC(
+    apgorm.Converter["list[Decimal | None]", "list[int | None]"]
+):
+    def from_stored(self, value: list[Decimal | None]) -> list[int | None]:
+        return [v if v is None else int(v) for v in value]
+
+    def to_stored(self, value: list[int | None]) -> list[Decimal | None]:
+        return [v if v is None else Decimal(v) for v in value]

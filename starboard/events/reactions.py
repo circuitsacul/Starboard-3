@@ -22,39 +22,22 @@
 
 from __future__ import annotations
 
-import apgorm
-from apgorm import types
+import hikari
+import tanjun
 
-from ._converters import DecimalC
-from .guild import Guild
-from .user import User
+from starboard.core import reactions
 
-
-class PosRole(apgorm.Model):
-    role_id = types.Numeric().field().with_converter(DecimalC)
-    guild_id = types.Numeric().field().with_converter(DecimalC)
-    max_users = types.Numeric().field().with_converter(DecimalC)
-
-    users = apgorm.ManyToMany["User", "PosRoleMember"](
-        "role_id",
-        "posrole_members.role_id",
-        "posrole_members.user_id",
-        "users.user_id",
-    )
-
-    guild_id_fk = apgorm.ForeignKey(guild_id, Guild.guild_id)
-
-    primary_key = (role_id,)
+C = tanjun.Component()
 
 
-class PosRoleMember(apgorm.Model):
-    role_id = types.Numeric().field().with_converter(DecimalC)
-    user_id = types.Numeric().field().with_converter(DecimalC)
+@C.with_listener(hikari.GuildReactionAddEvent)
+async def on_reaction_add(event: hikari.GuildReactionAddEvent):
+    await reactions.handle_reaction_add(event)
 
-    role_id_fk = apgorm.ForeignKey(role_id, PosRole.role_id)
-    user_id_fk = apgorm.ForeignKey(user_id, User.user_id)
 
-    primary_key = (
-        role_id,
-        user_id,
-    )
+@C.with_listener(hikari.GuildReactionDeleteEvent)
+async def on_reaction_delete(event: hikari.GuildReactionDeleteEvent):
+    await reactions.handle_reaction_remove(event)
+
+
+load = C.make_loader()

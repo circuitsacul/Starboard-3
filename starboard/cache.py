@@ -22,39 +22,36 @@
 
 from __future__ import annotations
 
-import apgorm
-from apgorm import types
+from typing import TYPE_CHECKING
 
-from ._converters import DecimalC
-from .guild import Guild
-from .user import User
+import hikari
+from cachetools import TTLCache
 
+from starboard.undefined import UNDEF
 
-class PosRole(apgorm.Model):
-    role_id = types.Numeric().field().with_converter(DecimalC)
-    guild_id = types.Numeric().field().with_converter(DecimalC)
-    max_users = types.Numeric().field().with_converter(DecimalC)
-
-    users = apgorm.ManyToMany["User", "PosRoleMember"](
-        "role_id",
-        "posrole_members.role_id",
-        "posrole_members.user_id",
-        "users.user_id",
-    )
-
-    guild_id_fk = apgorm.ForeignKey(guild_id, Guild.guild_id)
-
-    primary_key = (role_id,)
+if TYPE_CHECKING:
+    from starboard.bot import Bot
 
 
-class PosRoleMember(apgorm.Model):
-    role_id = types.Numeric().field().with_converter(DecimalC)
-    user_id = types.Numeric().field().with_converter(DecimalC)
+class CacheControl:
+    def __init__(self, bot: Bot):
+        self.bot = bot
 
-    role_id_fk = apgorm.ForeignKey(role_id, PosRole.role_id)
-    user_id_fk = apgorm.ForeignKey(user_id, User.user_id)
+        self._messages = TTLCache[int, "hikari.Message | None"](5_000, 30)
 
-    primary_key = (
-        role_id,
-        user_id,
-    )
+    async def get_message(
+        self,
+        channel: hikari.SnowflakeishOr[hikari.TextableChannel],
+        message: hikari.SnowflakeishOr[hikari.PartialMessage],
+    ) -> hikari.Message | None:
+        cached = self._messages.get(int(message), UNDEF.UNDEF)
+        if cached is not UNDEF.UNDEF:
+            return cached
+
+        try:
+            m = await self.bot.rest.fetch_message(channel, message)
+        except hikari.NotFoundError:
+            m = None
+
+        self._messages[int(message)] = m
+        return m

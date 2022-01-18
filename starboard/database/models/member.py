@@ -23,13 +23,14 @@
 import apgorm
 from apgorm import types
 
+from ._converters import DecimalC
 from .guild import Guild
 from .user import User
 
 
 class Member(apgorm.Model):
-    user_id = types.Numeric().field()
-    guild_id = types.Numeric().field()
+    user_id = types.Numeric().field().with_converter(DecimalC)
+    guild_id = types.Numeric().field().with_converter(DecimalC)
 
     stars_given = types.Int().field(default=0)
     stars_received = types.Int().field(default=0)

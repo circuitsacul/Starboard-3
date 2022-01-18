@@ -25,17 +25,26 @@ from __future__ import annotations
 import apgorm
 from apgorm import types
 
+from ._converters import DecimalArrayC, DecimalC
 from .guild import Guild
 
 
 class PermGroup(apgorm.Model):
     id = types.Serial().field()
-    guild_id = types.Numeric().field()
+    guild_id = types.Numeric().field().with_converter(DecimalC)
 
     index = types.SmallInt().field()
     name = types.Text().field()
-    starboards = types.Array(types.Numeric()).field(default=[])
-    channels = types.Array(types.Numeric()).field(default=[])
+    starboards = (
+        types.Array(types.Numeric())
+        .field(default=[])
+        .with_converter(DecimalArrayC)
+    )
+    channels = (
+        types.Array(types.Numeric())
+        .field(default=[])
+        .with_converter(DecimalArrayC)
+    )
 
     guild_id_fk = apgorm.ForeignKey(guild_id, Guild.guild_id)
 

@@ -28,6 +28,7 @@ import aiohttp
 import tanjun
 from hikari_clusters import Brain, Cluster, ClusterLauncher, Server
 
+from .cache import CacheControl
 from .config import Config
 from .database import Database
 
@@ -43,12 +44,17 @@ class Bot(Cluster):
             self,
             declare_global_commands=self.config.testing_guilds,
         )
+        self.ccache = CacheControl(self)
 
         def load_modules(parent: Path):
             for module in parent.glob("*.py"):
                 if module.name.startswith("_"):
                     continue
-                self.tjbot.load_modules(module)
+                name = "{}.{}".format(
+                    ".".join([p.name for p in module.parents]),
+                    module.name,
+                )
+                self.tjbot.load_modules(name)
 
         load_modules(Path("starboard/commands"))
         load_modules(Path("starboard/events"))

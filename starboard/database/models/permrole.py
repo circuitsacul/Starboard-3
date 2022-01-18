@@ -25,12 +25,13 @@ from __future__ import annotations
 import apgorm
 from apgorm import types
 
+from ._converters import DecimalC
 from .permgroup import PermGroup
 
 
 class PermRole(apgorm.Model):
     permgroup_id = types.Int().field()
-    role_id = types.Numeric().field()
+    role_id = types.Numeric().field().with_converter(DecimalC)
 
     index = types.SmallInt().field()
     allow_commands = types.Boolean().nullablefield()

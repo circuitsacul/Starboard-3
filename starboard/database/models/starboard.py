@@ -27,6 +27,7 @@ from typing import Callable
 import apgorm
 from apgorm import types
 
+from ._converters import DecimalArrayC, DecimalC
 from .guild import Guild
 
 
@@ -42,8 +43,8 @@ def limit_length(max_length: int, name: str) -> Callable[[str | None], bool]:
 
 
 class Starboard(apgorm.Model):
-    channel_id = types.Numeric().field()
-    guild_id = types.Numeric().field()
+    channel_id = types.Numeric().field().with_converter(DecimalC)
+    guild_id = types.Numeric().field().with_converter(DecimalC)
 
     webhook_url = types.Text().nullablefield()
     locked = types.Boolean().field(default=False)
@@ -72,8 +73,16 @@ class Starboard(apgorm.Model):
     regex = types.Text().field(default="")
     exclude_regex = types.Text().field(default="")
 
-    channel_bl = types.Array(types.Numeric()).field(default=[])
-    channel_wl = types.Array(types.Numeric()).field(default=[])
+    channel_bl = (
+        types.Array(types.Numeric())
+        .field(default=[])
+        .with_converter(DecimalArrayC)
+    )
+    channel_wl = (
+        types.Array(types.Numeric())
+        .field(default=[])
+        .with_converter(DecimalArrayC)
+    )
 
     # Behaviour
     autoreact = types.Boolean().field(default=True)

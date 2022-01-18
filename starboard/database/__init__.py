@@ -21,6 +21,7 @@
 # SOFTWARE.
 
 from .database import Database
+from .get_or_create import goc_guild, goc_member, goc_message, goc_user
 from .models.aschannel import AutoStarChannel
 from .models.autoredeem import AutoRedeem
 from .models.guild import Guild
@@ -51,4 +52,8 @@ __all__ = (
     "Starboard",
     "User",
     "XPRole",
+    "goc_guild",
+    "goc_member",
+    "goc_message",
+    "goc_user",
 )
