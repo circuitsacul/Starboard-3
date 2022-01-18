@@ -20,62 +20,58 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
+import inspect
 import json
 import secrets
 from dataclasses import asdict, dataclass
 from pathlib import Path
-from typing import List, Literal, Optional, Union
+from typing import List, Literal, Optional, Union, cast
 
 
 @dataclass
 class Config:
     # ipc stuff
-    host: str
-    port: int
-    total_servers: int
-    clusters_per_server: int
-    shards_per_cluster: int
-    ipc_token: str
-    certificate_path: Optional[str]
+    host: str = "HOST OF BRAIN SERVER"
+    port: int = 8888
+    total_servers: int = 1
+    clusters_per_server: int = 1
+    shards_per_cluster: int = 1
+    ipc_token: str = secrets.token_urlsafe(32)
+    certificate_path: Optional[str] = None
 
     # discord
-    discord_token: str
-    testing_guilds: Union[List[int], Literal[False]]
+    discord_token: str = "DISCORD TOKEN"
+    testing_guilds: Union[List[int], Literal[False]] = False
 
     # database
-    db_name: str
-    db_user: Optional[str]
-    db_password: Optional[str]
+    db_name: str = "DATABASE NAME"
+    db_user: Optional[str] = None
+    db_password: Optional[str] = None
 
     # apis
-    tenor_token: Optional[str]
-    giphy_token: Optional[str]
+    tenor_token: Optional[str] = None
+    giphy_token: Optional[str] = None
+
+    def save(self):
+        pth = Path("config.json")
+        with pth.open("w+") as f:
+            f.write(json.dumps(asdict(self), indent=4))
 
     @classmethod
     def load(cls) -> "Config":
         pth = Path("config.json")
 
         if not pth.exists():
-            with pth.open("w+") as f:
-                ad = asdict(
-                    Config(
-                        host="HOST OF BRAIN SERVER",
-                        port=8888,
-                        total_servers=1,
-                        clusters_per_server=1,
-                        shards_per_cluster=1,
-                        ipc_token=secrets.token_urlsafe(32),
-                        certificate_path=None,
-                        discord_token="DISCORD BOT TOKEN",
-                        testing_guilds=False,
-                        db_name="DATABASE NAME",
-                        db_user=None,
-                        db_password=None,
-                        tenor_token=None,
-                        giphy_token=None,
-                    )
+            c = Config()
+        else:
+            with pth.open("r") as f:
+                c = Config(
+                    **{
+                        k: v
+                        for k, v in cast(dict, json.loads(f.read())).items()
+                        if k in inspect.signature(Config).parameters
+                    }
                 )
-                f.write(json.dumps(ad, indent=4))
 
-        with pth.open("r") as f:
-            return Config(**json.loads(f.read()))
+        c.save()
+        return c
