@@ -20,8 +20,11 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
+from __future__ import annotations
+
 from pathlib import Path
 
+import aiohttp
 import tanjun
 from hikari_clusters import Brain, Cluster, ClusterLauncher, Server
 
@@ -33,6 +36,7 @@ class Bot(Cluster):
     def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
 
+        self._aiohttp_session: aiohttp.ClientSession | None = None
         self.database = Database()
         self.config = Config.load()
         self.tjbot = tanjun.Client.from_gateway_bot(
@@ -48,6 +52,11 @@ class Bot(Cluster):
 
         load_modules(Path("starboard/commands"))
         load_modules(Path("starboard/events"))
+
+    async def session(self) -> aiohttp.ClientSession:
+        if self._aiohttp_session is None or self._aiohttp_session.closed:
+            self._aiohttp_session = aiohttp.ClientSession()
+        return self._aiohttp_session
 
     async def start(self, **kwargs) -> None:
         await self.database.connect(

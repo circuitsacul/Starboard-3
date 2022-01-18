@@ -44,8 +44,12 @@ class Config:
 
     # database
     db_name: str
-    db_user: Union[str, None]
-    db_password: Union[str, None]
+    db_user: Optional[str]
+    db_password: Optional[str]
+
+    # apis
+    tenor_token: Optional[str]
+    giphy_token: Optional[str]
 
     @classmethod
     def load(cls) -> "Config":
@@ -67,6 +71,8 @@ class Config:
                         db_name="DATABASE NAME",
                         db_user=None,
                         db_password=None,
+                        tenor_token=None,
+                        giphy_token=None,
                     )
                 )
                 f.write(json.dumps(ad, indent=4))
