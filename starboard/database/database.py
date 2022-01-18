@@ -22,8 +22,6 @@
 
 from __future__ import annotations
 
-import warnings
-
 import apgorm
 
 from .models import (
@@ -50,7 +48,7 @@ class Database(apgorm.Database):
     async def connect(self, **connect_kwargs) -> None:
         await super().connect(**connect_kwargs)
         if self.must_create_migrations():
-            warnings.warn("There are migrations that need to be created.")
+            self.create_migrations()
         if await self.must_apply_migrations():
             await self.apply_migrations()
 
