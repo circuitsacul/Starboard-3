@@ -11,9 +11,9 @@ license = "MIT"
 [tool.poetry.dependencies]
 python = ">=3.9,<3.11"
 hikari = "^2.0.0-alpha.105"
-hikari-clusters = "^0.1.0-alpha.4"
-apgorm = "^0.1.0-beta.3"
 hikari-tanjun = "^2.3.0-alpha.1"
+hikari-clusters = {git = "https://github.com/TrigonDev/hikari-clusters.git", rev = "main"}
+apgorm = {git = "https://github.com/TrigonDev/apgorm.git", rev = "main"}
 
 [tool.poetry.dev-dependencies]
 black = "^21.9b0"
