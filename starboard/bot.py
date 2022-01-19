@@ -23,12 +23,13 @@
 from __future__ import annotations
 
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 import aiohttp
 import tanjun
 from hikari_clusters import Brain, Cluster, ClusterLauncher, Server
 
-from .cache import CacheControl
+from .cache import Cache
 from .config import Config
 from .database import Database
 
@@ -44,7 +45,10 @@ class Bot(Cluster):
             self,
             declare_global_commands=self.config.testing_guilds,
         )
-        self.ccache = CacheControl(self)
+        self._cache = Cache(self, self._cache._settings)
+
+        # "locks"
+        self.refresh_message_lock: set[int] = set()
 
         def load_modules(parent: Path):
             for module in parent.glob("*.py"):
@@ -57,6 +61,12 @@ class Bot(Cluster):
 
         load_modules(Path("starboard/commands"))
         load_modules(Path("starboard/events"))
+
+    if TYPE_CHECKING:
+
+        @property
+        def cache(self) -> Cache:
+            ...
 
     async def session(self) -> aiohttp.ClientSession:
         if self._aiohttp_session is None or self._aiohttp_session.closed:

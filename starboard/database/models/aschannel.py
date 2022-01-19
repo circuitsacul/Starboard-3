@@ -30,7 +30,7 @@ from .guild import Guild
 
 
 class AutoStarChannel(apgorm.Model):
-    channel_id = types.Numeric().field().with_converter(DecimalC)
+    id = types.Numeric().field().with_converter(DecimalC)
     guild_id = types.Numeric().field().with_converter(DecimalC)
 
     emojis = types.Array(types.Text()).field()
@@ -41,6 +41,6 @@ class AutoStarChannel(apgorm.Model):
     exclude_regex = types.VarChar(512).field(default="")
     delete_invalid = types.Boolean().field(default=False)
 
-    guild_id_fk = apgorm.ForeignKey(guild_id, Guild.guild_id)
+    guild_id_fk = apgorm.ForeignKey(guild_id, Guild.id)
 
-    primary_key = (channel_id,)
+    primary_key = (id,)

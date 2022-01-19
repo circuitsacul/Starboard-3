@@ -23,25 +23,34 @@
 from __future__ import annotations
 
 import apgorm
-from apgorm import types
 
-from ._converters import DecimalC
-from .message import Message
-from .starboard import Starboard
-from .user import User
+from starboard.database import Star
 
 
-class Star(apgorm.Model):
-    message_id = types.Numeric().field().with_converter(DecimalC)
-    starboard_id = types.Numeric().field().with_converter(DecimalC)
-    user_id = types.Numeric().field().with_converter(DecimalC)
+async def add_stars(
+    orig_message_id: int,
+    user_id: int,
+    starboard_ids: list[int],
+) -> None:
+    for sbid in starboard_ids:
+        if await Star.exists(
+            message_id=orig_message_id,
+            user_id=user_id,
+            staraboard_id=sbid,
+        ):
+            continue
+        await Star(
+            message_id=orig_message_id, user_id=user_id, starboard_id=sbid
+        ).create()
 
-    message_id_fk = apgorm.ForeignKey(message_id, Message.id)
-    starboard_id_fk = apgorm.ForeignKey(starboard_id, Starboard.id)
-    user_id_fk = apgorm.ForeignKey(user_id, User.id)
 
-    primary_key = (
-        message_id,
-        starboard_id,
-        user_id,
-    )
+async def remove_stars(
+    orig_message_id: int,
+    user_id: int,
+    starboard_ids: list[int],
+) -> None:
+    await Star.delete_query().where(
+        message_id=orig_message_id,
+        user_id=user_id,
+        starboard_id=apgorm.sql(starboard_ids).any,
+    ).execute()

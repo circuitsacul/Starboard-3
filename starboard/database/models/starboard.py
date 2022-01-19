@@ -43,7 +43,7 @@ def limit_length(max_length: int, name: str) -> Callable[[str | None], bool]:
 
 
 class Starboard(apgorm.Model):
-    channel_id = types.Numeric().field().with_converter(DecimalC)
+    id = types.Numeric().field().with_converter(DecimalC)
     guild_id = types.Numeric().field().with_converter(DecimalC)
 
     webhook_url = types.Text().nullablefield()
@@ -93,6 +93,6 @@ class Starboard(apgorm.Model):
     allow_explore = types.Boolean().field(default=True)
 
     # ForeignKeys & PrimaryKey
-    guild_id_fk = apgorm.ForeignKey(guild_id, Guild.guild_id)
+    guild_id_fk = apgorm.ForeignKey(guild_id, Guild.id)
 
-    primary_key = (channel_id,)
+    primary_key = (id,)

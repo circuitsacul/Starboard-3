@@ -25,25 +25,29 @@ from __future__ import annotations
 import apgorm
 from apgorm import types
 
-from ._converters import DecimalC
+from ._converters import DecimalArrayC, DecimalC
 from .guild import Guild
 from .user import User
 
 
 class Message(apgorm.Model):
-    message_id = types.Numeric().field().with_converter(DecimalC)
+    id = types.Numeric().field().with_converter(DecimalC)
     guild_id = types.Numeric().field().with_converter(DecimalC)
     channel_id = types.Numeric().field().with_converter(DecimalC)
     author_id = types.Numeric().field().with_converter(DecimalC)
 
     is_nsfw = types.Boolean().field()
 
-    forced_to = types.Array(types.Numeric()).field(default=[])
+    forced_to = (
+        types.Array(types.Numeric())
+        .field(default=[])
+        .with_converter(DecimalArrayC)
+    )
     trashed = types.Boolean().field(default=False)
     trash_reason = types.VarChar(512).nullablefield()
     frozen = types.Boolean().field(default=False)
 
-    guild_id_fk = apgorm.ForeignKey(guild_id, Guild.guild_id)
-    author_id_fk = apgorm.ForeignKey(author_id, User.user_id)
+    guild_id_fk = apgorm.ForeignKey(guild_id, Guild.id)
+    author_id_fk = apgorm.ForeignKey(author_id, User.id)
 
-    primary_key = (message_id,)
+    primary_key = (id,)

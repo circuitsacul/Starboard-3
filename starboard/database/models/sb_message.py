@@ -25,19 +25,26 @@ from __future__ import annotations
 import apgorm
 from apgorm import types
 
-from ._converters import DecimalC
+from ._converters import DecimalC, NullDecimalC
 from .message import Message
 from .starboard import Starboard
 
 
 class SBMessage(apgorm.Model):
     message_id = types.Numeric().field().with_converter(DecimalC)
-    orig_message_id = types.Numeric().field().with_converter(DecimalC)
     starboard_id = types.Numeric().field().with_converter(DecimalC)
+    sb_message_id = (
+        types.Numeric().nullablefield().with_converter(NullDecimalC)
+    )
 
     last_known_star_count = types.SmallInt().field(default=0)
 
-    orig_message_id_fk = apgorm.ForeignKey(orig_message_id, Message.message_id)
-    starboard_id_fk = apgorm.ForeignKey(starboard_id, Starboard.channel_id)
+    message_id_fk = apgorm.ForeignKey(message_id, Message.id)
+    starboard_id_fk = apgorm.ForeignKey(starboard_id, Starboard.id)
 
-    primary_key = (message_id,)
+    sb_message_id_unique = apgorm.Unique(sb_message_id)
+
+    primary_key = (
+        message_id,
+        starboard_id,
+    )

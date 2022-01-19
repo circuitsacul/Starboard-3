@@ -29,7 +29,7 @@ from ._converters import DecimalC, NullDecimalC
 
 
 class Guild(apgorm.Model):
-    guild_id = types.Numeric().field().with_converter(DecimalC)
+    id = types.Numeric().field().with_converter(DecimalC)
 
     # config options
     locale = types.VarChar(8).field(default="en_US")
@@ -52,4 +52,4 @@ class Guild(apgorm.Model):
     stack_xproles = types.Boolean().field(default=False)
 
     # primary key
-    primary_key = (guild_id,)
+    primary_key = (id,)

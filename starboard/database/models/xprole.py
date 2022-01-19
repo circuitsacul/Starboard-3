@@ -30,10 +30,10 @@ from .guild import Guild
 
 
 class XPRole(apgorm.Model):
-    role_id = types.Numeric().field().with_converter(DecimalC)
+    id = types.Numeric().field().with_converter(DecimalC)
     guild_id = types.Numeric().field().with_converter(DecimalC)
     required = types.SmallInt().field()
 
-    guild_id_fk = apgorm.ForeignKey(guild_id, Guild.guild_id)
+    guild_id_fk = apgorm.ForeignKey(guild_id, Guild.id)
 
-    primary_key = (role_id,)
+    primary_key = (id,)

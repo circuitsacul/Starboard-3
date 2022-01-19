@@ -37,8 +37,8 @@ class Member(apgorm.Model):
     xp = types.Int().field(default=0)
     level = types.SmallInt().field(default=0)
 
-    userid_fk = apgorm.ForeignKey(user_id, User.user_id)
-    guildid_fk = apgorm.ForeignKey(guild_id, Guild.guild_id)
+    userid_fk = apgorm.ForeignKey(user_id, User.id)
+    guildid_fk = apgorm.ForeignKey(guild_id, Guild.id)
 
     primary_key = (
         user_id,

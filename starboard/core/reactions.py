@@ -27,10 +27,80 @@ from typing import TYPE_CHECKING, cast
 import apgorm
 import hikari
 
-from starboard.database import Star, Starboard, goc_member, goc_message
+from starboard.database import Starboard, goc_member, goc_message
+
+from .starboards import get_orig_message, refresh_message
+from .stars import add_stars, remove_stars
 
 if TYPE_CHECKING:
     from starboard.bot import Bot
+
+
+async def handle_reaction_add(event: hikari.GuildReactionAddEvent) -> None:
+    bot = cast("Bot", event.app)
+
+    orig_msg = await get_orig_message(event.message_id)
+    if orig_msg is None:
+        _m = await bot.cache.gof_message(event.channel_id, event.message_id)
+        if not _m:
+            return
+        orig_msg = await goc_message(
+            event.guild_id,
+            event.channel_id,
+            event.message_id,
+            _m.author.id,
+            _m.author.is_bot,
+        )
+
+    emoji_str = await _get_emoji_str_from_event(event)
+    starboards = await _get_starboards_for_emoji(emoji_str, event.guild_id)
+    if len(starboards) == 0:
+        return
+
+    # create users & members if necessary
+    orig_msg_obj = await bot.cache.gof_message(
+        orig_msg.channel_id.v, orig_msg.id.v
+    )
+    if orig_msg_obj is None:
+        return
+
+    # data for the person who reacted
+    await goc_member(
+        event.guild_id,
+        event.member.id,
+        event.member.is_bot,
+    )
+
+    # create a "star" for each starboard
+    await add_stars(
+        orig_msg.id.v,
+        event.user_id,
+        [s.id.v for s in starboards],
+    )
+
+    await refresh_message(cast(Bot, event.app), orig_msg)
+
+
+async def handle_reaction_remove(
+    event: hikari.GuildReactionDeleteEvent,
+) -> None:
+    orig_msg = await get_orig_message(event.message_id)
+    if not orig_msg:
+        return
+
+    emoji_str = await _get_emoji_str_from_event(event)
+    starboards = await _get_starboards_for_emoji(emoji_str, event.guild_id)
+
+    if len(starboards) == 0:
+        return
+
+    await remove_stars(
+        orig_msg.id.v,
+        event.user_id,
+        [sb.id.v for sb in starboards],
+    )
+
+    await refresh_message(cast(Bot, event.app), orig_msg)
 
 
 async def _get_emoji_str_from_event(
@@ -58,63 +128,4 @@ async def _get_starboards_for_emoji(
         .where(guild_id=guild_id)
         .where(Starboard.star_emojis.any.eq(emoji_str))
         .fetchmany()
-    )
-
-
-async def handle_reaction_add(event: hikari.GuildReactionAddEvent) -> None:
-    bot = cast("Bot", event.app)
-
-    emoji_str = await _get_emoji_str_from_event(event)
-    starboards = await _get_starboards_for_emoji(emoji_str, event.guild_id)
-    if len(starboards) == 0:
-        return
-
-    # create users & members if necessary
-    message = await bot.ccache.get_message(event.channel_id, event.message_id)
-    if message is None:
-        return
-
-    # data for the person who reacted
-    await goc_member(
-        event.guild_id,
-        event.member.id,
-        event.member.is_bot,
-    )
-
-    # data for the message and its author
-    await goc_message(
-        event.guild_id,
-        event.channel_id,
-        message.id,
-        message.author.id,
-        message.author.is_bot,
-    )
-
-    # create a "star" for each starboard
-    for s in starboards:
-        if not await Star.exists(
-            message_id=message.id,
-            starboard_id=s.channel_id.v,
-            user_id=event.user_id,
-        ):
-            await Star(
-                message_id=message.id,
-                starboard_id=s.channel_id.v,
-                user_id=event.user_id,
-            ).create()
-
-
-async def handle_reaction_remove(
-    event: hikari.GuildReactionDeleteEvent,
-) -> None:
-    emoji_str = await _get_emoji_str_from_event(event)
-    starboards = await _get_starboards_for_emoji(emoji_str, event.guild_id)
-    sbids = [sb.channel_id.v for sb in starboards]
-
-    (
-        await Star.delete_query()
-        .where(message_id=event.message_id)
-        .where(user_id=event.user_id)
-        .where(starboard_id=apgorm.sql(sbids).any)
-        .execute()
     )

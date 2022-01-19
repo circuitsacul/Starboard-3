@@ -46,6 +46,6 @@ class PermGroup(apgorm.Model):
         .with_converter(DecimalArrayC)
     )
 
-    guild_id_fk = apgorm.ForeignKey(guild_id, Guild.guild_id)
+    guild_id_fk = apgorm.ForeignKey(guild_id, Guild.id)
 
     primary_key = (id,)

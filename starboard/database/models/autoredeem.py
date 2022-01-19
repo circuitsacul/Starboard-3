@@ -35,8 +35,8 @@ class AutoRedeem(apgorm.Model):
     guild_id = types.Numeric().field().with_converter(DecimalC)
     enabled_on = types.Timestamp().field(default=datetime.now())
 
-    userid_fk = apgorm.ForeignKey(user_id, User.user_id)
-    guildid_fk = apgorm.ForeignKey(guild_id, Guild.guild_id)
+    userid_fk = apgorm.ForeignKey(user_id, User.id)
+    guildid_fk = apgorm.ForeignKey(guild_id, Guild.id)
 
     primary_key = (
         user_id,

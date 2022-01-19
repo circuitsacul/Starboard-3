@@ -22,10 +22,11 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, cast
 
 import hikari
 from cachetools import TTLCache
+from hikari.impl.cache import CacheImpl
 
 from starboard.undefined import UNDEF
 
@@ -33,25 +34,32 @@ if TYPE_CHECKING:
     from starboard.bot import Bot
 
 
-class CacheControl:
-    def __init__(self, bot: Bot):
-        self.bot = bot
+class Cache(CacheImpl):
+    def __init__(self, *args, **kwargs) -> None:
+        super().__init__(*args, **kwargs)
 
-        self._messages = TTLCache[int, "hikari.Message | None"](5_000, 30)
+        self.__messages = TTLCache[int, "hikari.Message | None"](5000, 30)
 
-    async def get_message(
+        if TYPE_CHECKING:
+            self._app = cast(Bot, self._app)
+
+    async def gof_message(
         self,
         channel: hikari.SnowflakeishOr[hikari.TextableChannel],
         message: hikari.SnowflakeishOr[hikari.PartialMessage],
     ) -> hikari.Message | None:
-        cached = self._messages.get(int(message), UNDEF.UNDEF)
-        if cached is not UNDEF.UNDEF:
-            return cached
+        msg: UNDEF | None | hikari.Message
+        if (msg := self.get_message(message)) is not None:
+            return msg
+
+        msg = self.__messages.get(int(message), UNDEF.UNDEF)
+        if msg is not UNDEF.UNDEF:
+            return msg
 
         try:
-            m = await self.bot.rest.fetch_message(channel, message)
+            msg = await self._app.rest.fetch_message(channel, message)
         except hikari.NotFoundError:
-            m = None
+            msg = None
 
-        self._messages[int(message)] = m
-        return m
+        self.__messages[int(message)] = msg
+        return msg

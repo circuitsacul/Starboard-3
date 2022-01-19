@@ -35,7 +35,7 @@ class PatreonStatus(IntEnum):
 
 
 class User(apgorm.Model):
-    user_id = types.Numeric().field().with_converter(DecimalC)
+    id = types.Numeric().field().with_converter(DecimalC)
 
     is_bot = types.Boolean()
     locale = types.VarChar(16).field(default="en_US")
@@ -50,4 +50,4 @@ class User(apgorm.Model):
         .with_converter(apgorm.IntEFConverter(PatreonStatus))
     )
 
-    primary_key = (user_id,)
+    primary_key = (id,)
