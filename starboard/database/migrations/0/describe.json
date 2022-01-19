@@ -22,11 +22,6 @@
             "name": "aschannels",
             "fields": [
                 {
-                    "name": "channel_id",
-                    "type_": "NUMERIC",
-                    "not_null": true
-                },
-                {
                     "name": "delete_invalid",
                     "type_": "BOOLEAN",
                     "not_null": true
@@ -43,6 +38,11 @@
                 },
                 {
                     "name": "guild_id",
+                    "type_": "NUMERIC",
+                    "not_null": true
+                },
+                {
+                    "name": "id",
                     "type_": "NUMERIC",
                     "not_null": true
                 },
@@ -70,12 +70,12 @@
             "fk_constraints": [
                 {
                     "name": "guild_id_fk",
-                    "raw_sql": "CONSTRAINT guild_id_fk FOREIGN KEY ( guild_id ) REFERENCES guilds ( guild_id ) MATCH SIMPLE ON DELETE CASCADE ON UPDATE CASCADE"
+                    "raw_sql": "CONSTRAINT guild_id_fk FOREIGN KEY ( guild_id ) REFERENCES guilds ( id ) MATCH SIMPLE ON DELETE CASCADE ON UPDATE CASCADE"
                 }
             ],
             "pk_constraint": {
-                "name": "_aschannels_channel_id_primary_key",
-                "raw_sql": "CONSTRAINT _aschannels_channel_id_primary_key PRIMARY KEY ( channel_id )"
+                "name": "_aschannels_id_primary_key",
+                "raw_sql": "CONSTRAINT _aschannels_id_primary_key PRIMARY KEY ( id )"
             },
             "unique_constraints": [],
             "check_constraints": [],
@@ -103,11 +103,11 @@
             "fk_constraints": [
                 {
                     "name": "guildid_fk",
-                    "raw_sql": "CONSTRAINT guildid_fk FOREIGN KEY ( guild_id ) REFERENCES guilds ( guild_id ) MATCH SIMPLE ON DELETE CASCADE ON UPDATE CASCADE"
+                    "raw_sql": "CONSTRAINT guildid_fk FOREIGN KEY ( guild_id ) REFERENCES guilds ( id ) MATCH SIMPLE ON DELETE CASCADE ON UPDATE CASCADE"
                 },
                 {
                     "name": "userid_fk",
-                    "raw_sql": "CONSTRAINT userid_fk FOREIGN KEY ( user_id ) REFERENCES users ( user_id ) MATCH SIMPLE ON DELETE CASCADE ON UPDATE CASCADE"
+                    "raw_sql": "CONSTRAINT userid_fk FOREIGN KEY ( user_id ) REFERENCES users ( id ) MATCH SIMPLE ON DELETE CASCADE ON UPDATE CASCADE"
                 }
             ],
             "pk_constraint": {
@@ -127,7 +127,7 @@
                     "not_null": true
                 },
                 {
-                    "name": "guild_id",
+                    "name": "id",
                     "type_": "NUMERIC",
                     "not_null": true
                 },
@@ -179,8 +179,8 @@
             ],
             "fk_constraints": [],
             "pk_constraint": {
-                "name": "_guilds_guild_id_primary_key",
-                "raw_sql": "CONSTRAINT _guilds_guild_id_primary_key PRIMARY KEY ( guild_id )"
+                "name": "_guilds_id_primary_key",
+                "raw_sql": "CONSTRAINT _guilds_id_primary_key PRIMARY KEY ( id )"
             },
             "unique_constraints": [],
             "check_constraints": [],
@@ -223,11 +223,11 @@
             "fk_constraints": [
                 {
                     "name": "guildid_fk",
-                    "raw_sql": "CONSTRAINT guildid_fk FOREIGN KEY ( guild_id ) REFERENCES guilds ( guild_id ) MATCH SIMPLE ON DELETE CASCADE ON UPDATE CASCADE"
+                    "raw_sql": "CONSTRAINT guildid_fk FOREIGN KEY ( guild_id ) REFERENCES guilds ( id ) MATCH SIMPLE ON DELETE CASCADE ON UPDATE CASCADE"
                 },
                 {
                     "name": "userid_fk",
-                    "raw_sql": "CONSTRAINT userid_fk FOREIGN KEY ( user_id ) REFERENCES users ( user_id ) MATCH SIMPLE ON DELETE CASCADE ON UPDATE CASCADE"
+                    "raw_sql": "CONSTRAINT userid_fk FOREIGN KEY ( user_id ) REFERENCES users ( id ) MATCH SIMPLE ON DELETE CASCADE ON UPDATE CASCADE"
                 }
             ],
             "pk_constraint": {
@@ -267,13 +267,13 @@
                     "not_null": true
                 },
                 {
-                    "name": "is_nsfw",
-                    "type_": "BOOLEAN",
+                    "name": "id",
+                    "type_": "NUMERIC",
                     "not_null": true
                 },
                 {
-                    "name": "message_id",
-                    "type_": "NUMERIC",
+                    "name": "is_nsfw",
+                    "type_": "BOOLEAN",
                     "not_null": true
                 },
                 {
@@ -290,16 +290,16 @@
             "fk_constraints": [
                 {
                     "name": "author_id_fk",
-                    "raw_sql": "CONSTRAINT author_id_fk FOREIGN KEY ( author_id ) REFERENCES users ( user_id ) MATCH SIMPLE ON DELETE CASCADE ON UPDATE CASCADE"
+                    "raw_sql": "CONSTRAINT author_id_fk FOREIGN KEY ( author_id ) REFERENCES users ( id ) MATCH SIMPLE ON DELETE CASCADE ON UPDATE CASCADE"
                 },
                 {
                     "name": "guild_id_fk",
-                    "raw_sql": "CONSTRAINT guild_id_fk FOREIGN KEY ( guild_id ) REFERENCES guilds ( guild_id ) MATCH SIMPLE ON DELETE CASCADE ON UPDATE CASCADE"
+                    "raw_sql": "CONSTRAINT guild_id_fk FOREIGN KEY ( guild_id ) REFERENCES guilds ( id ) MATCH SIMPLE ON DELETE CASCADE ON UPDATE CASCADE"
                 }
             ],
             "pk_constraint": {
-                "name": "_messages_message_id_primary_key",
-                "raw_sql": "CONSTRAINT _messages_message_id_primary_key PRIMARY KEY ( message_id )"
+                "name": "_messages_id_primary_key",
+                "raw_sql": "CONSTRAINT _messages_id_primary_key PRIMARY KEY ( id )"
             },
             "unique_constraints": [],
             "check_constraints": [],
@@ -342,7 +342,7 @@
             "fk_constraints": [
                 {
                     "name": "guild_id_fk",
-                    "raw_sql": "CONSTRAINT guild_id_fk FOREIGN KEY ( guild_id ) REFERENCES guilds ( guild_id ) MATCH SIMPLE ON DELETE CASCADE ON UPDATE CASCADE"
+                    "raw_sql": "CONSTRAINT guild_id_fk FOREIGN KEY ( guild_id ) REFERENCES guilds ( id ) MATCH SIMPLE ON DELETE CASCADE ON UPDATE CASCADE"
                 }
             ],
             "pk_constraint": {
@@ -433,11 +433,11 @@
             "fk_constraints": [
                 {
                     "name": "role_id_fk",
-                    "raw_sql": "CONSTRAINT role_id_fk FOREIGN KEY ( role_id ) REFERENCES posroles ( role_id ) MATCH SIMPLE ON DELETE CASCADE ON UPDATE CASCADE"
+                    "raw_sql": "CONSTRAINT role_id_fk FOREIGN KEY ( role_id ) REFERENCES posroles ( id ) MATCH SIMPLE ON DELETE CASCADE ON UPDATE CASCADE"
                 },
                 {
                     "name": "user_id_fk",
-                    "raw_sql": "CONSTRAINT user_id_fk FOREIGN KEY ( user_id ) REFERENCES users ( user_id ) MATCH SIMPLE ON DELETE CASCADE ON UPDATE CASCADE"
+                    "raw_sql": "CONSTRAINT user_id_fk FOREIGN KEY ( user_id ) REFERENCES users ( id ) MATCH SIMPLE ON DELETE CASCADE ON UPDATE CASCADE"
                 }
             ],
             "pk_constraint": {
@@ -457,12 +457,12 @@
                     "not_null": true
                 },
                 {
-                    "name": "max_users",
+                    "name": "id",
                     "type_": "NUMERIC",
                     "not_null": true
                 },
                 {
-                    "name": "role_id",
+                    "name": "max_users",
                     "type_": "NUMERIC",
                     "not_null": true
                 }
@@ -470,12 +470,12 @@
             "fk_constraints": [
                 {
                     "name": "guild_id_fk",
-                    "raw_sql": "CONSTRAINT guild_id_fk FOREIGN KEY ( guild_id ) REFERENCES guilds ( guild_id ) MATCH SIMPLE ON DELETE CASCADE ON UPDATE CASCADE"
+                    "raw_sql": "CONSTRAINT guild_id_fk FOREIGN KEY ( guild_id ) REFERENCES guilds ( id ) MATCH SIMPLE ON DELETE CASCADE ON UPDATE CASCADE"
                 }
             ],
             "pk_constraint": {
-                "name": "_posroles_role_id_primary_key",
-                "raw_sql": "CONSTRAINT _posroles_role_id_primary_key PRIMARY KEY ( role_id )"
+                "name": "_posroles_id_primary_key",
+                "raw_sql": "CONSTRAINT _posroles_id_primary_key PRIMARY KEY ( id )"
             },
             "unique_constraints": [],
             "check_constraints": [],
@@ -495,9 +495,9 @@
                     "not_null": true
                 },
                 {
-                    "name": "orig_message_id",
+                    "name": "sb_message_id",
                     "type_": "NUMERIC",
-                    "not_null": true
+                    "not_null": false
                 },
                 {
                     "name": "starboard_id",
@@ -507,19 +507,24 @@
             ],
             "fk_constraints": [
                 {
-                    "name": "orig_message_id_fk",
-                    "raw_sql": "CONSTRAINT orig_message_id_fk FOREIGN KEY ( orig_message_id ) REFERENCES messages ( message_id ) MATCH SIMPLE ON DELETE CASCADE ON UPDATE CASCADE"
+                    "name": "message_id_fk",
+                    "raw_sql": "CONSTRAINT message_id_fk FOREIGN KEY ( message_id ) REFERENCES messages ( id ) MATCH SIMPLE ON DELETE CASCADE ON UPDATE CASCADE"
                 },
                 {
                     "name": "starboard_id_fk",
-                    "raw_sql": "CONSTRAINT starboard_id_fk FOREIGN KEY ( starboard_id ) REFERENCES starboards ( channel_id ) MATCH SIMPLE ON DELETE CASCADE ON UPDATE CASCADE"
+                    "raw_sql": "CONSTRAINT starboard_id_fk FOREIGN KEY ( starboard_id ) REFERENCES starboards ( id ) MATCH SIMPLE ON DELETE CASCADE ON UPDATE CASCADE"
                 }
             ],
             "pk_constraint": {
-                "name": "_sb_messages_message_id_primary_key",
-                "raw_sql": "CONSTRAINT _sb_messages_message_id_primary_key PRIMARY KEY ( message_id )"
+                "name": "_sb_messages_message_id_starboard_id_primary_key",
+                "raw_sql": "CONSTRAINT _sb_messages_message_id_starboard_id_primary_key PRIMARY KEY ( message_id , starboard_id )"
             },
-            "unique_constraints": [],
+            "unique_constraints": [
+                {
+                    "name": "sb_message_id_unique",
+                    "raw_sql": "CONSTRAINT sb_message_id_unique UNIQUE ( sb_message_id )"
+                }
+            ],
             "check_constraints": [],
             "exclude_constraints": []
         },
@@ -544,11 +549,6 @@
                 {
                     "name": "channel_bl",
                     "type_": "NUMERIC[]",
-                    "not_null": true
-                },
-                {
-                    "name": "channel_id",
-                    "type_": "NUMERIC",
                     "not_null": true
                 },
                 {
@@ -578,6 +578,11 @@
                 },
                 {
                     "name": "guild_id",
+                    "type_": "NUMERIC",
+                    "not_null": true
+                },
+                {
+                    "name": "id",
                     "type_": "NUMERIC",
                     "not_null": true
                 },
@@ -665,12 +670,12 @@
             "fk_constraints": [
                 {
                     "name": "guild_id_fk",
-                    "raw_sql": "CONSTRAINT guild_id_fk FOREIGN KEY ( guild_id ) REFERENCES guilds ( guild_id ) MATCH SIMPLE ON DELETE CASCADE ON UPDATE CASCADE"
+                    "raw_sql": "CONSTRAINT guild_id_fk FOREIGN KEY ( guild_id ) REFERENCES guilds ( id ) MATCH SIMPLE ON DELETE CASCADE ON UPDATE CASCADE"
                 }
             ],
             "pk_constraint": {
-                "name": "_starboards_channel_id_primary_key",
-                "raw_sql": "CONSTRAINT _starboards_channel_id_primary_key PRIMARY KEY ( channel_id )"
+                "name": "_starboards_id_primary_key",
+                "raw_sql": "CONSTRAINT _starboards_id_primary_key PRIMARY KEY ( id )"
             },
             "unique_constraints": [],
             "check_constraints": [],
@@ -698,15 +703,15 @@
             "fk_constraints": [
                 {
                     "name": "message_id_fk",
-                    "raw_sql": "CONSTRAINT message_id_fk FOREIGN KEY ( message_id ) REFERENCES messages ( message_id ) MATCH SIMPLE ON DELETE CASCADE ON UPDATE CASCADE"
+                    "raw_sql": "CONSTRAINT message_id_fk FOREIGN KEY ( message_id ) REFERENCES messages ( id ) MATCH SIMPLE ON DELETE CASCADE ON UPDATE CASCADE"
                 },
                 {
                     "name": "starboard_id_fk",
-                    "raw_sql": "CONSTRAINT starboard_id_fk FOREIGN KEY ( starboard_id ) REFERENCES starboards ( channel_id ) MATCH SIMPLE ON DELETE CASCADE ON UPDATE CASCADE"
+                    "raw_sql": "CONSTRAINT starboard_id_fk FOREIGN KEY ( starboard_id ) REFERENCES starboards ( id ) MATCH SIMPLE ON DELETE CASCADE ON UPDATE CASCADE"
                 },
                 {
                     "name": "user_id_fk",
-                    "raw_sql": "CONSTRAINT user_id_fk FOREIGN KEY ( user_id ) REFERENCES users ( user_id ) MATCH SIMPLE ON DELETE CASCADE ON UPDATE CASCADE"
+                    "raw_sql": "CONSTRAINT user_id_fk FOREIGN KEY ( user_id ) REFERENCES users ( id ) MATCH SIMPLE ON DELETE CASCADE ON UPDATE CASCADE"
                 }
             ],
             "pk_constraint": {
@@ -723,6 +728,11 @@
                 {
                     "name": "credits",
                     "type_": "INTEGER",
+                    "not_null": true
+                },
+                {
+                    "name": "id",
+                    "type_": "NUMERIC",
                     "not_null": true
                 },
                 {
@@ -751,11 +761,6 @@
                     "not_null": true
                 },
                 {
-                    "name": "user_id",
-                    "type_": "NUMERIC",
-                    "not_null": true
-                },
-                {
                     "name": "votes",
                     "type_": "INTEGER",
                     "not_null": true
@@ -763,8 +768,8 @@
             ],
             "fk_constraints": [],
             "pk_constraint": {
-                "name": "_users_user_id_primary_key",
-                "raw_sql": "CONSTRAINT _users_user_id_primary_key PRIMARY KEY ( user_id )"
+                "name": "_users_id_primary_key",
+                "raw_sql": "CONSTRAINT _users_id_primary_key PRIMARY KEY ( id )"
             },
             "unique_constraints": [],
             "check_constraints": [],
@@ -779,25 +784,25 @@
                     "not_null": true
                 },
                 {
-                    "name": "required",
-                    "type_": "SMALLINT",
+                    "name": "id",
+                    "type_": "NUMERIC",
                     "not_null": true
                 },
                 {
-                    "name": "role_id",
-                    "type_": "NUMERIC",
+                    "name": "required",
+                    "type_": "SMALLINT",
                     "not_null": true
                 }
             ],
             "fk_constraints": [
                 {
                     "name": "guild_id_fk",
-                    "raw_sql": "CONSTRAINT guild_id_fk FOREIGN KEY ( guild_id ) REFERENCES guilds ( guild_id ) MATCH SIMPLE ON DELETE CASCADE ON UPDATE CASCADE"
+                    "raw_sql": "CONSTRAINT guild_id_fk FOREIGN KEY ( guild_id ) REFERENCES guilds ( id ) MATCH SIMPLE ON DELETE CASCADE ON UPDATE CASCADE"
                 }
             ],
             "pk_constraint": {
-                "name": "_xproles_role_id_primary_key",
-                "raw_sql": "CONSTRAINT _xproles_role_id_primary_key PRIMARY KEY ( role_id )"
+                "name": "_xproles_id_primary_key",
+                "raw_sql": "CONSTRAINT _xproles_id_primary_key PRIMARY KEY ( id )"
             },
             "unique_constraints": [],
             "check_constraints": [],
