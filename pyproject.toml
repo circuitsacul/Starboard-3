@@ -12,11 +12,11 @@ license = "MIT"
 python = ">=3.9,<3.11"
 hikari = "^2.0.0-alpha.105"
 hikari-tanjun = "^2.3.0-alpha.1"
-hikari-clusters = {git = "https://github.com/TrigonDev/hikari-clusters.git", rev = "main"}
-apgorm = {git = "https://github.com/TrigonDev/apgorm.git", rev = "main"}
 aiohttp = "^3.8.1"
 cachetools = "^5.0.0"
 types-cachetools = "^4.2.9"
+hikari-clusters = "^0.1.0-alpha.6"
+apgorm = "^0.1.0-beta.6"
 
 [tool.poetry.dev-dependencies]
 black = "^21.9b0"
