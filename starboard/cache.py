@@ -63,3 +63,20 @@ class Cache(CacheImpl):
 
         self.__messages[int(message)] = msg
         return msg
+
+    async def gof_guild_channel_wnsfw(
+        self,
+        channel: hikari.SnowflakeishOr[hikari.PartialChannel],
+    ) -> hikari.GuildChannel | None:
+        cached = self.get_guild_channel(channel)
+        if cached is None:
+            return None
+
+        if cached.is_nsfw is None:
+            _ret = await self._app.rest.fetch_channel(channel)
+            assert isinstance(_ret, hikari.GuildChannel)
+            cached = _ret
+
+        assert cached.is_nsfw is not None
+        self.update_guild_channel(cached)
+        return cached
