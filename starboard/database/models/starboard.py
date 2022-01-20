@@ -56,7 +56,7 @@ class Starboard(apgorm.Model):
     use_nicknames = types.Boolean().field(default=False)
     use_webhook = types.Boolean().field(default=False)
 
-    webhook_name = types.Text().nullablefield()
+    webhook_name = types.Text().field(default="Starboard")
     webhook_name.add_validator(limit_length(32, "Webhook name"))
 
     webhook_avatar = types.Text().nullablefield()
@@ -70,8 +70,8 @@ class Starboard(apgorm.Model):
     allow_bots = types.Boolean().field(default=True)
     images_only = types.Boolean().field(default=False)
 
-    regex = types.Text().field(default="")
-    exclude_regex = types.Text().field(default="")
+    regex = types.Text().nullablefield()
+    exclude_regex = types.Text().nullablefield()
 
     channel_bl = (
         types.Array(types.Numeric())

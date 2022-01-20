@@ -574,7 +574,7 @@
                 {
                     "name": "exclude_regex",
                     "type_": "TEXT",
-                    "not_null": true
+                    "not_null": false
                 },
                 {
                     "name": "guild_id",
@@ -614,7 +614,7 @@
                 {
                     "name": "regex",
                     "type_": "TEXT",
-                    "not_null": true
+                    "not_null": false
                 },
                 {
                     "name": "remove_invalid",
@@ -659,7 +659,7 @@
                 {
                     "name": "webhook_name",
                     "type_": "TEXT",
-                    "not_null": false
+                    "not_null": true
                 },
                 {
                     "name": "webhook_url",

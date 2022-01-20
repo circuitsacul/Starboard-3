@@ -18,5 +18,5 @@ repos:
     hooks:
       - id: mypy
         pass_filenames: false
-        additional_dependencies: [types-cachetools, apgorm, hikari-clusters]
+        additional_dependencies: [types-cachetools, apgorm, hikari-clusters, types-emoji]
         entry: mypy .
