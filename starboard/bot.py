@@ -38,8 +38,6 @@ class Bot(Cluster):
     def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
 
-        self.event_manager
-
         self._aiohttp_session: aiohttp.ClientSession | None = None
         self.database = Database()
         self.config = Config.load()
