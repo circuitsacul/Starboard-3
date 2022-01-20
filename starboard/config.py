@@ -30,6 +30,9 @@ from typing import List, Literal, Optional, Union, cast
 
 @dataclass
 class Config:
+    # bot style
+    color: int = int("FFE19C", 16)
+
     # ipc stuff
     host: str = "HOST OF BRAIN SERVER"
     port: int = 8888

@@ -22,10 +22,12 @@
 
 from __future__ import annotations
 
+from datetime import datetime
 from pathlib import Path
 from typing import TYPE_CHECKING
 
 import aiohttp
+import hikari
 import tanjun
 from hikari_clusters import Brain, Cluster, ClusterLauncher, Server
 
@@ -86,6 +88,21 @@ class Bot(Cluster):
         await super().close()
         await self.database.cleanup()
         self.logger.info("Cleaned up!")
+
+    def embed(
+        self,
+        title=None,
+        description=None,
+        url: str | None = None,
+        timestamp: datetime | None = None,
+    ) -> hikari.Embed:
+        return hikari.Embed(
+            title=title,
+            description=description,
+            url=url,
+            color=self.config.color,
+            timestamp=timestamp,
+        )
 
 
 def get_brain(config: Config) -> Brain:
