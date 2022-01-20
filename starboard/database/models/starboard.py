@@ -65,7 +65,7 @@ class Starboard(apgorm.Model):
     # Requirements
     required = types.SmallInt().field(default=3)
     required_remove = types.SmallInt().field(default=0)
-    star_emojis = types.Array(types.Text()).field()
+    star_emojis = types.Array(types.Text()).field(default=[])
     self_star = types.Boolean().field(default=False)
     allow_bots = types.Boolean().field(default=True)
     images_only = types.Boolean().field(default=False)
