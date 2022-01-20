@@ -44,10 +44,16 @@ async def handle_reaction_add(event: hikari.GuildReactionAddEvent) -> None:
         _m = await bot.cache.gof_message(event.channel_id, event.message_id)
         if not _m:
             return
+        channel = bot.cache.get_guild_channel(event.channel_id)
+        print(dict(bot.cache._guild_channel_entries))
+        assert channel is not None
+        assert channel.is_nsfw is not None
+
         orig_msg = await goc_message(
             event.guild_id,
             event.channel_id,
             event.message_id,
+            channel.is_nsfw,
             _m.author.id,
             _m.author.is_bot,
         )

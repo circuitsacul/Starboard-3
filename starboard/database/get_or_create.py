@@ -27,15 +27,15 @@ from .models.user import User
 
 
 async def goc_guild(guild_id: int) -> Guild:
-    if (g := await Guild.exists(guild_id=guild_id)) is not None:
+    if (g := await Guild.exists(id=guild_id)) is not None:
         return g
-    return await Guild(guild_id=guild_id).create()
+    return await Guild(id=guild_id).create()
 
 
 async def goc_user(user_id: int, is_bot: bool) -> User:
-    if (u := await User.exists(user_id=user_id)) is not None:
+    if (u := await User.exists(id=user_id)) is not None:
         return u
-    return await User(user_id=user_id, is_bot=is_bot).create()
+    return await User(id=user_id, is_bot=is_bot).create()
 
 
 async def goc_member(guild_id: int, user_id: int, is_bot: bool) -> Member:
@@ -54,10 +54,11 @@ async def goc_message(
     guild_id: int,
     channel_id: int,
     message_id: int,
+    is_nsfw: bool,
     author_id: int,
     is_author_bot: bool,
 ) -> Message:
-    if (m := await Message.exists(message_id=message_id)) is not None:
+    if (m := await Message.exists(id=message_id)) is not None:
         return m
 
     await goc_member(guild_id, author_id, is_author_bot)
@@ -66,5 +67,6 @@ async def goc_message(
         guild_id=guild_id,
         author_id=author_id,
         channel_id=channel_id,
-        message_id=message_id,
+        id=message_id,
+        is_nsfw=is_nsfw,
     ).create()

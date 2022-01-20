@@ -32,11 +32,11 @@ if TYPE_CHECKING:
 
 
 async def get_orig_message(message_id: int) -> Message | None:
-    if m := await Message.exists(message_id=message_id):
+    if m := await Message.exists(id=message_id):
         return m
 
     if sbm := await SBMessage.exists(message_id=message_id):
-        return await Message.fetch(message_id=sbm.message_id.v)
+        return await Message.fetch(id=sbm.message_id.v)
 
     return None
 
