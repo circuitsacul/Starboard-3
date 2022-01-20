@@ -38,6 +38,8 @@ class Bot(Cluster):
     def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
 
+        self.event_manager
+
         self._aiohttp_session: aiohttp.ClientSession | None = None
         self.database = Database()
         self.config = Config.load()
@@ -46,6 +48,7 @@ class Bot(Cluster):
             declare_global_commands=self.config.testing_guilds,
         )
         self._cache = Cache(self, self._cache._settings)
+        self._event_manager._cache = self._cache
 
         # "locks"
         self.refresh_message_lock: set[int] = set()
