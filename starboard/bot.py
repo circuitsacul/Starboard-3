@@ -41,12 +41,12 @@ class Bot(Cluster):
         self._aiohttp_session: aiohttp.ClientSession | None = None
         self.database = Database()
         self.config = Config.load()
+        self._cache = Cache(self, self._cache._settings)
+        self._event_manager._cache = self._cache
         self.tjbot = tanjun.Client.from_gateway_bot(
             self,
             declare_global_commands=self.config.testing_guilds,
         )
-        self._cache = Cache(self, self._cache._settings)
-        self._event_manager._cache = self._cache
 
         # "locks"
         self.refresh_message_lock: set[int] = set()
