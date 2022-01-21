@@ -26,7 +26,6 @@ import apgorm
 
 from .models import (
     aschannel,
-    autoredeem,
     guild,
     member,
     message,
@@ -54,7 +53,6 @@ class Database(apgorm.Database):
 
     guilds = guild.Guild
     users = user.User
-    autoredeems = autoredeem.AutoRedeem
     members = member.Member
 
     starboards = starboard.Starboard

@@ -23,7 +23,6 @@
 from .database import Database
 from .get_or_create import goc_guild, goc_member, goc_message, goc_user
 from .models.aschannel import AutoStarChannel
-from .models.autoredeem import AutoRedeem
 from .models.guild import Guild
 from .models.member import Member
 from .models.message import Message
@@ -39,7 +38,6 @@ from .models.xprole import XPRole
 __all__ = (
     "Database",
     "AutoStarChannel",
-    "AutoRedeem",
     "Guild",
     "Member",
     "Message",

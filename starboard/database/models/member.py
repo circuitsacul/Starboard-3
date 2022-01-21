@@ -37,6 +37,8 @@ class Member(apgorm.Model):
     xp = types.Int().field(default=0)
     level = types.SmallInt().field(default=0)
 
+    autoredeem_enabled = types.Boolean().field(default=False)
+
     userid_fk = apgorm.ForeignKey(user_id, User.id)
     guildid_fk = apgorm.ForeignKey(guild_id, Guild.id)
 
