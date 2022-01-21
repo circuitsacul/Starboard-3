@@ -42,6 +42,13 @@ def any_emoji(text: str) -> hikari.CustomEmoji | hikari.UnicodeEmoji:
     raise tanjun.CommandError(f"'{e}' is not a valid emoji.")
 
 
+def any_emoji_str(text: str) -> str:
+    e = any_emoji(text)
+    if isinstance(e, hikari.CustomEmoji):
+        return str(e.id)
+    return str(e)
+
+
 def hex_color(text: str) -> int:
     try:
         return int(text.replace("#", ""), base=16)

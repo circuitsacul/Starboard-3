@@ -32,11 +32,11 @@ if TYPE_CHECKING:
 
 
 async def get_orig_message(message_id: int) -> Message | None:
+    if sbm := await SBMessage.exists(sb_message_id=message_id):
+        return await Message.fetch(id=sbm.message_id.v)
+
     if m := await Message.exists(id=message_id):
         return m
-
-    if sbm := await SBMessage.exists(message_id=message_id):
-        return await Message.fetch(id=sbm.message_id.v)
 
     return None
 
@@ -84,23 +84,26 @@ async def _refresh_message_for_starboard(
     else:
         sbmsg_obj = None
 
-    if action.add:
-        if sbmsg_obj is None:
-            sbmsg_obj = await bot.rest.create_message(
-                starboard.id.v, content=f"{sbmsg.message_id.v} | {starcount}"
-            )
-            sbmsg.sb_message_id.v = sbmsg_obj.id
-            await sbmsg.save()
+    if action.add and sbmsg_obj is None:
+        sbmsg_obj = await bot.rest.create_message(
+            starboard.id.v, content=f"{sbmsg.message_id.v} | {starcount}"
+        )
+        sbmsg.sb_message_id.v = sbmsg_obj.id
 
     elif action.remove:
+        print("remove")
         if sbmsg_obj is not None:
-            await sbmsg.delete()
+            print("not none")
+            sbmsg.sb_message_id.v = None
             await sbmsg_obj.delete()
 
     elif sbmsg_obj is not None:
         # edit the message
 
         await sbmsg_obj.edit(content=f"{sbmsg.message_id.v} | {starcount}")
+
+    else:
+        sbmsg.sb_message_id.v = None
 
     sbmsg.last_known_star_count.v = starcount
     await sbmsg.save()

@@ -43,8 +43,11 @@ C.add_slash_command(owner)
 @tanjun.with_str_slash_option("code", "Code to evaluate.")
 @tanjun.as_slash_command("eval", "Evaluate code.")
 async def evaluate(ctx: tanjun.abc.SlashContext, code: str):
+    bot = cast("Bot", ctx.interaction.app)
     await ctx.defer()
-    await ctx.respond(eval(code))
+
+    result = await bot.exec_code(code)
+    await ctx.respond(repr(result))
 
 
 @owner.with_command
@@ -54,6 +57,42 @@ async def restart_bot(ctx: tanjun.abc.SlashContext):
     await ctx.respond("Restarting all clusters...")
     await asyncio.sleep(1)
     await bot.ipc.send_command(bot.ipc.cluster_uids, "cluster_stop")
+
+
+class Rollback(Exception):
+    """Rollback the transaction."""
+
+    pass
+
+
+@owner.with_command
+@tanjun.with_str_slash_option("sql", "The SQL to execute.")
+@tanjun.with_bool_slash_option(
+    "rollback", "Whether to rollback.", default=True
+)
+@tanjun.as_slash_command(
+    "sql", "Execute SQL, optionally rolling back.", default_to_ephemeral=True
+)
+async def run_sql(
+    ctx: tanjun.abc.SlashContext,
+    sql: str,
+    rollback: bool,
+):
+    bot = cast("Bot", ctx.interaction.app)
+    assert bot.database.pool
+    try:
+        async with bot.database.pool.acquire() as con:
+            async with con.transaction():
+                ret = await con.fetchmany(sql, [])
+                result = " - " + "\n".join([repr(d) for d in ret[0:50]])
+                if rollback:
+                    raise Rollback
+    except Rollback:
+        pass
+    except Exception as e:
+        result = str(e)
+
+    await ctx.respond(result)
 
 
 load = C.make_loader()

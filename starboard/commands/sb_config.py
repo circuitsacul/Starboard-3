@@ -31,7 +31,7 @@ from starboard.database import Starboard
 from starboard.database.get_or_create import goc_guild
 from starboard.undefined import UNDEF
 
-from ._converters import any_emoji, hex_color, none_or, none_or_str
+from ._converters import any_emoji_str, hex_color, none_or, none_or_str
 
 if TYPE_CHECKING:
     from starboard.bot import Bot
@@ -146,7 +146,7 @@ else:
 @str_option(
     "display_emoji",
     "The emoji shown next to the point count.",
-    converters=none_or(any_emoji),
+    converters=none_or(any_emoji_str),
 )
 @bool_option(
     "ping_author",
@@ -249,6 +249,74 @@ async def edit_starboard(
 
     await s.save()
     await ctx.respond(f"Settings for <#{starboard.id}> updated.")
+
+
+emojis = tanjun.slash_command_group("emojis", "Modify emojis for a starboard.")
+starboards.add_command(emojis)
+
+
+@emojis.with_command
+@tanjun.with_str_slash_option(
+    "emoji",
+    "The emoji to add.",
+    converters=any_emoji_str,
+)
+@tanjun.with_channel_slash_option(
+    "starboard",
+    "The starboard to add a star emoji too.",
+    types=(hikari.TextableGuildChannel,),
+)
+@tanjun.as_slash_command("add", "Add a star emoji.")
+async def add_star_emoji(
+    ctx: tanjun.abc.SlashContext,
+    starboard: hikari.InteractionChannel,
+    emoji: str,
+):
+    s = await Starboard.exists(id=starboard.id)
+    if not s:
+        return await ctx.respond(f"<#{starboard.id}> is not a starboard.")
+
+    emojis = s.star_emojis.v.copy()
+    if emoji in emojis:
+        return await ctx.respond(
+            f"{emoji} is already a star emoji for <#{starboard.id}>."
+        )
+    emojis.append(emoji)
+    s.star_emojis.v = emojis
+    await s.save()
+    await ctx.respond("Done.")
+
+
+@emojis.with_command
+@tanjun.with_str_slash_option(
+    "emoji",
+    "The emoji to remove.",
+    converters=any_emoji_str,
+)
+@tanjun.with_channel_slash_option(
+    "starboard",
+    "The starboard to remove the star emoji from.",
+    types=(hikari.TextableGuildChannel,),
+)
+@tanjun.as_slash_command("remove", "Remove a star emoji.")
+async def remove_star_emoji(
+    ctx: tanjun.abc.SlashContext,
+    starboard: hikari.InteractionChannel,
+    emoji: str,
+):
+    s = await Starboard.exists(id=starboard.id)
+    if not s:
+        return await ctx.respond(f"<#{starboard.id}> is not a starboard.")
+
+    emojis = s.star_emojis.v.copy()
+    if emoji not in emojis:
+        return await ctx.respond(
+            f"{emoji} is not a star emoji for <#{starboard.id}>."
+        )
+    emojis.remove(emoji)
+    s.star_emojis.v = emojis
+    await s.save()
+    await ctx.respond("Done.")
 
 
 @starboards.with_command

@@ -24,7 +24,8 @@ from __future__ import annotations
 
 from datetime import datetime
 from pathlib import Path
-from typing import TYPE_CHECKING
+from textwrap import indent
+from typing import TYPE_CHECKING, Any
 
 import aiohttp
 import hikari
@@ -103,6 +104,18 @@ class Bot(Cluster):
             color=self.config.color,
             timestamp=timestamp,
         )
+
+    async def exec_code(self, code: str) -> Any:
+        code = indent(code, "    ")
+        code = (
+            f"async def _async_internal_exec_func_wrap():\n{code}\n\nresult="
+            "_async_internal_exec_func_wrap()"
+        )
+
+        lcls: dict[str, Any] = {}
+        exec(code, globals(), lcls)
+
+        return await lcls["result"]
 
 
 def get_brain(config: Config) -> Brain:

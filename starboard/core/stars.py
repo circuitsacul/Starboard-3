@@ -36,7 +36,7 @@ async def add_stars(
         if await Star.exists(
             message_id=orig_message_id,
             user_id=user_id,
-            staraboard_id=sbid,
+            starboard_id=sbid,
         ):
             continue
         await Star(

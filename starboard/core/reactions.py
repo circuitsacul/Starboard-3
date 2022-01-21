@@ -63,13 +63,6 @@ async def handle_reaction_add(event: hikari.GuildReactionAddEvent) -> None:
     if len(starboards) == 0:
         return
 
-    # create users & members if necessary
-    orig_msg_obj = await bot.cache.gof_message(
-        orig_msg.channel_id.v, orig_msg.id.v
-    )
-    if orig_msg_obj is None:
-        return
-
     # data for the person who reacted
     await goc_member(
         event.guild_id,
@@ -84,7 +77,7 @@ async def handle_reaction_add(event: hikari.GuildReactionAddEvent) -> None:
         [s.id.v for s in starboards],
     )
 
-    await refresh_message(cast(Bot, event.app), orig_msg)
+    await refresh_message(cast("Bot", event.app), orig_msg)
 
 
 async def handle_reaction_remove(
@@ -106,7 +99,7 @@ async def handle_reaction_remove(
         [sb.id.v for sb in starboards],
     )
 
-    await refresh_message(cast(Bot, event.app), orig_msg)
+    await refresh_message(cast("Bot", event.app), orig_msg)
 
 
 async def _get_emoji_str_from_event(
