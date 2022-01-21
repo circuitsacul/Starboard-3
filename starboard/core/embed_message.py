@@ -47,18 +47,44 @@ def get_raw_message_text(
     return text
 
 
+async def _get_name_and_avatar(
+    bot: Bot,
+    guild: hikari.SnowflakeishOr[hikari.PartialGuild],
+    user: hikari.User,
+    nicknames: bool,
+) -> tuple[str, hikari.URL]:
+    if not nicknames:
+        return (user.username, user.avatar_url or user.default_avatar_url)
+
+    member = await bot.cache.gof_member(guild, user)
+    if not member:
+        return (user.username, user.avatar_url or user.default_avatar_url)
+
+    return (
+        member.nickname or member.username,
+        member.guild_avatar_url
+        or member.avatar_url
+        or member.default_avatar_url,
+    )
+
+
 async def embed_message(
     bot: Bot,
     message: hikari.Message,
     guild_id: int,
     color: int,
     display_emoji: hikari.CustomEmoji | hikari.UnicodeEmoji | None,
+    nicknames: bool,
     point_count: int,
 ) -> tuple[str, hikari.Embed]:
     channel = await bot.cache.gof_guild_channel_wnsfw(message.channel_id)
     assert channel is not None
     nsfw = channel.is_nsfw
     assert nsfw is not None
+
+    name, avatar = await _get_name_and_avatar(
+        bot, guild_id, message.author, nicknames
+    )
 
     embed = (
         hikari.Embed(
@@ -67,9 +93,8 @@ async def embed_message(
             timestamp=message.created_at,
         )
         .set_author(
-            name=message.author.username,
-            icon=message.author.avatar_url
-            or message.author.default_avatar_url,
+            name=name,
+            icon=avatar,
         )
         .add_field(
             name=ZWS,
@@ -78,8 +103,14 @@ async def embed_message(
     )
 
     if (ref := message.referenced_message) is not None:
+        name, _ = await _get_name_and_avatar(
+            bot,
+            guild_id,
+            ref.author,
+            nicknames,
+        )
         embed.add_field(
-            name=f"Replying To {ref.author.username}",
+            name=f"Replying To {name}",
             value=(
                 (ref.content + "\n\n" if ref.content else "")
                 + f"[Go to Message]({ref.make_link(guild_id)})"

@@ -66,6 +66,7 @@ async def get_sbmsg_content(
             starboard.guild_id.v,
             starboard.color.v or bot.config.color,
             _display_emoji(),
+            starboard.use_nicknames.v,
             starcount,
         )
 

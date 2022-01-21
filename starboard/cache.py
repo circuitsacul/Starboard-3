@@ -38,31 +38,64 @@ class Cache(CacheImpl):
     def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
 
-        self.__messages = TTLCache[int, "hikari.Message | None"](5000, 30)
+        self.__messages = TTLCache[int, "hikari.Message | None"](5000, 120)
+        self.__members = TTLCache["tuple[int, int]", "hikari.Member | None"](
+            5000, 120
+        )
 
         if TYPE_CHECKING:
             self._app = cast(Bot, self._app)
+
+    async def gof_member(
+        self,
+        guild: hikari.SnowflakeishOr[hikari.PartialGuild],
+        user: hikari.SnowflakeishOr[hikari.PartialUser],
+    ) -> hikari.Member | None:
+        if (ic := self.get_member(guild, user)) is not None:
+            return ic
+
+        c = self.__members.get(
+            (
+                int(guild),
+                int(user),
+            ),
+            UNDEF.UNDEF,
+        )
+        if c is not UNDEF.UNDEF:
+            return c
+
+        try:
+            obj = await self._app.rest.fetch_member(guild, user)
+        except hikari.NotFoundError:
+            obj = None
+
+        self.__members[
+            (
+                int(guild),
+                int(user),
+            )
+        ] = obj
+        return obj
 
     async def gof_message(
         self,
         channel: hikari.SnowflakeishOr[hikari.TextableChannel],
         message: hikari.SnowflakeishOr[hikari.PartialMessage],
     ) -> hikari.Message | None:
-        msg: UNDEF | None | hikari.Message
-        if (msg := self.get_message(message)) is not None:
-            return msg
+        if (ic := self.get_message(message)) is not None:
+            return ic
 
-        msg = self.__messages.get(int(message), UNDEF.UNDEF)
-        if msg is not UNDEF.UNDEF:
-            return msg
+        c = self.__messages.get(int(message), UNDEF.UNDEF)
+        if c is not UNDEF.UNDEF:
+            return c
 
         try:
-            msg = await self._app.rest.fetch_message(channel, message)
+            obj = await self._app.rest.fetch_message(channel, message)
         except hikari.NotFoundError:
-            msg = None
+            obj = None
 
-        self.__messages[int(message)] = msg
-        return msg
+        self.__messages[int(message)] = obj
+        return obj
 
     async def gof_guild_channel_wnsfw(
         self,
