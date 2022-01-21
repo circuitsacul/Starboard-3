@@ -34,12 +34,21 @@ async def is_star_valid_for(
     author: User,
     star_adder: hikari.Member,
 ) -> bool:
+    if starboard.locked.v:
+        return False
+
     if (
         not starboard.self_star.v
     ) and star_adder.id == orig_message.author_id.v:
         return False
 
     if author.is_bot.v and not starboard.allow_bots.v:
+        return False
+
+    if orig_message.trashed.v:
+        return False
+
+    if orig_message.frozen.v:
         return False
 
     return True
