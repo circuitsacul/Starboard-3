@@ -268,6 +268,17 @@ pytest-cov = ">=3.0.0,<4.0.0"
 websockets = ">=10.1,<11.0"
 
 [[package]]
+name = "hikari-miru"
+version = "0.5.3"
+description = "An alternative component handler for hikari, inspired by discord.py's views."
+category = "main"
+optional = false
+python-versions = ">=3.8.0,<3.11"
+
+[package.dependencies]
+hikari = ">=2.0.0.dev105,<2.1.0"
+
+[[package]]
 name = "hikari-tanjun"
 version = "2.3.0a1"
 description = "A flexible command framework designed to extend Hikari."
@@ -485,7 +496,7 @@ python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*"
 
 [[package]]
 name = "pyparsing"
-version = "3.0.6"
+version = "3.0.7"
 description = "Python parsing module"
 category = "main"
 optional = false
@@ -627,7 +638,7 @@ multidict = ">=4.0"
 [metadata]
 lock-version = "1.1"
 python-versions = ">=3.9,<3.11"
-content-hash = "b7ae61eb71e18cbb9e731c3cff75a6c05f4189d1e8ea8cfffdf140ada8f8d73f"
+content-hash = "c985ee671c9a32e2fe979cd7f48ffd9004f761a85bce7929a12236cf5895b4cb"
 
 [metadata.files]
 aiohttp = [
@@ -913,6 +924,10 @@ hikari-clusters = [
     {file = "hikari-clusters-0.1.0.post1.tar.gz", hash = "sha256:317852fd3a37773389117e44b9e2f9f944305c9d4d6178e122f99e2eb92d2382"},
     {file = "hikari_clusters-0.1.0.post1-py3-none-any.whl", hash = "sha256:383be72334372d43be85bc14f469a8135c2805361b3881442cdc5ee847f55963"},
 ]
+hikari-miru = [
+    {file = "hikari-miru-0.5.3.tar.gz", hash = "sha256:6f5fa067b50b107455c386fb594942e5f1cd3f178bf2f876339976904bd23886"},
+    {file = "hikari_miru-0.5.3-py3-none-any.whl", hash = "sha256:ac2f8b28bcae1f48b2b0b83848bea28bdbbcaa5d550aa895df885b33fff6f1e2"},
+]
 hikari-tanjun = [
     {file = "hikari-tanjun-2.3.0a1.tar.gz", hash = "sha256:7cd5d6c1f36dfe683f33048fd9caff6be2a7f5b0e1b16409082b4c5df3fd7c8b"},
     {file = "hikari_tanjun-2.3.0a1-py3-none-any.whl", hash = "sha256:41807a4b386c63de67551bdfa90b0f20509972a1696f70e5f835b6bee79a31d0"},
@@ -1114,8 +1129,8 @@ pyflakes = [
     {file = "pyflakes-2.4.0.tar.gz", hash = "sha256:05a85c2872edf37a4ed30b0cce2f6093e1d0581f8c19d7393122da7e25b2b24c"},
 ]
 pyparsing = [
-    {file = "pyparsing-3.0.6-py3-none-any.whl", hash = "sha256:04ff808a5b90911829c55c4e26f75fa5ca8a2f5f36aa3a51f68e27033341d3e4"},
-    {file = "pyparsing-3.0.6.tar.gz", hash = "sha256:d9bdec0013ef1eb5a84ab39a3b3868911598afa494f5faa038647101504e2b81"},
+    {file = "pyparsing-3.0.7-py3-none-any.whl", hash = "sha256:a6c06a88f252e6c322f65faf8f418b16213b51bdfaece0524c1c1bc30c63c484"},
+    {file = "pyparsing-3.0.7.tar.gz", hash = "sha256:18ee9022775d270c55187733956460083db60b37d0d0fb357445f3094eed3eea"},
 ]
 pytest = [
     {file = "pytest-6.2.5-py3-none-any.whl", hash = "sha256:7310f8d27bc79ced999e760ca304d69f6ba6c6649c0b60fb0e04a4a77cacc134"},

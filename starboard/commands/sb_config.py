@@ -30,6 +30,7 @@ import tanjun
 from starboard.database import Starboard
 from starboard.database.get_or_create import goc_guild
 from starboard.undefined import UNDEF
+from starboard.views import Confirm
 
 from ._converters import any_emoji_str, hex_color, none_or, none_or_str
 
@@ -111,10 +112,25 @@ async def add_starboard(
 async def remove_starboard(
     ctx: tanjun.abc.SlashContext, starboard: hikari.InteractionChannel
 ):
-    res = await Starboard.delete_query().where(id=starboard.id).execute()
-    if len(res) == 0:
-        return await ctx.respond(f"<#{starboard.id}> is not a starboard.")
-    await ctx.respond(f"Deleted starboard <#{starboard.id}>.")
+    confirm = Confirm(cast("Bot", ctx.interaction.app))
+    msg = await ctx.respond(
+        "Are you sure?", components=confirm.build(), ensure_result=True
+    )
+    confirm.start(msg)
+    await confirm.wait()
+
+    if confirm.result is True:
+        res = await Starboard.delete_query().where(id=starboard.id).execute()
+        if len(res) == 0:
+            await msg.edit(
+                f"<#{starboard.id}> is not a starboard.", components=[]
+            )
+        else:
+            await msg.edit(
+                f"Deleted starboard <#{starboard.id}>.", components=[]
+            )
+    else:
+        await msg.edit("Cancelled.", components=[])
 
 
 if TYPE_CHECKING:
