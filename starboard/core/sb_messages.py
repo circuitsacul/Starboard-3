@@ -67,12 +67,17 @@ async def get_sbmsg_content(
             starboard.color.v or bot.config.color,
             _display_emoji(),
             starboard.use_nicknames.v,
+            starboard.ping_author.v,
             starcount,
         )
 
     return (
         get_raw_message_text(
-            sql_orig_msg.channel_id.v, _display_emoji(), starcount
+            sql_orig_msg.channel_id.v,
+            sql_orig_msg.author_id.v,
+            _display_emoji(),
+            starboard.ping_author.v,
+            starcount,
         ),
         None,
     )

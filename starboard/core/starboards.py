@@ -94,7 +94,10 @@ async def _refresh_message_for_starboard(
             )
             assert embed
             sbmsg_obj = await bot.rest.create_message(
-                starboard.id.v, embed=embed, content=content
+                starboard.id.v,
+                embed=embed,
+                content=content,
+                user_mentions=(orig_msg_obj.author.id,),
             )
             sbmsg.sb_message_id.v = sbmsg_obj.id
             await sbmsg.save()

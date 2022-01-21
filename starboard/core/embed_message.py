@@ -35,7 +35,9 @@ ZWS = "​"
 
 def get_raw_message_text(
     channel_id: int,
+    author_id: int,
     display_emoji: hikari.UnicodeEmoji | hikari.CustomEmoji | None,
+    ping_author: bool,
     point_count: int,
 ) -> str:
     text = ""
@@ -43,6 +45,9 @@ def get_raw_message_text(
         text += display_emoji.mention + " "
 
     text += f"**{point_count} |** <#{channel_id}>"
+
+    if ping_author:
+        text += f" **(**<@{author_id}>**)**"
 
     return text
 
@@ -75,6 +80,7 @@ async def embed_message(
     color: int,
     display_emoji: hikari.CustomEmoji | hikari.UnicodeEmoji | None,
     nicknames: bool,
+    ping_author: bool,
     point_count: int,
 ) -> tuple[str, hikari.Embed]:
     channel = await bot.cache.gof_guild_channel_wnsfw(message.channel_id)
@@ -118,7 +124,13 @@ async def embed_message(
         )
 
     return (
-        get_raw_message_text(message.channel_id, display_emoji, point_count),
+        get_raw_message_text(
+            message.channel_id,
+            message.author.id,
+            display_emoji,
+            ping_author,
+            point_count,
+        ),
         embed,
     )
 
