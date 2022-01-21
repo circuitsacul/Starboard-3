@@ -27,6 +27,8 @@ from typing import TYPE_CHECKING, Awaitable
 
 from starboard.database import Message, SBMessage, Star, Starboard
 
+from .embed_message import embed_message
+
 if TYPE_CHECKING:
     from starboard.bot import Bot
 
@@ -85,10 +87,17 @@ async def _refresh_message_for_starboard(
         sbmsg_obj = None
 
     if action.add and sbmsg_obj is None:
-        sbmsg_obj = await bot.rest.create_message(
-            starboard.id.v, content=f"{sbmsg.message_id.v} | {starcount}"
+        orig_msg_obj = await bot.cache.gof_message(
+            orig_msg.channel_id.v, orig_msg.id.v
         )
-        sbmsg.sb_message_id.v = sbmsg_obj.id
+        if orig_msg_obj:
+            m, e = await embed_message(
+                bot, orig_msg_obj, orig_msg.guild_id.v, 0
+            )
+            sbmsg_obj = await bot.rest.create_message(
+                starboard.id.v, embeds=[m, *e]
+            )
+            sbmsg.sb_message_id.v = sbmsg_obj.id
 
     elif action.remove:
         print("remove")
@@ -100,7 +109,15 @@ async def _refresh_message_for_starboard(
     elif sbmsg_obj is not None:
         # edit the message
 
-        await sbmsg_obj.edit(content=f"{sbmsg.message_id.v} | {starcount}")
+        orig_msg_obj = await bot.cache.gof_message(
+            orig_msg.channel_id.v,
+            orig_msg.id.v,
+        )
+        if orig_msg_obj:
+            m, e = await embed_message(
+                bot, orig_msg_obj, orig_msg.guild_id.v, 0
+            )
+            await sbmsg_obj.edit(embeds=[m, *e])
 
     else:
         sbmsg.sb_message_id.v = None
