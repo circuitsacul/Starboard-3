@@ -29,8 +29,7 @@ import hikari
 
 from starboard.database import Message, SBMessage, Star, Starboard
 
-from . import emojis
-from .embed_message import embed_message, get_raw_message_text
+from .sb_messages import get_sbmsg_content
 
 if TYPE_CHECKING:
     from starboard.bot import Bot
@@ -86,18 +85,14 @@ async def _refresh_message_for_starboard(
             orig_msg.channel_id.v, orig_msg.id.v
         )
         if orig_msg_obj:
-            content, embed = await embed_message(
+            content, embed = await get_sbmsg_content(
                 bot,
+                starboard,
                 orig_msg_obj,
-                orig_msg.guild_id.v,
-                starboard.color.v or bot.config.color,
-                (
-                    emojis.stored_to_emoji(starboard.display_emoji.v, bot)
-                    if starboard.display_emoji.v is not None
-                    else None
-                ),
+                orig_msg,
                 starcount,
             )
+            assert embed
             sbmsg_obj = await bot.rest.create_message(
                 starboard.id.v, embed=embed, content=content
             )
@@ -136,27 +131,21 @@ async def _refresh_message_for_starboard(
             orig_msg.id.v,
         )
         if orig_msg_obj:
-            content, embed = await embed_message(
+            content, embed = await get_sbmsg_content(
                 bot,
+                starboard,
                 orig_msg_obj,
-                orig_msg.guild_id.v,
-                starboard.color.v or bot.config.color,
-                (
-                    emojis.stored_to_emoji(starboard.display_emoji.v, bot)
-                    if starboard.display_emoji.v is not None
-                    else None
-                ),
+                orig_msg,
                 starcount,
             )
+            assert embed
             await sbmsg_obj.edit(content=content, embed=embed)
         else:
-            content = get_raw_message_text(
-                orig_msg.channel_id.v,
-                (
-                    emojis.stored_to_emoji(starboard.display_emoji.v, bot)
-                    if starboard.display_emoji.v is not None
-                    else None
-                ),
+            content, _ = await get_sbmsg_content(
+                bot,
+                starboard,
+                None,
+                orig_msg,
                 starcount,
             )
             await sbmsg_obj.edit(content=content)

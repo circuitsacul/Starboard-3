@@ -22,7 +22,17 @@
 
 from __future__ import annotations
 
-from starboard.database import Message, SBMessage
+from typing import TYPE_CHECKING
+
+import hikari
+
+from starboard.database import Message, SBMessage, Starboard
+
+from .embed_message import embed_message, get_raw_message_text
+from .emojis import stored_to_emoji
+
+if TYPE_CHECKING:
+    from starboard.bot import Bot
 
 
 async def get_orig_message(message_id: int) -> Message | None:
@@ -33,3 +43,35 @@ async def get_orig_message(message_id: int) -> Message | None:
         return m
 
     return None
+
+
+async def get_sbmsg_content(
+    bot: Bot,
+    starboard: Starboard,
+    dis_orig_msg: hikari.Message | None,
+    sql_orig_msg: Message,
+    starcount: int,
+) -> tuple[str, hikari.Embed | None]:
+    def _display_emoji() -> hikari.UnicodeEmoji | hikari.CustomEmoji | None:
+        return (
+            stored_to_emoji(starboard.display_emoji.v, bot)
+            if starboard.display_emoji.v is not None
+            else None
+        )
+
+    if dis_orig_msg is not None:
+        return await embed_message(
+            bot,
+            dis_orig_msg,
+            starboard.guild_id.v,
+            starboard.color.v or bot.config.color,
+            _display_emoji(),
+            starcount,
+        )
+
+    return (
+        get_raw_message_text(
+            sql_orig_msg.channel_id.v, _display_emoji(), starcount
+        ),
+        None,
+    )
