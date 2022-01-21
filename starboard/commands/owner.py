@@ -48,8 +48,13 @@ async def evaluate(ctx: tanjun.abc.SlashContext, code: str):
     bot = cast("Bot", ctx.interaction.app)
     await ctx.defer()
 
-    result = await bot.exec_code(code)
-    await ctx.respond(repr(result))
+    stdout, obj = await bot.exec_code(code, {"_bot": bot, "_ctx": ctx})
+    await ctx.respond(
+        embed=bot.embed(title="Output", description=stdout,).add_field(
+            name="Return",
+            value=repr(obj),
+        )
+    )
 
 
 @owner.with_command

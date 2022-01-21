@@ -22,7 +22,10 @@
 
 from __future__ import annotations
 
+import traceback
+from contextlib import redirect_stdout
 from datetime import datetime
+from io import StringIO
 from pathlib import Path
 from textwrap import indent
 from typing import TYPE_CHECKING, Any
@@ -105,7 +108,11 @@ class Bot(Cluster):
             timestamp=timestamp,
         )
 
-    async def exec_code(self, code: str) -> Any:
+    async def exec_code(
+        self,
+        code: str,
+        glbls: dict[str, Any] | None = None,
+    ) -> tuple[str, Any]:
         code = indent(code, "    ")
         code = (
             f"async def _async_internal_exec_func_wrap():\n{code}\n\nresult="
@@ -113,9 +120,16 @@ class Bot(Cluster):
         )
 
         lcls: dict[str, Any] = {}
-        exec(code, globals(), lcls)
+        exec(code, glbls, lcls)
 
-        return await lcls["result"]
+        f = StringIO()
+        with redirect_stdout(f):
+            try:
+                result = await lcls["result"]
+            except Exception:
+                return "```py\n" + traceback.format_exc() + "\n```", None
+
+        return f.getvalue(), result
 
 
 def get_brain(config: Config) -> Brain:
