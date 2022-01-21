@@ -100,9 +100,7 @@ async def _refresh_message_for_starboard(
             sbmsg.sb_message_id.v = sbmsg_obj.id
 
     elif action.remove:
-        print("remove")
         if sbmsg_obj is not None:
-            print("not none")
             sbmsg.sb_message_id.v = None
             await sbmsg_obj.delete()
 
