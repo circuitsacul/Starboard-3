@@ -70,3 +70,5 @@ class Database(apgorm.Database):
     messages = message.Message
     sb_messages = sb_message.SBMessage
     stars = star.Star
+
+    indexes = [apgorm.Index(sb_messages, sb_messages.sb_message_id)]
