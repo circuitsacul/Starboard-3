@@ -73,9 +73,18 @@ async def embed_message(
         )
         .add_field(
             name=ZWS,
-            value=f"[Jump]({message.make_link(guild_id)})",
+            value=f"[Go to Message]({message.make_link(guild_id)})",
         )
     )
+
+    if (ref := message.referenced_message) is not None:
+        embed.add_field(
+            name=f"Replying To {ref.author.username}",
+            value=(
+                (ref.content + "\n\n" if ref.content else "")
+                + f"[Go to Message]({ref.make_link(guild_id)})"
+            ),
+        )
 
     return get_raw_message_text(message, display_emoji, point_count), embed
 
