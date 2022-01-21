@@ -59,14 +59,23 @@ async def _refresh_message(bot: Bot, orig_message: Message) -> None:
 async def _refresh_message_for_starboard(
     bot: Bot, orig_msg: Message, starboard: Starboard
 ) -> None:
+    orig_msg_obj = await bot.cache.gof_message(
+        orig_msg.channel_id.v,
+        orig_msg.id.v,
+    )
+
     starcount = await _get_star_count(orig_msg.id.v, starboard.id.v)
-    action = _get_action(orig_msg, starboard, starcount)
+    action = _get_action(orig_msg, starboard, starcount, orig_msg_obj is None)
 
     sbmsg = await SBMessage.exists(
         message_id=orig_msg.id.v,
         starboard_id=starboard.id.v,
     )
-    if sbmsg and sbmsg.last_known_star_count.v == starcount:
+    if (
+        sbmsg is not None
+        and sbmsg.last_known_star_count.v == starcount
+        and not action.remove
+    ):
         return
     if not sbmsg:
         sbmsg = await SBMessage(
@@ -81,9 +90,6 @@ async def _refresh_message_for_starboard(
         sbmsg_obj = None
 
     if action.add and sbmsg_obj is None:
-        orig_msg_obj = await bot.cache.gof_message(
-            orig_msg.channel_id.v, orig_msg.id.v
-        )
         if orig_msg_obj:
             content, embed = await get_sbmsg_content(
                 bot,
@@ -129,10 +135,6 @@ async def _refresh_message_for_starboard(
     elif sbmsg_obj is not None:
         # edit the message
 
-        orig_msg_obj = await bot.cache.gof_message(
-            orig_msg.channel_id.v,
-            orig_msg.id.v,
-        )
         if orig_msg_obj:
             content, embed = await get_sbmsg_content(
                 bot,
@@ -178,7 +180,10 @@ class _Actions:
 
 
 def _get_action(
-    orig_msg: Message, starboard: Starboard, points: int
+    orig_msg: Message,
+    starboard: Starboard,
+    points: int,
+    deleted: bool,
 ) -> _Actions:
     add_trib: bool | None = None
 
@@ -186,6 +191,10 @@ def _get_action(
     if points >= starboard.required.v:
         add_trib = True
     elif points <= starboard.required_remove.v:
+        add_trib = False
+
+    # check deletion
+    if deleted and starboard.link_deletes.v:
         add_trib = False
 
     # check if forced
