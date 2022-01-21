@@ -19,3 +19,17 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
+
+from __future__ import annotations
+
+from starboard.database import Message, SBMessage
+
+
+async def get_orig_message(message_id: int) -> Message | None:
+    if sbm := await SBMessage.exists(sb_message_id=message_id):
+        return await Message.fetch(id=sbm.message_id.v)
+
+    if m := await Message.exists(id=message_id):
+        return m
+
+    return None

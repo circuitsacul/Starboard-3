@@ -36,16 +36,6 @@ if TYPE_CHECKING:
     from starboard.bot import Bot
 
 
-async def get_orig_message(message_id: int) -> Message | None:
-    if sbm := await SBMessage.exists(sb_message_id=message_id):
-        return await Message.fetch(id=sbm.message_id.v)
-
-    if m := await Message.exists(id=message_id):
-        return m
-
-    return None
-
-
 async def refresh_message(bot: Bot, orig_message: Message) -> None:
     if orig_message.id.v in bot.refresh_message_lock:
         return
@@ -77,6 +67,8 @@ async def _refresh_message_for_starboard(
         message_id=orig_msg.id.v,
         starboard_id=starboard.id.v,
     )
+    if sbmsg and sbmsg.last_known_star_count.v == starcount:
+        return
     if not sbmsg:
         sbmsg = await SBMessage(
             message_id=orig_msg.id.v, starboard_id=starboard.id.v

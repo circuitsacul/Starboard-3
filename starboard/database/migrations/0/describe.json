@@ -82,43 +82,6 @@
             "exclude_constraints": []
         },
         {
-            "name": "autoredeems",
-            "fields": [
-                {
-                    "name": "enabled_on",
-                    "type_": "TIMESTAMP",
-                    "not_null": true
-                },
-                {
-                    "name": "guild_id",
-                    "type_": "NUMERIC",
-                    "not_null": true
-                },
-                {
-                    "name": "user_id",
-                    "type_": "NUMERIC",
-                    "not_null": true
-                }
-            ],
-            "fk_constraints": [
-                {
-                    "name": "guildid_fk",
-                    "raw_sql": "CONSTRAINT guildid_fk FOREIGN KEY ( guild_id ) REFERENCES guilds ( id ) MATCH SIMPLE ON DELETE CASCADE ON UPDATE CASCADE"
-                },
-                {
-                    "name": "userid_fk",
-                    "raw_sql": "CONSTRAINT userid_fk FOREIGN KEY ( user_id ) REFERENCES users ( id ) MATCH SIMPLE ON DELETE CASCADE ON UPDATE CASCADE"
-                }
-            ],
-            "pk_constraint": {
-                "name": "_autoredeems_user_id_guild_id_primary_key",
-                "raw_sql": "CONSTRAINT _autoredeems_user_id_guild_id_primary_key PRIMARY KEY ( user_id , guild_id )"
-            },
-            "unique_constraints": [],
-            "check_constraints": [],
-            "exclude_constraints": []
-        },
-        {
             "name": "guilds",
             "fields": [
                 {
@@ -189,6 +152,11 @@
         {
             "name": "members",
             "fields": [
+                {
+                    "name": "autoredeem_enabled",
+                    "type_": "BOOLEAN",
+                    "not_null": true
+                },
                 {
                     "name": "guild_id",
                     "type_": "NUMERIC",
@@ -736,6 +704,11 @@
                     "not_null": true
                 },
                 {
+                    "name": "is_bot",
+                    "type_": "BOOLEAN",
+                    "not_null": true
+                },
+                {
                     "name": "last_patreon_total",
                     "type_": "MONEY",
                     "not_null": true
@@ -809,5 +782,10 @@
             "exclude_constraints": []
         }
     ],
-    "indexes": []
+    "indexes": [
+        {
+            "name": "_btree_index_sb_messages__sb_message_id",
+            "raw_sql": "INDEX _btree_index_sb_messages__sb_message_id ON sb_messages USING BTREE ( ( sb_message_id ) )"
+        }
+    ]
 }

@@ -28,9 +28,11 @@ import apgorm
 import hikari
 
 from starboard.database import Starboard, goc_member, goc_message
+from starboard.database.models.user import User
 
-from .starboards import get_orig_message, refresh_message
-from .stars import add_stars, remove_stars
+from .sb_messages import get_orig_message
+from .starboards import refresh_message
+from .stars import add_stars, is_star_valid_for, remove_stars
 
 if TYPE_CHECKING:
     from starboard.bot import Bot
@@ -72,11 +74,46 @@ async def handle_reaction_add(event: hikari.GuildReactionAddEvent) -> None:
         event.member.is_bot,
     )
 
+    author = await User.fetch(id=orig_msg.author_id.v)
+    valid_starboard_ids: list[int] = []
+    remove_invalid: bool = True
+    for s in starboards:
+        if not s.remove_invalid.v:
+            remove_invalid = False
+        if await is_star_valid_for(s, orig_msg, author, event.member):
+            valid_starboard_ids.append(s.id.v)
+
+    if len(valid_starboard_ids) == 0:
+        if remove_invalid:
+            actual_msg = await bot.cache.gof_message(
+                event.channel_id,
+                event.message_id,
+            )
+            if actual_msg:
+                try:
+                    if isinstance(event.emoji_name, hikari.UnicodeEmoji):
+                        await actual_msg.remove_reaction(
+                            event.emoji_name,
+                            user=event.member,
+                        )
+                    elif (
+                        isinstance(event.emoji_name, str)
+                        and event.emoji_id is not None
+                    ):
+                        await actual_msg.remove_reaction(
+                            event.emoji_name,
+                            event.emoji_id,
+                            user=event.member,
+                        )
+                except (hikari.NotFoundError, hikari.ForbiddenError):
+                    pass
+        return
+
     # create a "star" for each starboard
     await add_stars(
         orig_msg.id.v,
         event.user_id,
-        [s.id.v for s in starboards],
+        valid_starboard_ids,
     )
 
     await refresh_message(cast("Bot", event.app), orig_msg)

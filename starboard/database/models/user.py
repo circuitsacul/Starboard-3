@@ -37,7 +37,7 @@ class PatreonStatus(IntEnum):
 class User(apgorm.Model):
     id = types.Numeric().field().with_converter(DecimalC)
 
-    is_bot = types.Boolean()
+    is_bot = types.Boolean().field()
     locale = types.VarChar(16).field(default="en_US")
     public = types.Boolean().field(default=True)
     votes = types.Int().field(default=0)
