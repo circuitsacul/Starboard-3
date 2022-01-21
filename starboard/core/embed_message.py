@@ -34,7 +34,7 @@ ZWS = "​"
 
 
 def get_raw_message_text(
-    message: hikari.Message,
+    channel_id: int,
     display_emoji: hikari.UnicodeEmoji | hikari.CustomEmoji | None,
     point_count: int,
 ) -> str:
@@ -42,7 +42,7 @@ def get_raw_message_text(
     if display_emoji:
         text += display_emoji.mention + " "
 
-    text += f"**{point_count} |** <#{message.channel_id}>"
+    text += f"**{point_count} |** <#{channel_id}>"
 
     return text
 
@@ -86,7 +86,10 @@ async def embed_message(
             ),
         )
 
-    return get_raw_message_text(message, display_emoji, point_count), embed
+    return (
+        get_raw_message_text(message.channel_id, display_emoji, point_count),
+        embed,
+    )
 
 
 def _get_main_content(message: hikari.Message) -> str:

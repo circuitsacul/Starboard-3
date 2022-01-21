@@ -30,7 +30,7 @@ import hikari
 from starboard.database import Message, SBMessage, Star, Starboard
 
 from . import emojis
-from .embed_message import embed_message
+from .embed_message import embed_message, get_raw_message_text
 
 if TYPE_CHECKING:
     from starboard.bot import Bot
@@ -149,6 +149,17 @@ async def _refresh_message_for_starboard(
                 starcount,
             )
             await sbmsg_obj.edit(content=content, embed=embed)
+        else:
+            content = get_raw_message_text(
+                orig_msg.channel_id.v,
+                (
+                    emojis.stored_to_emoji(starboard.display_emoji.v, bot)
+                    if starboard.display_emoji.v is not None
+                    else None
+                ),
+                starcount,
+            )
+            await sbmsg_obj.edit(content=content)
 
     else:
         sbmsg.sb_message_id.v = None
