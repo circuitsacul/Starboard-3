@@ -25,8 +25,11 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Awaitable
 
+import hikari
+
 from starboard.database import Message, SBMessage, Star, Starboard
 
+from . import emojis
 from .embed_message import embed_message
 
 if TYPE_CHECKING:
@@ -91,13 +94,42 @@ async def _refresh_message_for_starboard(
             orig_msg.channel_id.v, orig_msg.id.v
         )
         if orig_msg_obj:
-            m, e = await embed_message(
-                bot, orig_msg_obj, orig_msg.guild_id.v, 0
+            content, embed = await embed_message(
+                bot,
+                orig_msg_obj,
+                orig_msg.guild_id.v,
+                starboard.color.v or bot.config.color,
+                (
+                    emojis.stored_to_emoji(starboard.display_emoji.v, bot)
+                    if starboard.display_emoji.v is not None
+                    else None
+                ),
+                starcount,
             )
             sbmsg_obj = await bot.rest.create_message(
-                starboard.id.v, embeds=[m, *e]
+                starboard.id.v, embed=embed, content=content
             )
             sbmsg.sb_message_id.v = sbmsg_obj.id
+            await sbmsg.save()
+            if starboard.autoreact.v:
+                for emoji in starboard.star_emojis.v:
+                    assert emoji
+                    _emoji: hikari.UnicodeEmoji | hikari.CustomEmoji
+                    try:
+                        __emoji = bot.cache.get_emoji(int(emoji))
+                        if __emoji is None:
+                            continue
+                        _emoji = __emoji
+                    except ValueError:
+                        _emoji = hikari.UnicodeEmoji.parse(emoji)
+                    try:
+                        await sbmsg_obj.add_reaction(_emoji)
+                    except (
+                        hikari.ForbiddenError,
+                        hikari.BadRequestError,
+                        hikari.NotFoundError,
+                    ):
+                        pass
 
     elif action.remove:
         if sbmsg_obj is not None:
@@ -112,10 +144,19 @@ async def _refresh_message_for_starboard(
             orig_msg.id.v,
         )
         if orig_msg_obj:
-            m, e = await embed_message(
-                bot, orig_msg_obj, orig_msg.guild_id.v, 0
+            content, embed = await embed_message(
+                bot,
+                orig_msg_obj,
+                orig_msg.guild_id.v,
+                starboard.color.v or bot.config.color,
+                (
+                    emojis.stored_to_emoji(starboard.display_emoji.v, bot)
+                    if starboard.display_emoji.v is not None
+                    else None
+                ),
+                starcount,
             )
-            await sbmsg_obj.edit(embeds=[m, *e])
+            await sbmsg_obj.edit(content=content, embed=embed)
 
     else:
         sbmsg.sb_message_id.v = None

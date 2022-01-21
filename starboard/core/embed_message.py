@@ -22,7 +22,7 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Sequence
+from typing import TYPE_CHECKING
 
 import hikari
 
@@ -33,12 +33,28 @@ if TYPE_CHECKING:
 ZWS = "​"
 
 
+def get_raw_message_text(
+    message: hikari.Message,
+    display_emoji: hikari.UnicodeEmoji | hikari.CustomEmoji | None,
+    point_count: int,
+) -> str:
+    text = ""
+    if display_emoji:
+        text += display_emoji.mention + " "
+
+    text += f"**{point_count} |** <#{message.channel_id}>"
+
+    return text
+
+
 async def embed_message(
     bot: Bot,
     message: hikari.Message,
     guild_id: int,
     color: int,
-) -> tuple[hikari.Embed, Sequence[hikari.Embed]]:
+    display_emoji: hikari.CustomEmoji | hikari.UnicodeEmoji | None,
+    point_count: int,
+) -> tuple[str, hikari.Embed]:
     channel = await bot.cache.gof_guild_channel_wnsfw(message.channel_id)
     assert channel is not None
     nsfw = channel.is_nsfw
@@ -61,7 +77,7 @@ async def embed_message(
         )
     )
 
-    return embed, message.embeds
+    return get_raw_message_text(message, display_emoji, point_count), embed
 
 
 def _get_main_content(message: hikari.Message) -> str:

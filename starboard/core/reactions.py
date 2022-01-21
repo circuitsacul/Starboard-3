@@ -37,6 +37,8 @@ if TYPE_CHECKING:
 
 
 async def handle_reaction_add(event: hikari.GuildReactionAddEvent) -> None:
+    if event.member.is_bot:
+        return
     bot = cast("Bot", event.app)
 
     orig_msg = await get_orig_message(event.message_id)
