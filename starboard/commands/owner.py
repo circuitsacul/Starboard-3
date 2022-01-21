@@ -34,7 +34,9 @@ if TYPE_CHECKING:
 C = tanjun.Component()
 
 
-owner = tanjun.slash_command_group("owner", "Owner Only Commands")
+owner = tanjun.slash_command_group(
+    "owner", "Owner Only Commands", default_to_ephemeral=True
+)
 owner = tanjun.with_owner_check(owner)
 C.add_slash_command(owner)
 
@@ -70,9 +72,7 @@ class Rollback(Exception):
 @tanjun.with_bool_slash_option(
     "rollback", "Whether to rollback.", default=True
 )
-@tanjun.as_slash_command(
-    "sql", "Execute SQL, optionally rolling back.", default_to_ephemeral=True
-)
+@tanjun.as_slash_command("sql", "Execute SQL, optionally rolling back.")
 async def run_sql(
     ctx: tanjun.abc.SlashContext,
     sql: str,
