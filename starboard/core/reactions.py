@@ -62,7 +62,9 @@ async def handle_reaction_add(event: hikari.GuildReactionAddEvent) -> None:
             _m.author.is_bot,
         )
 
-    emoji_str = await _get_emoji_str_from_event(event)
+    emoji_str = _get_emoji_str_from_event(event)
+    if not emoji_str:
+        return
     starboards = await _get_starboards_for_emoji(emoji_str, event.guild_id)
     if len(starboards) == 0:
         return
@@ -126,7 +128,9 @@ async def handle_reaction_remove(
     if not orig_msg:
         return
 
-    emoji_str = await _get_emoji_str_from_event(event)
+    emoji_str = _get_emoji_str_from_event(event)
+    if not emoji_str:
+        return
     starboards = await _get_starboards_for_emoji(emoji_str, event.guild_id)
 
     if len(starboards) == 0:
@@ -141,17 +145,15 @@ async def handle_reaction_remove(
     await refresh_message(cast("Bot", event.app), orig_msg)
 
 
-async def _get_emoji_str_from_event(
+def _get_emoji_str_from_event(
     event: hikari.GuildReactionDeleteEvent | hikari.GuildReactionAddEvent,
-) -> str:
+) -> str | None:
+    bot = cast("Bot", event.app)
     if event.emoji_id is not None:
-        return str(
-            (
-                await event.app.rest.fetch_emoji(
-                    event.guild_id, event.emoji_id
-                )
-            ).id
-        )
+        c = bot.cache.get_emoji(event.emoji_id)
+        if not c:
+            return None
+        return str(c.id)
     else:
         assert isinstance(event.emoji_name, hikari.UnicodeEmoji)
         return str(event.emoji_name)
