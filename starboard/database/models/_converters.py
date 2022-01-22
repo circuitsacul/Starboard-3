@@ -39,7 +39,12 @@ class NullDecimalC(apgorm.Converter["Decimal | None", "int | None"]):
         return Decimal(value)
 
 
-DecimalC = apgorm.DecimalConverter
+class DecimalC(apgorm.Converter[Decimal, int]):
+    def from_stored(self, value: Decimal) -> int:
+        return int(value)
+
+    def to_stored(self, value: int) -> Decimal:
+        return Decimal(value)
 
 
 class DecimalArrayC(
