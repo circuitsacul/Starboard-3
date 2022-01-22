@@ -63,7 +63,9 @@ async def restart_bot(ctx: tanjun.abc.SlashContext):
     bot = cast("Bot", ctx.interaction.app)
     await ctx.respond("Restarting all clusters...")
     await asyncio.sleep(1)
-    await bot.ipc.send_command(bot.ipc.cluster_uids, "cluster_stop")
+    await bot.cluster.ipc.send_command(
+        bot.cluster.ipc.cluster_uids, "cluster_stop"
+    )
 
 
 class Rollback(Exception):

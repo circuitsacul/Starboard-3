@@ -40,13 +40,16 @@ from .config import Config
 from .database import Database
 
 
-class Bot(Cluster):
-    def __init__(self, *args, **kwargs) -> None:
-        super().__init__(*args, **kwargs)
+class Bot(hikari.GatewayBot):
+    cluster: Cluster
+
+    def __init__(self) -> None:
+        self.config = Config.load()
+
+        super().__init__(token=self.config.discord_token)
 
         self._aiohttp_session: aiohttp.ClientSession | None = None
         self.database = Database()
-        self.config = Config.load()
         self._cache = Cache(self, self._cache._settings)
         self._event_manager._cache = self._cache
         self.tjbot = tanjun.Client.from_gateway_bot(
@@ -91,7 +94,7 @@ class Bot(Cluster):
     async def close(self) -> None:
         await super().close()
         await self.database.cleanup()
-        self.logger.info("Cleaned up!")
+        self.cluster.logger.info("Cleaned up!")
 
     def embed(
         self,
@@ -144,11 +147,8 @@ def get_brain(config: Config) -> Brain:
     )
 
 
-def _get_cluster_launcher(config: Config) -> ClusterLauncher:
-    return ClusterLauncher(
-        bot_class=Bot,
-        bot_init_kwargs={"token": config.discord_token},
-    )
+def _get_cluster_launcher() -> ClusterLauncher:
+    return ClusterLauncher(bot_class=Bot)
 
 
 def get_server(config: Config) -> Server:
@@ -156,6 +156,6 @@ def get_server(config: Config) -> Server:
         host=config.host,
         port=config.port,
         token=config.ipc_token,
-        cluster_launcher=_get_cluster_launcher(config),
+        cluster_launcher=_get_cluster_launcher(),
         certificate_path=config.certificate_path,
     )
