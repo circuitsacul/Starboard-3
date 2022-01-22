@@ -116,11 +116,7 @@ async def embed_message(
             nicknames,
         )
         embed.add_field(
-            name=f"Replying To {name}",
-            value=(
-                (ref.content + "\n\n" if ref.content else "")
-                + f"[Go to Message]({ref.make_link(guild_id)})"
-            ),
+            name=f"Replying To {name}", value=ref.content or "*file only*"
         )
 
     return (
