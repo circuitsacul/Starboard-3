@@ -144,7 +144,10 @@ async def _refresh_message_for_starboard(
                 starcount,
             )
             assert embed
-            await sbmsg_obj.edit(content=content, embed=embed)
+            if starboard.link_edits.v:
+                await sbmsg_obj.edit(content=content, embed=embed)
+            else:
+                await sbmsg_obj.edit(content=content)
         else:
             content, _ = await get_sbmsg_content(
                 bot,
