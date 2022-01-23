@@ -31,7 +31,7 @@ frozenlist = ">=1.1.0"
 
 [[package]]
 name = "apgorm"
-version = "0.1.0b9"
+version = "0.1.0b10"
 description = "A fully type-checked asynchronous ORM wrapped around asyncpg."
 category = "main"
 optional = false
@@ -269,7 +269,7 @@ websockets = ">=10.1,<11.0"
 
 [[package]]
 name = "hikari-miru"
-version = "0.5.4"
+version = "0.5.5"
 description = "An alternative component handler for hikari, inspired by discord.py's views."
 category = "main"
 optional = false
@@ -300,11 +300,11 @@ type_checking = ["pyright (==0.0.13)"]
 
 [[package]]
 name = "identify"
-version = "2.4.4"
+version = "2.4.5"
 description = "File identification library for Python"
 category = "dev"
 optional = false
-python-versions = ">=3.6.1"
+python-versions = ">=3.7"
 
 [package.extras]
 license = ["ukkonen"]
@@ -720,8 +720,8 @@ aiosignal = [
     {file = "aiosignal-1.2.0.tar.gz", hash = "sha256:78ed67db6c7b7ced4f98e495e572106d5c432a93e1ddd1bf475e1dc05f5b7df2"},
 ]
 apgorm = [
-    {file = "apgorm-0.1.0b9-py3-none-any.whl", hash = "sha256:c578d45f7559d32fe797319ebb1c840625d0fdb2e21d8a440ee607aa335bf360"},
-    {file = "apgorm-0.1.0b9.tar.gz", hash = "sha256:25fec20046baac0e59d215ac09286e6d5d4c9b484aede2baa6bff046abce326b"},
+    {file = "apgorm-0.1.0b10-py3-none-any.whl", hash = "sha256:8c79861a7b2945c7a3e106ed7e777792c02e8ea035bae8379a00b55933c6d5a8"},
+    {file = "apgorm-0.1.0b10.tar.gz", hash = "sha256:8722d93275e7d5e73f15031de2f5cd3db39093e15f41193e15b3892297471002"},
 ]
 async-timeout = [
     {file = "async-timeout-4.0.2.tar.gz", hash = "sha256:2163e1640ddb52b7a8c80d0a67a08587e5d245cc9c553a74a847056bc2976b15"},
@@ -925,16 +925,16 @@ hikari-clusters = [
     {file = "hikari_clusters-0.1.1.post1-py3-none-any.whl", hash = "sha256:ceb9855d4b8508129fd7771557b934d286dda6f63aa2b149a2fbfba56cda68b8"},
 ]
 hikari-miru = [
-    {file = "hikari-miru-0.5.4.tar.gz", hash = "sha256:47a27843bcf1b327619093783b89deb4f066901af4dd785288aa0e72892f3837"},
-    {file = "hikari_miru-0.5.4-py3-none-any.whl", hash = "sha256:d44ccfe2502adbce6f99344b8dc3a4ce06421e68f8ab9482f3c604c71c9f8aca"},
+    {file = "hikari-miru-0.5.5.tar.gz", hash = "sha256:60635a800e5126b28ba4c31c7220df4d9d8b8a3d2bc4097dcde0fc7acc29397d"},
+    {file = "hikari_miru-0.5.5-py3-none-any.whl", hash = "sha256:c5492e69576a77cdcbac6eaa448464bb068975f5b38560b553f797c7a43490a9"},
 ]
 hikari-tanjun = [
     {file = "hikari-tanjun-2.3.0a1.tar.gz", hash = "sha256:7cd5d6c1f36dfe683f33048fd9caff6be2a7f5b0e1b16409082b4c5df3fd7c8b"},
     {file = "hikari_tanjun-2.3.0a1-py3-none-any.whl", hash = "sha256:41807a4b386c63de67551bdfa90b0f20509972a1696f70e5f835b6bee79a31d0"},
 ]
 identify = [
-    {file = "identify-2.4.4-py2.py3-none-any.whl", hash = "sha256:aa68609c7454dbcaae60a01ff6b8df1de9b39fe6e50b1f6107ec81dcda624aa6"},
-    {file = "identify-2.4.4.tar.gz", hash = "sha256:6b4b5031f69c48bf93a646b90de9b381c6b5f560df4cbe0ed3cf7650ae741e4d"},
+    {file = "identify-2.4.5-py2.py3-none-any.whl", hash = "sha256:d27d10099844741c277b45d809bd452db0d70a9b41ea3cd93799ebbbcc6dcb29"},
+    {file = "identify-2.4.5.tar.gz", hash = "sha256:d11469ff952a4d7fd7f9be520d335dc450f585d474b39b5dfb86a500831ab6c7"},
 ]
 idna = [
     {file = "idna-3.3-py3-none-any.whl", hash = "sha256:84d9dd047ffa80596e0f246e2eab0b391788b0503584e8945f2368256d2735ff"},
