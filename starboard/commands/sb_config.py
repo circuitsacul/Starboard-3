@@ -54,6 +54,7 @@ starboards = C.with_command(starboards)
     "starboard",
     "The starboard to view info for. Leave blank to view all.",
     default=None,
+    types=(hikari.TextableGuildChannel,),
 )
 @tanjun.as_slash_command(
     "view", "View starboards or settings for a starboard."
