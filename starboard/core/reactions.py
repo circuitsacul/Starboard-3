@@ -118,7 +118,9 @@ async def handle_reaction_add(event: hikari.GuildReactionAddEvent) -> None:
         valid_starboard_ids,
     )
 
-    await refresh_message(cast("Bot", event.app), orig_msg)
+    await refresh_message(
+        cast("Bot", event.app), orig_msg, valid_starboard_ids
+    )
 
 
 async def handle_reaction_remove(
@@ -136,13 +138,15 @@ async def handle_reaction_remove(
     if len(starboards) == 0:
         return
 
+    valid_sbids = [sb.id.v for sb in starboards]
+
     await remove_stars(
         orig_msg.id.v,
         event.user_id,
-        [sb.id.v for sb in starboards],
+        valid_sbids,
     )
 
-    await refresh_message(cast("Bot", event.app), orig_msg)
+    await refresh_message(cast("Bot", event.app), orig_msg, valid_sbids)
 
 
 def _get_emoji_str_from_event(

@@ -22,10 +22,12 @@
 
 from __future__ import annotations
 
+import asyncio
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Awaitable
 
 import hikari
+from apgorm import sql
 
 from starboard.database import Message, SBMessage, Star, Starboard
 
@@ -35,22 +37,33 @@ if TYPE_CHECKING:
     from starboard.bot import Bot
 
 
-async def refresh_message(bot: Bot, orig_message: Message) -> None:
+async def refresh_message(
+    bot: Bot, orig_message: Message, sbids: list[int] | None = None
+) -> None:
     if orig_message.id.v in bot.refresh_message_lock:
         return
     bot.refresh_message_lock.add(orig_message.id.v)
     try:
-        await _refresh_message(bot, orig_message)
+        await _refresh_message(bot, orig_message, sbids)
     finally:
         bot.refresh_message_lock.remove(orig_message.id.v)
 
 
-async def _refresh_message(bot: Bot, orig_message: Message) -> None:
-    starboards = (
-        await Starboard.fetch_query()
-        .where(guild_id=orig_message.guild_id.v)
-        .fetchmany()
-    )
+async def _refresh_message(
+    bot: Bot, orig_message: Message, sbids: list[int] | None
+) -> None:
+    if sbids:
+        starboards = (
+            await Starboard.fetch_query()
+            .where(Starboard.id.eq(sql(sbids).any))
+            .fetchmany()
+        )
+    else:
+        starboards = (
+            await Starboard.fetch_query()
+            .where(guild_id=orig_message.guild_id.v)
+            .fetchmany()
+        )
 
     for sb in starboards:
         await _refresh_message_for_starboard(bot, orig_message, sb)
@@ -148,6 +161,7 @@ async def _refresh_message_for_starboard(
                 await sbmsg_obj.edit(content=content, embed=embed)
             else:
                 await sbmsg_obj.edit(content=content)
+            await asyncio.sleep(5)
         else:
             content, _ = await get_sbmsg_content(
                 bot,
