@@ -78,6 +78,11 @@ class Bot(hikari.GatewayBot):
         def cache(self) -> Cache:
             ...
 
+    @property
+    def me(self) -> hikari.OwnUser:
+        assert (u := self.get_me())
+        return u
+
     async def session(self) -> aiohttp.ClientSession:
         if self._aiohttp_session is None or self._aiohttp_session.closed:
             self._aiohttp_session = aiohttp.ClientSession()

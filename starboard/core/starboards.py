@@ -112,38 +112,34 @@ async def _refresh_message_for_starboard(
                 starcount,
             )
             assert embed
-            sbmsg_obj = await bot.rest.create_message(
-                starboard.id.v,
-                embed=embed,
-                content=content,
-                user_mentions=(orig_msg_obj.author.id,),
-            )
-            sbmsg.sb_message_id.v = sbmsg_obj.id
-            await sbmsg.save()
-            if starboard.autoreact.v:
-                for emoji in starboard.star_emojis.v:
-                    assert emoji
-                    _emoji: hikari.UnicodeEmoji | hikari.CustomEmoji
-                    try:
-                        __emoji = bot.cache.get_emoji(int(emoji))
-                        if __emoji is None:
-                            continue
-                        _emoji = __emoji
-                    except ValueError:
-                        _emoji = hikari.UnicodeEmoji.parse(emoji)
-                    try:
-                        await sbmsg_obj.add_reaction(_emoji)
-                    except (
-                        hikari.ForbiddenError,
-                        hikari.BadRequestError,
-                        hikari.NotFoundError,
-                    ):
-                        pass
+            sbmsg_obj = await _send(bot, starboard, content, embed)
+            if sbmsg_obj:
+                sbmsg.sb_message_id.v = sbmsg_obj.id
+                await sbmsg.save()
+                if starboard.autoreact.v:
+                    for emoji in starboard.star_emojis.v:
+                        assert emoji
+                        _emoji: hikari.UnicodeEmoji | hikari.CustomEmoji
+                        try:
+                            __emoji = bot.cache.get_emoji(int(emoji))
+                            if __emoji is None:
+                                continue
+                            _emoji = __emoji
+                        except ValueError:
+                            _emoji = hikari.UnicodeEmoji.parse(emoji)
+                        try:
+                            await sbmsg_obj.add_reaction(_emoji)
+                        except (
+                            hikari.ForbiddenError,
+                            hikari.BadRequestError,
+                            hikari.NotFoundError,
+                        ):
+                            pass
 
     elif action.remove:
         if sbmsg_obj is not None:
             sbmsg.sb_message_id.v = None
-            await sbmsg_obj.delete()
+            await _delete(bot, starboard, sbmsg_obj)
 
     elif sbmsg_obj is not None:
         # edit the message
@@ -158,9 +154,9 @@ async def _refresh_message_for_starboard(
             )
             assert embed
             if starboard.link_edits.v:
-                await sbmsg_obj.edit(content=content, embed=embed)
+                await _edit(bot, starboard, sbmsg_obj, content, embed)
             else:
-                await sbmsg_obj.edit(content=content)
+                await _edit(bot, starboard, sbmsg_obj, content, None)
             await asyncio.sleep(5)
         else:
             content, _ = await get_sbmsg_content(
@@ -170,13 +166,129 @@ async def _refresh_message_for_starboard(
                 orig_msg,
                 starcount,
             )
-            await sbmsg_obj.edit(content=content)
+            await _edit(bot, starboard, sbmsg_obj, content, None)
 
     else:
         sbmsg.sb_message_id.v = None
 
     sbmsg.last_known_star_count.v = starcount
     await sbmsg.save()
+
+
+async def _edit(
+    bot: Bot,
+    starboard: Starboard,
+    message: hikari.Message,
+    content: str | None,
+    embed: hikari.Embed | None,
+) -> None:
+    if message.author.id != bot.me.id:
+        wh = await _webhook(bot, starboard, False)
+        if (not wh) or wh.webhook_id != message.author.id:
+            return
+
+        await wh.edit_message(
+            message,
+            content=content or hikari.UNDEFINED,
+            embed=embed or hikari.UNDEFINED,
+        )
+
+    else:
+        await message.edit(
+            content=content or hikari.UNDEFINED,
+            embed=embed or hikari.UNDEFINED,
+        )
+
+
+async def _delete(
+    bot: Bot,
+    starboard: Starboard,
+    message: hikari.Message,
+) -> None:
+    if message.author.id == bot.me.id:
+        return await message.delete()
+
+    else:
+        wh = await _webhook(bot, starboard, False)
+        if wh is not None:
+            await wh.delete_message(message)
+
+        else:
+            # try anyways. will work if bot has manage_messages
+            try:
+                await message.delete()
+            except hikari.ForbiddenError:
+                pass
+
+
+async def _send(
+    bot: Bot,
+    starboard: Starboard,
+    content: str,
+    embed: hikari.Embed,
+) -> hikari.Message | None:
+    webhook = await _webhook(bot, starboard)
+
+    if webhook and starboard.use_webhook.v:
+        try:
+            botuser = bot.get_me()
+            assert botuser
+            return await webhook.execute(
+                content,
+                embed=embed,
+                username=starboard.webhook_name.v,
+                avatar_url=(
+                    starboard.webhook_avatar.v
+                    or botuser.avatar_url
+                    or botuser.default_avatar_url
+                ),
+            )
+        except hikari.NotFoundError:
+            pass
+
+    try:
+        return await bot.rest.create_message(
+            starboard.id.v,
+            content,
+            embed=embed,
+        )
+    except (hikari.ForbiddenError, hikari.NotFoundError):
+        return None
+
+
+async def _webhook(
+    bot: Bot,
+    starboard: Starboard,
+    allow_create: bool = True,
+) -> hikari.ExecutableWebhook | None:
+    create = allow_create and starboard.use_webhook.v
+    wh = None
+    if starboard.webhook_id.v is not None:
+        wh = await bot.cache.gof_webhook(starboard.webhook_id.v)
+        if not wh:
+            starboard.webhook_id.v = None
+            await starboard.save()
+
+    if wh is not None:
+        assert isinstance(wh, hikari.ExecutableWebhook)
+        return wh
+
+    if not create:
+        return None
+
+    try:
+        wh = await bot.rest.create_webhook(
+            starboard.id.v,
+            name="Starboard Webhook",
+            reason="This starboard has use_webhook set to True.",
+        )
+    except (hikari.ForbiddenError, hikari.NotFoundError):
+        return None
+
+    starboard.webhook_id.v = wh.id
+    await starboard.save()
+
+    return wh
 
 
 def _get_star_count(orig_msg_id: int, starboard_id: int) -> Awaitable[int]:

@@ -27,7 +27,7 @@ from typing import Callable
 import apgorm
 from apgorm import types
 
-from ._converters import DecimalArrayC, DecimalC
+from ._converters import DecimalArrayC, DecimalC, NullDecimalC
 from .guild import Guild
 
 
@@ -46,7 +46,7 @@ class Starboard(apgorm.Model):
     id = types.Numeric().field().with_converter(DecimalC)
     guild_id = types.Numeric().field().with_converter(DecimalC)
 
-    webhook_url = types.Text().nullablefield()
+    webhook_id = types.Numeric().nullablefield().with_converter(NullDecimalC)
     locked = types.Boolean().field(default=False)
 
     # Appearance

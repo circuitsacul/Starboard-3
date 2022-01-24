@@ -42,9 +42,26 @@ class Cache(CacheImpl):
         self.__members = TTLCache["tuple[int, int]", "hikari.Member | None"](
             5000, 120
         )
+        self.__webhooks = TTLCache[int, hikari.ExecutableWebhook](5000, 120)
 
         if TYPE_CHECKING:
             self._app = cast(Bot, self._app)
+
+    async def gof_webhook(
+        self, webhook_id: hikari.SnowflakeishOr[hikari.PartialWebhook]
+    ) -> hikari.ExecutableWebhook | None:
+        if (c := self.__webhooks.get(int(webhook_id), None)) is not None:
+            return c
+
+        try:
+            obj = await self._app.rest.fetch_webhook(webhook_id)
+        except hikari.NotFoundError:
+            return None
+
+        assert isinstance(obj, hikari.ExecutableWebhook)
+
+        self.__webhooks[int(webhook_id)] = obj
+        return obj
 
     async def gof_member(
         self,
