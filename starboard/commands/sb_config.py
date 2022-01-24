@@ -27,8 +27,7 @@ from typing import TYPE_CHECKING, cast
 import hikari
 import tanjun
 
-from starboard.database import Starboard
-from starboard.database.get_or_create import goc_guild
+from starboard.database import Starboard, goc_guild
 from starboard.undefined import UNDEF
 from starboard.views import Confirm
 
