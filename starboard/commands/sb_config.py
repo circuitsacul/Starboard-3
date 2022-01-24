@@ -112,7 +112,9 @@ async def add_starboard(
 async def remove_starboard(
     ctx: tanjun.abc.SlashContext, starboard: hikari.InteractionChannel
 ):
-    confirm = Confirm(cast("Bot", ctx.interaction.app))
+    confirm = Confirm(
+        cast("Bot", ctx.interaction.app), int(ctx.interaction.user.id)
+    )
     msg = await ctx.respond(
         "Are you sure?", components=confirm.build(), ensure_result=True
     )

@@ -27,10 +27,14 @@ import miru
 
 
 class Confirm(miru.View):
-    def __init__(self, bot: hikari.GatewayBot) -> None:
+    def __init__(self, bot: hikari.GatewayBot, user_id: int) -> None:
         super().__init__(bot, timeout=30)
 
+        self.user_id = user_id
         self.result: bool | None = None
+
+    async def view_check(self, ctx: miru.Interaction) -> bool:
+        return int(ctx.user.id) == self.user_id
 
     @miru.button(label="Confirm", style=hikari.ButtonStyle.SUCCESS)
     async def confirm(self, btn: miru.Button, ctx: miru.Interaction) -> None:
