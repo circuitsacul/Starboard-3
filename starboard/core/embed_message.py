@@ -22,6 +22,7 @@
 
 from __future__ import annotations
 
+from textwrap import indent
 from typing import TYPE_CHECKING
 
 import hikari
@@ -50,27 +51,6 @@ def get_raw_message_text(
         text += f" **(**<@{author_id}>**)**"
 
     return text
-
-
-async def _get_name_and_avatar(
-    bot: Bot,
-    guild: hikari.SnowflakeishOr[hikari.PartialGuild],
-    user: hikari.User,
-    nicknames: bool,
-) -> tuple[str, hikari.URL]:
-    if not nicknames:
-        return (user.username, user.avatar_url or user.default_avatar_url)
-
-    member = await bot.cache.gof_member(guild, user)
-    if not member:
-        return (user.username, user.avatar_url or user.default_avatar_url)
-
-    return (
-        member.nickname or member.username,
-        member.guild_avatar_url
-        or member.avatar_url
-        or member.default_avatar_url,
-    )
 
 
 async def embed_message(
@@ -108,16 +88,7 @@ async def embed_message(
         )
     )
 
-    if (ref := message.referenced_message) is not None:
-        name, _ = await _get_name_and_avatar(
-            bot,
-            guild_id,
-            ref.author,
-            nicknames,
-        )
-        embed.add_field(
-            name=f"Replying To {name}", value=ref.content or "*file only*"
-        )
+    await _extract_reply(bot, message, guild_id, nicknames, embed)
 
     return (
         get_raw_message_text(
@@ -131,5 +102,77 @@ async def embed_message(
     )
 
 
-def _get_main_content(message: hikari.Message) -> str:
-    return message.content or "<nothing>"
+async def _get_name_and_avatar(
+    bot: Bot,
+    guild: hikari.SnowflakeishOr[hikari.PartialGuild],
+    user: hikari.User,
+    nicknames: bool,
+) -> tuple[str, hikari.URL]:
+    if not nicknames:
+        return (user.username, user.avatar_url or user.default_avatar_url)
+
+    member = await bot.cache.gof_member(guild, user)
+    if not member:
+        return (user.username, user.avatar_url or user.default_avatar_url)
+
+    return (
+        member.nickname or member.username,
+        member.guild_avatar_url
+        or member.avatar_url
+        or member.default_avatar_url,
+    )
+
+
+async def _extract_reply(
+    bot: Bot,
+    message: hikari.Message,
+    guild_id: int,
+    nicknames: bool,
+    embed: hikari.Embed,
+) -> None:
+    if (ref := message.referenced_message) is not None:
+        name, _ = await _get_name_and_avatar(
+            bot,
+            guild_id,
+            ref.author,
+            nicknames,
+        )
+        embed.add_field(
+            name=f"Replying To {name}", value=ref.content or "*file only*"
+        )
+
+
+def _str_embed(embed: hikari.Embed) -> str:
+    return indent(
+        (
+            "\n\n"
+            + (
+                (
+                    f"**__{embed.title}__**\n"
+                    if not embed.url
+                    else f"**__[{embed.title}]({embed.url})__**\n"
+                )
+                if embed.title
+                else ""
+            )
+            + (f"{embed.description}\n" if embed.description else "")
+            + (
+                "\n".join(
+                    [
+                        (f"**{field.name}**\n{field.value}")
+                        for field in embed.fields
+                    ]
+                )
+            )
+        ),
+        "> ",
+    )
+
+
+def _get_main_content(message: hikari.Message) -> str | None:
+    raw_content = message.content or ""
+
+    for e in message.embeds:
+        raw_content += _str_embed(e)
+
+    return raw_content or None
