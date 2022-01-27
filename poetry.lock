@@ -269,7 +269,7 @@ websockets = ">=10.1,<11.0"
 
 [[package]]
 name = "hikari-miru"
-version = "0.6.1"
+version = "0.6.2"
 description = "An alternative component handler for hikari, inspired by discord.py's views."
 category = "main"
 optional = false
@@ -638,7 +638,7 @@ multidict = ">=4.0"
 [metadata]
 lock-version = "1.1"
 python-versions = ">=3.9,<3.11"
-content-hash = "2205e117e641a80f402880ed83ad208f7a73ea96c632743cabe6add98c0d615f"
+content-hash = "95daaab2f621ab67d8c3abfdec9234a08a0cce7405702b09a278749788c764fc"
 
 [metadata.files]
 aiohttp = [
@@ -922,8 +922,8 @@ hikari-clusters = [
     {file = "hikari_clusters-0.1.1.post2-py3-none-any.whl", hash = "sha256:7cc71518f46fc2aa1a910f3030e294a9cdbf7950b861e9953c3749cfc056099f"},
 ]
 hikari-miru = [
-    {file = "hikari-miru-0.6.1.tar.gz", hash = "sha256:5baa0a92f0aee04429d7f662db9b76d7cb6e3c72163b13d04b92790a40ba6c8e"},
-    {file = "hikari_miru-0.6.1-py3-none-any.whl", hash = "sha256:b4b5127fa880457bd236e3f6b7f4dfa3757e8e53eb180af326cf3631e01a0030"},
+    {file = "hikari-miru-0.6.2.tar.gz", hash = "sha256:52c8fab02293efe277ab7598e884c69077cc04ea24a31d989497b3cd2ceb3249"},
+    {file = "hikari_miru-0.6.2-py3-none-any.whl", hash = "sha256:5c289b933b1841f7c5a2648aa9b4d7356c40b4572f7787561d4ff7f7085bd2a5"},
 ]
 hikari-tanjun = [
     {file = "hikari-tanjun-2.3.0a1.tar.gz", hash = "sha256:7cd5d6c1f36dfe683f33048fd9caff6be2a7f5b0e1b16409082b4c5df3fd7c8b"},
