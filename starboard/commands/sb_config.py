@@ -68,7 +68,7 @@ async def view_starboard_settings(
             return await ctx.respond("There are no starboards in this guild.")
         embed = bot.embed(
             title="Starboards",
-            description="\n".join([f"<#{s.id.v}>" for s in all_starboards]),
+            description="\n".join([f"<#{s.id}>" for s in all_starboards]),
         )
         await ctx.respond(embed=embed)
     else:
@@ -263,7 +263,7 @@ async def edit_starboard(
     for k, v in kwargs.items():
         if v is UNDEF.UNDEF:
             continue
-        s.all_fields[k].v = v
+        setattr(s, k, v)
 
     await s.save()
     await ctx.respond(f"Settings for <#{starboard.id}> updated.")
@@ -294,13 +294,13 @@ async def add_star_emoji(
     if not s:
         return await ctx.respond(f"<#{starboard.id}> is not a starboard.")
 
-    emojis = s.star_emojis.v.copy()
+    emojis = s.star_emojis.copy()
     if emoji in emojis:
         return await ctx.respond(
             f"{emoji} is already a star emoji for <#{starboard.id}>."
         )
     emojis.append(emoji)
-    s.star_emojis.v = emojis
+    s.star_emojis = emojis
     await s.save()
     await ctx.respond("Done.")
 
@@ -326,13 +326,13 @@ async def remove_star_emoji(
     if not s:
         return await ctx.respond(f"<#{starboard.id}> is not a starboard.")
 
-    emojis = s.star_emojis.v.copy()
+    emojis = s.star_emojis.copy()
     if emoji not in emojis:
         return await ctx.respond(
             f"{emoji} is not a star emoji for <#{starboard.id}>."
         )
     emojis.remove(emoji)
-    s.star_emojis.v = emojis
+    s.star_emojis = emojis
     await s.save()
     await ctx.respond("Done.")
 
@@ -352,7 +352,7 @@ async def reset_regex(
     if not s:
         return await ctx.respond(f"<#{starboard.id}> is not a starboard.")
 
-    s.regex.v = None
+    s.regex = None
     await s.save()
     await ctx.respond("Done.")
 
@@ -374,7 +374,7 @@ async def reset_exclude_regex(
     if not s:
         return await ctx.respond(f"<#{starboard.id}> is not a starboard.")
 
-    s.exclude_regex.v = None
+    s.exclude_regex = None
     await s.save()
     await ctx.respond("Done.")
 

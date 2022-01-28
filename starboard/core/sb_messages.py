@@ -37,7 +37,7 @@ if TYPE_CHECKING:
 
 async def get_orig_message(message_id: int) -> Message | None:
     if sbm := await SBMessage.exists(sb_message_id=message_id):
-        return await Message.fetch(id=sbm.message_id.v)
+        return await Message.fetch(id=sbm.message_id)
 
     if m := await Message.exists(id=message_id):
         return m
@@ -54,8 +54,8 @@ async def get_sbmsg_content(
 ) -> tuple[str, hikari.Embed | None]:
     def _display_emoji() -> hikari.UnicodeEmoji | hikari.CustomEmoji | None:
         return (
-            stored_to_emoji(starboard.display_emoji.v, bot)
-            if starboard.display_emoji.v is not None
+            stored_to_emoji(starboard.display_emoji, bot)
+            if starboard.display_emoji is not None
             else None
         )
 
@@ -63,20 +63,20 @@ async def get_sbmsg_content(
         return await embed_message(
             bot,
             dis_orig_msg,
-            starboard.guild_id.v,
-            starboard.color.v or bot.config.color,
+            starboard.guild_id,
+            starboard.color or bot.config.color,
             _display_emoji(),
-            starboard.use_nicknames.v,
-            starboard.ping_author.v,
+            starboard.use_nicknames,
+            starboard.ping_author,
             starcount,
         )
 
     return (
         get_raw_message_text(
-            sql_orig_msg.channel_id.v,
-            sql_orig_msg.author_id.v,
+            sql_orig_msg.channel_id,
+            sql_orig_msg.author_id,
             _display_emoji(),
-            starboard.ping_author.v,
+            starboard.ping_author,
             starcount,
         ),
         None,
