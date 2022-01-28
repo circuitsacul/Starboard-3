@@ -11,7 +11,7 @@ license = "MIT"
 [tool.poetry.dependencies]
 python = ">=3.9,<3.11"
 hikari = "^2.0.0-alpha.105"
-hikari-tanjun = "^2.3.0-alpha.1"
+hikari-tanjun = "^2.3.1a1"
 aiohttp = "^3.8.1"
 cachetools = "^5.0.0"
 types-cachetools = "^4.2.9"
