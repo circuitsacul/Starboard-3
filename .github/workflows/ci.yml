@@ -23,6 +23,6 @@ jobs:
     - name: Install dependencies
       run: poetry install
     - name: Run Nox
-      run: nox
+      run: poetry run nox
     - name: Upload to CodeCov
       uses: codecov/codecov-action@v2
