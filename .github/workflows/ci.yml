@@ -1,21 +1,20 @@
-name: pytest
+name: CI
 
 on:
-  push:
   pull_request:
 
 jobs:
-  build:
+  ci:
     runs-on: ${{ matrix.os }}-latest
     strategy:
       matrix:
         python-version: [ '3.9', '3.10' ]
         os: [ ubuntu, macos, windows ]
 
-    name: PY${{ matrix.python-version }} ${{ matrix.os }}
+    name: ${{ matrix.python-version }} ${{ matrix.os }}
     steps:
     - uses: actions/checkout@v2
-    - name: Set up Python 3.8
+    - name: Set up Python
       uses: actions/setup-python@v2
       with:
         python-version: ${{ matrix.python-version }}
@@ -23,7 +22,7 @@ jobs:
       run: pip install poetry
     - name: Install dependencies
       run: poetry install
-    - name: Test with pytest
-      run: poetry run python -m pytest --cov=starboard/ --cov-report=xml
+    - name: Run Nox
+      run: nox
     - name: Upload to CodeCov
       uses: codecov/codecov-action@v2

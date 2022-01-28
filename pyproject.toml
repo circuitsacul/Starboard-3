@@ -26,9 +26,9 @@ black = "^21.9b0"
 isort = "^5.9.3"
 mypy = "^0.931"
 flake8 = "^4.0.1"
-pre-commit = "^2.15.0"
 pytest = "^6.2.5"
 pytest-cov = "^3.0.0"
+nox = "^2022.1.7"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
