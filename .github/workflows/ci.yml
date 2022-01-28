@@ -19,10 +19,8 @@ jobs:
       with:
         python-version: ${{ matrix.python-version }}
     - name: Set up Poetry
-      run: pip install poetry
-    - name: Install dependencies
-      run: poetry install
+      run: pip install nox
     - name: Run Nox
-      run: poetry run nox
+      run: nox
     - name: Upload to CodeCov
       uses: codecov/codecov-action@v2
