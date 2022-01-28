@@ -31,7 +31,7 @@ frozenlist = ">=1.1.0"
 
 [[package]]
 name = "apgorm"
-version = "0.1.0b10"
+version = "1.0.0b3"
 description = "A fully type-checked asynchronous ORM wrapped around asyncpg."
 category = "main"
 optional = false
@@ -269,7 +269,7 @@ websockets = ">=10.1,<11.0"
 
 [[package]]
 name = "hikari-miru"
-version = "0.6.2"
+version = "0.6.3"
 description = "An alternative component handler for hikari, inspired by discord.py's views."
 category = "main"
 optional = false
@@ -280,7 +280,7 @@ hikari = ">=2.0.0.dev105,<2.1.0"
 
 [[package]]
 name = "hikari-tanjun"
-version = "2.3.0a1"
+version = "2.3.1a1"
 description = "A flexible command framework designed to extend Hikari."
 category = "main"
 optional = false
@@ -290,17 +290,17 @@ python-versions = ">=3.9.0,<3.12"
 hikari = ">=2.0.0.dev105,<2.1.0"
 
 [package.extras]
-docs = ["pdoc (==8.2.0)"]
+docs = ["pdoc (==9.0.1)"]
 flake8 = ["flake8 (==4.0.1)", "flake8-bandit (==2.1.2)", "flake8-black (==0.2.3)", "flake8-broken-line (==0.4)", "flake8-builtins (==1.5.3)", "flake8-coding (==1.3.2)", "flake8-comprehensions (==3.8)", "flake8-deprecated (==1.3)", "flake8-executable (==2.1.1)", "flake8-fixme (==1.1.1)", "flake8-functions (==0.0.6)", "flake8-html (==0.4.1)", "flake8-if-statements (==0.1)", "flake8-isort (==4.1.1)", "flake8-mutable (==1.2)", "flake8-pep3101 (==1.3)", "flake8-print (==4)", "flake8-printf-formatting (==1.1.2)", "flake8-pytest-style (==1.6.0)", "flake8-raise (==0.0.5)"]
 lint = ["codespell (==2.1)"]
 publish = ["flit (==3.6.0)"]
 reformat = ["black (==21.12b0)", "isort (==5.10.1)"]
-tests = ["pytest (==6.2.5)", "pytest-asyncio (==0.16)", "pytest-cov (==3)"]
+tests = ["pytest (==6.2.5)", "pytest-asyncio (==0.17.2)", "pytest-cov (==3)"]
 type_checking = ["pyright (==0.0.13)"]
 
 [[package]]
 name = "identify"
-version = "2.4.5"
+version = "2.4.6"
 description = "File identification library for Python"
 category = "dev"
 optional = false
@@ -638,7 +638,7 @@ multidict = ">=4.0"
 [metadata]
 lock-version = "1.1"
 python-versions = ">=3.9,<3.11"
-content-hash = "95daaab2f621ab67d8c3abfdec9234a08a0cce7405702b09a278749788c764fc"
+content-hash = "72096e59fe7eeed57dfec1ef01bdd2e1d8d88c9793984dcfcbddd5c2b9472a3e"
 
 [metadata.files]
 aiohttp = [
@@ -720,8 +720,8 @@ aiosignal = [
     {file = "aiosignal-1.2.0.tar.gz", hash = "sha256:78ed67db6c7b7ced4f98e495e572106d5c432a93e1ddd1bf475e1dc05f5b7df2"},
 ]
 apgorm = [
-    {file = "apgorm-0.1.0b10-py3-none-any.whl", hash = "sha256:8c79861a7b2945c7a3e106ed7e777792c02e8ea035bae8379a00b55933c6d5a8"},
-    {file = "apgorm-0.1.0b10.tar.gz", hash = "sha256:8722d93275e7d5e73f15031de2f5cd3db39093e15f41193e15b3892297471002"},
+    {file = "apgorm-1.0.0b3-py3-none-any.whl", hash = "sha256:37e3e789598f2859f7a95be3b3664dcff311138b6ee37defa184fa8150bfff06"},
+    {file = "apgorm-1.0.0b3.tar.gz", hash = "sha256:a34a6684c1d5b7d5b749448d692a1aa6e48ec5bd11d9959d687c4b3cc4a582de"},
 ]
 async-timeout = [
     {file = "async-timeout-4.0.2.tar.gz", hash = "sha256:2163e1640ddb52b7a8c80d0a67a08587e5d245cc9c553a74a847056bc2976b15"},
@@ -922,16 +922,16 @@ hikari-clusters = [
     {file = "hikari_clusters-0.1.1.post2-py3-none-any.whl", hash = "sha256:7cc71518f46fc2aa1a910f3030e294a9cdbf7950b861e9953c3749cfc056099f"},
 ]
 hikari-miru = [
-    {file = "hikari-miru-0.6.2.tar.gz", hash = "sha256:52c8fab02293efe277ab7598e884c69077cc04ea24a31d989497b3cd2ceb3249"},
-    {file = "hikari_miru-0.6.2-py3-none-any.whl", hash = "sha256:5c289b933b1841f7c5a2648aa9b4d7356c40b4572f7787561d4ff7f7085bd2a5"},
+    {file = "hikari-miru-0.6.3.tar.gz", hash = "sha256:56a0521ab0cdb9b4bc645c6b7d63129e9d6ccdd3e3ea5a3b9b79ae77958e691d"},
+    {file = "hikari_miru-0.6.3-py3-none-any.whl", hash = "sha256:8e8917aefcaee625a4b645cc3a3a8633b4d2c8d98716e1405189e5f1d9efdd17"},
 ]
 hikari-tanjun = [
-    {file = "hikari-tanjun-2.3.0a1.tar.gz", hash = "sha256:7cd5d6c1f36dfe683f33048fd9caff6be2a7f5b0e1b16409082b4c5df3fd7c8b"},
-    {file = "hikari_tanjun-2.3.0a1-py3-none-any.whl", hash = "sha256:41807a4b386c63de67551bdfa90b0f20509972a1696f70e5f835b6bee79a31d0"},
+    {file = "hikari-tanjun-2.3.1a1.tar.gz", hash = "sha256:b897521e464df51d5b6809f3f64c2727529f834c4b426681c0da26afc83f88b7"},
+    {file = "hikari_tanjun-2.3.1a1-py3-none-any.whl", hash = "sha256:f6f646a2885b79eb3f53abfc698526491c96f5cebe9d28fbf79e607004a91392"},
 ]
 identify = [
-    {file = "identify-2.4.5-py2.py3-none-any.whl", hash = "sha256:d27d10099844741c277b45d809bd452db0d70a9b41ea3cd93799ebbbcc6dcb29"},
-    {file = "identify-2.4.5.tar.gz", hash = "sha256:d11469ff952a4d7fd7f9be520d335dc450f585d474b39b5dfb86a500831ab6c7"},
+    {file = "identify-2.4.6-py2.py3-none-any.whl", hash = "sha256:cf06b1639e0dca0c184b1504d8b73448c99a68e004a80524c7923b95f7b6837c"},
+    {file = "identify-2.4.6.tar.gz", hash = "sha256:233679e3f61a02015d4293dbccf16aa0e4996f868bd114688b8c124f18826706"},
 ]
 idna = [
     {file = "idna-3.3-py3-none-any.whl", hash = "sha256:84d9dd047ffa80596e0f246e2eab0b391788b0503584e8945f2368256d2735ff"},

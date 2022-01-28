@@ -76,14 +76,14 @@ async def handle_reaction_add(event: hikari.GuildReactionAddEvent) -> None:
         event.member.is_bot,
     )
 
-    author = await User.fetch(id=orig_msg.author_id.v)
+    author = await User.fetch(id=orig_msg.author_id)
     valid_starboard_ids: list[int] = []
     remove_invalid: bool = True
     for s in starboards:
-        if not s.remove_invalid.v:
+        if not s.remove_invalid:
             remove_invalid = False
         if await is_star_valid_for(s, orig_msg, author, event.member):
-            valid_starboard_ids.append(s.id.v)
+            valid_starboard_ids.append(s.id)
 
     if len(valid_starboard_ids) == 0:
         if remove_invalid:
@@ -113,7 +113,7 @@ async def handle_reaction_add(event: hikari.GuildReactionAddEvent) -> None:
 
     # create a "star" for each starboard
     await add_stars(
-        orig_msg.id.v,
+        orig_msg.id,
         event.user_id,
         valid_starboard_ids,
     )
@@ -138,10 +138,10 @@ async def handle_reaction_remove(
     if len(starboards) == 0:
         return
 
-    valid_sbids = [sb.id.v for sb in starboards]
+    valid_sbids = [sb.id for sb in starboards]
 
     await remove_stars(
-        orig_msg.id.v,
+        orig_msg.id,
         event.user_id,
         valid_sbids,
     )

@@ -40,13 +40,13 @@ if TYPE_CHECKING:
 async def refresh_message(
     bot: Bot, orig_message: Message, sbids: list[int] | None = None
 ) -> None:
-    if orig_message.id.v in bot.refresh_message_lock:
+    if orig_message.id in bot.refresh_message_lock:
         return
-    bot.refresh_message_lock.add(orig_message.id.v)
+    bot.refresh_message_lock.add(orig_message.id)
     try:
         await _refresh_message(bot, orig_message, sbids)
     finally:
-        bot.refresh_message_lock.remove(orig_message.id.v)
+        bot.refresh_message_lock.remove(orig_message.id)
 
 
 async def _refresh_message(
@@ -61,7 +61,7 @@ async def _refresh_message(
     else:
         starboards = (
             await Starboard.fetch_query()
-            .where(guild_id=orig_message.guild_id.v)
+            .where(guild_id=orig_message.guild_id)
             .fetchmany()
         )
 
@@ -73,31 +73,31 @@ async def _refresh_message_for_starboard(
     bot: Bot, orig_msg: Message, starboard: Starboard
 ) -> None:
     orig_msg_obj = await bot.cache.gof_message(
-        orig_msg.channel_id.v,
-        orig_msg.id.v,
+        orig_msg.channel_id,
+        orig_msg.id,
     )
 
-    starcount = await _get_star_count(orig_msg.id.v, starboard.id.v)
+    starcount = await _get_star_count(orig_msg.id, starboard.id)
     action = _get_action(orig_msg, starboard, starcount, orig_msg_obj is None)
 
     sbmsg = await SBMessage.exists(
-        message_id=orig_msg.id.v,
-        starboard_id=starboard.id.v,
+        message_id=orig_msg.id,
+        starboard_id=starboard.id,
     )
     if (
         sbmsg is not None
-        and sbmsg.last_known_star_count.v == starcount
+        and sbmsg.last_known_star_count == starcount
         and not action.remove
     ):
         return
     if not sbmsg:
         sbmsg = await SBMessage(
-            message_id=orig_msg.id.v, starboard_id=starboard.id.v
+            message_id=orig_msg.id, starboard_id=starboard.id
         ).create()
-    if sbmsg.sb_message_id.v is not None:
+    if sbmsg.sb_message_id is not None:
         sbmsg_obj = await bot.cache.gof_message(
-            sbmsg.starboard_id.v,
-            sbmsg.sb_message_id.v,
+            sbmsg.starboard_id,
+            sbmsg.sb_message_id,
         )
     else:
         sbmsg_obj = None
@@ -114,10 +114,10 @@ async def _refresh_message_for_starboard(
             assert embed
             sbmsg_obj = await _send(bot, starboard, content, embed)
             if sbmsg_obj:
-                sbmsg.sb_message_id.v = sbmsg_obj.id
+                sbmsg.sb_message_id = sbmsg_obj.id
                 await sbmsg.save()
-                if starboard.autoreact.v:
-                    for emoji in starboard.star_emojis.v:
+                if starboard.autoreact:
+                    for emoji in starboard.star_emojis:
                         assert emoji
                         _emoji: hikari.UnicodeEmoji | hikari.CustomEmoji
                         try:
@@ -138,7 +138,7 @@ async def _refresh_message_for_starboard(
 
     elif action.remove:
         if sbmsg_obj is not None:
-            sbmsg.sb_message_id.v = None
+            sbmsg.sb_message_id = None
             await _delete(bot, starboard, sbmsg_obj)
 
     elif sbmsg_obj is not None:
@@ -153,7 +153,7 @@ async def _refresh_message_for_starboard(
                 starcount,
             )
             assert embed
-            if starboard.link_edits.v:
+            if starboard.link_edits:
                 await _edit(bot, starboard, sbmsg_obj, content, embed)
             else:
                 await _edit(bot, starboard, sbmsg_obj, content, None)
@@ -169,9 +169,9 @@ async def _refresh_message_for_starboard(
             await _edit(bot, starboard, sbmsg_obj, content, None)
 
     else:
-        sbmsg.sb_message_id.v = None
+        sbmsg.sb_message_id = None
 
-    sbmsg.last_known_star_count.v = starcount
+    sbmsg.last_known_star_count = starcount
     await sbmsg.save()
 
 
@@ -229,16 +229,16 @@ async def _send(
 ) -> hikari.Message | None:
     webhook = await _webhook(bot, starboard)
 
-    if webhook and starboard.use_webhook.v:
+    if webhook and starboard.use_webhook:
         try:
             botuser = bot.get_me()
             assert botuser
             return await webhook.execute(
                 content,
                 embed=embed,
-                username=starboard.webhook_name.v,
+                username=starboard.webhook_name,
                 avatar_url=(
-                    starboard.webhook_avatar.v
+                    starboard.webhook_avatar
                     or botuser.avatar_url
                     or botuser.default_avatar_url
                 ),
@@ -248,7 +248,7 @@ async def _send(
 
     try:
         return await bot.rest.create_message(
-            starboard.id.v,
+            starboard.id,
             content,
             embed=embed,
         )
@@ -261,12 +261,12 @@ async def _webhook(
     starboard: Starboard,
     allow_create: bool = True,
 ) -> hikari.ExecutableWebhook | None:
-    create = allow_create and starboard.use_webhook.v
+    create = allow_create and starboard.use_webhook
     wh = None
-    if starboard.webhook_id.v is not None:
-        wh = await bot.cache.gof_webhook(starboard.webhook_id.v)
+    if starboard.webhook_id is not None:
+        wh = await bot.cache.gof_webhook(starboard.webhook_id)
         if not wh:
-            starboard.webhook_id.v = None
+            starboard.webhook_id = None
             await starboard.save()
 
     if wh is not None:
@@ -278,14 +278,14 @@ async def _webhook(
 
     try:
         wh = await bot.rest.create_webhook(
-            starboard.id.v,
+            starboard.id,
             name="Starboard Webhook",
             reason="This starboard has use_webhook set to True.",
         )
     except (hikari.ForbiddenError, hikari.NotFoundError):
         return None
 
-    starboard.webhook_id.v = wh.id
+    starboard.webhook_id = wh.id
     await starboard.save()
 
     return wh
@@ -317,21 +317,21 @@ def _get_action(
     add_trib: bool | None = None
 
     # check points
-    if points >= starboard.required.v:
+    if points >= starboard.required:
         add_trib = True
-    elif points <= starboard.required_remove.v:
+    elif points <= starboard.required_remove:
         add_trib = False
 
     # check deletion
-    if deleted and starboard.link_deletes.v:
+    if deleted and starboard.link_deletes:
         add_trib = False
 
     # check if forced
-    if starboard.id.v in orig_msg.forced_to.v:
+    if starboard.id in orig_msg.forced_to:
         add_trib = True
 
     # check trashed
-    if orig_msg.trashed.v:
+    if orig_msg.trashed:
         add_trib = False
 
     # return
