@@ -73,16 +73,14 @@ async def _refresh_message_for_starboard(
     bot: Bot, orig_msg: Message, starboard: Starboard
 ) -> None:
     orig_msg_obj = await bot.cache.gof_message(
-        orig_msg.channel_id,
-        orig_msg.id,
+        orig_msg.channel_id, orig_msg.id
     )
 
     starcount = await _get_star_count(orig_msg.id, starboard.id)
     action = _get_action(orig_msg, starboard, starcount, orig_msg_obj is None)
 
     sbmsg = await SBMessage.exists(
-        message_id=orig_msg.id,
-        starboard_id=starboard.id,
+        message_id=orig_msg.id, starboard_id=starboard.id
     )
     if (
         sbmsg is not None
@@ -96,8 +94,7 @@ async def _refresh_message_for_starboard(
         ).create()
     if sbmsg.sb_message_id is not None:
         sbmsg_obj = await bot.cache.gof_message(
-            sbmsg.starboard_id,
-            sbmsg.sb_message_id,
+            sbmsg.starboard_id, sbmsg.sb_message_id
         )
     else:
         sbmsg_obj = None
@@ -105,11 +102,7 @@ async def _refresh_message_for_starboard(
     if action.add and sbmsg_obj is None:
         if orig_msg_obj:
             content, embed = await get_sbmsg_content(
-                bot,
-                starboard,
-                orig_msg_obj,
-                orig_msg,
-                starcount,
+                bot, starboard, orig_msg_obj, orig_msg, starcount
             )
             assert embed
             sbmsg_obj = await _send(bot, starboard, content, embed)
@@ -146,11 +139,7 @@ async def _refresh_message_for_starboard(
 
         if orig_msg_obj:
             content, embed = await get_sbmsg_content(
-                bot,
-                starboard,
-                orig_msg_obj,
-                orig_msg,
-                starcount,
+                bot, starboard, orig_msg_obj, orig_msg, starcount
             )
             assert embed
             if starboard.link_edits:
@@ -160,11 +149,7 @@ async def _refresh_message_for_starboard(
             await asyncio.sleep(5)
         else:
             content, _ = await get_sbmsg_content(
-                bot,
-                starboard,
-                None,
-                orig_msg,
-                starcount,
+                bot, starboard, None, orig_msg, starcount
             )
             await _edit(bot, starboard, sbmsg_obj, content, None)
 
@@ -201,9 +186,7 @@ async def _edit(
 
 
 async def _delete(
-    bot: Bot,
-    starboard: Starboard,
-    message: hikari.Message,
+    bot: Bot, starboard: Starboard, message: hikari.Message
 ) -> None:
     if message.author.id == bot.me.id:
         return await message.delete()
@@ -222,10 +205,7 @@ async def _delete(
 
 
 async def _send(
-    bot: Bot,
-    starboard: Starboard,
-    content: str,
-    embed: hikari.Embed,
+    bot: Bot, starboard: Starboard, content: str, embed: hikari.Embed
 ) -> hikari.Message | None:
     webhook = await _webhook(bot, starboard)
 
@@ -248,18 +228,14 @@ async def _send(
 
     try:
         return await bot.rest.create_message(
-            starboard.id,
-            content,
-            embed=embed,
+            starboard.id, content, embed=embed
         )
     except (hikari.ForbiddenError, hikari.NotFoundError):
         return None
 
 
 async def _webhook(
-    bot: Bot,
-    starboard: Starboard,
-    allow_create: bool = True,
+    bot: Bot, starboard: Starboard, allow_create: bool = True
 ) -> hikari.ExecutableWebhook | None:
     create = allow_create and starboard.use_webhook
     wh = None
@@ -294,10 +270,7 @@ async def _webhook(
 def _get_star_count(orig_msg_id: int, starboard_id: int) -> Awaitable[int]:
     return (
         Star.fetch_query()
-        .where(
-            message_id=orig_msg_id,
-            starboard_id=starboard_id,
-        )
+        .where(message_id=orig_msg_id, starboard_id=starboard_id)
         .count()
     )
 
@@ -309,10 +282,7 @@ class _Actions:
 
 
 def _get_action(
-    orig_msg: Message,
-    starboard: Starboard,
-    points: int,
-    deleted: bool,
+    orig_msg: Message, starboard: Starboard, points: int, deleted: bool
 ) -> _Actions:
     add_trib: bool | None = None
 

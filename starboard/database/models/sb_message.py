@@ -44,7 +44,4 @@ class SBMessage(apgorm.Model):
 
     sb_message_id_unique = apgorm.Unique(sb_message_id)
 
-    primary_key = (
-        message_id,
-        starboard_id,
-    )
+    primary_key = (message_id, starboard_id)

@@ -54,7 +54,4 @@ class PosRoleMember(apgorm.Model):
     role_id_fk = apgorm.ForeignKey(role_id, PosRole.id)
     user_id_fk = apgorm.ForeignKey(user_id, User.id)
 
-    primary_key = (
-        role_id,
-        user_id,
-    )
+    primary_key = (role_id, user_id)

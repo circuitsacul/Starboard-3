@@ -40,8 +40,4 @@ class Star(apgorm.Model):
     starboard_id_fk = apgorm.ForeignKey(starboard_id, Starboard.id)
     user_id_fk = apgorm.ForeignKey(user_id, User.id)
 
-    primary_key = (
-        message_id,
-        starboard_id,
-        user_id,
-    )
+    primary_key = (message_id, starboard_id, user_id)

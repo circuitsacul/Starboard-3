@@ -50,9 +50,8 @@ async def evaluate(ctx: tanjun.abc.SlashContext, code: str):
 
     stdout, obj = await bot.exec_code(code, {"_bot": bot, "_ctx": ctx})
     await ctx.respond(
-        embed=bot.embed(title="Output", description=stdout,).add_field(
-            name="Return",
-            value=repr(obj),
+        embed=bot.embed(title="Output", description=stdout).add_field(
+            name="Return", value=repr(obj)
         )
     )
 
@@ -80,11 +79,7 @@ class Rollback(Exception):
     "rollback", "Whether to rollback.", default=True
 )
 @tanjun.as_slash_command("sql", "Execute SQL, optionally rolling back.")
-async def run_sql(
-    ctx: tanjun.abc.SlashContext,
-    sql: str,
-    rollback: bool,
-):
+async def run_sql(ctx: tanjun.abc.SlashContext, sql: str, rollback: bool):
     bot = cast("Bot", ctx.interaction.app)
     assert bot.database.pool
     try:

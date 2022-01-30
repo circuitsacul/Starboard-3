@@ -70,11 +70,7 @@ async def handle_reaction_add(event: hikari.GuildReactionAddEvent) -> None:
         return
 
     # data for the person who reacted
-    await goc_member(
-        event.guild_id,
-        event.member.id,
-        event.member.is_bot,
-    )
+    await goc_member(event.guild_id, event.member.id, event.member.is_bot)
 
     author = await User.fetch(id=orig_msg.author_id)
     valid_starboard_ids: list[int] = []
@@ -88,35 +84,27 @@ async def handle_reaction_add(event: hikari.GuildReactionAddEvent) -> None:
     if len(valid_starboard_ids) == 0:
         if remove_invalid:
             actual_msg = await bot.cache.gof_message(
-                event.channel_id,
-                event.message_id,
+                event.channel_id, event.message_id
             )
             if actual_msg:
                 try:
                     if isinstance(event.emoji_name, hikari.UnicodeEmoji):
                         await actual_msg.remove_reaction(
-                            event.emoji_name,
-                            user=event.member,
+                            event.emoji_name, user=event.member
                         )
                     elif (
                         isinstance(event.emoji_name, str)
                         and event.emoji_id is not None
                     ):
                         await actual_msg.remove_reaction(
-                            event.emoji_name,
-                            event.emoji_id,
-                            user=event.member,
+                            event.emoji_name, event.emoji_id, user=event.member
                         )
                 except (hikari.NotFoundError, hikari.ForbiddenError):
                     pass
         return
 
     # create a "star" for each starboard
-    await add_stars(
-        orig_msg.id,
-        event.user_id,
-        valid_starboard_ids,
-    )
+    await add_stars(orig_msg.id, event.user_id, valid_starboard_ids)
 
     await refresh_message(
         cast("Bot", event.app), orig_msg, valid_starboard_ids
@@ -140,11 +128,7 @@ async def handle_reaction_remove(
 
     valid_sbids = [sb.id for sb in starboards]
 
-    await remove_stars(
-        orig_msg.id,
-        event.user_id,
-        valid_sbids,
-    )
+    await remove_stars(orig_msg.id, event.user_id, valid_sbids)
 
     await refresh_message(cast("Bot", event.app), orig_msg, valid_sbids)
 
@@ -164,8 +148,7 @@ def _get_emoji_str_from_event(
 
 
 async def _get_starboards_for_emoji(
-    emoji_str: str,
-    guild_id: int,
+    emoji_str: str, guild_id: int
 ) -> apgorm.LazyList[dict, Starboard]:
     return (
         await Starboard.fetch_query()

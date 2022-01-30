@@ -53,15 +53,11 @@ async def is_star_valid_for(
 
 
 async def add_stars(
-    orig_message_id: int,
-    user_id: int,
-    starboard_ids: list[int],
+    orig_message_id: int, user_id: int, starboard_ids: list[int]
 ) -> None:
     for sbid in starboard_ids:
         if await Star.exists(
-            message_id=orig_message_id,
-            user_id=user_id,
-            starboard_id=sbid,
+            message_id=orig_message_id, user_id=user_id, starboard_id=sbid
         ):
             continue
         await Star(
@@ -70,9 +66,7 @@ async def add_stars(
 
 
 async def remove_stars(
-    orig_message_id: int,
-    user_id: int,
-    starboard_ids: list[int],
+    orig_message_id: int, user_id: int, starboard_ids: list[int]
 ) -> None:
     await Star.delete_query().where(
         message_id=orig_message_id,

@@ -53,8 +53,7 @@ class Bot(hikari.GatewayBot):
         self._cache = Cache(self, self._cache._settings)
         self._event_manager._cache = self._cache
         self.tjbot = tanjun.Client.from_gateway_bot(
-            self,
-            declare_global_commands=self.config.testing_guilds,
+            self, declare_global_commands=self.config.testing_guilds
         )
 
         # "locks"
@@ -117,9 +116,7 @@ class Bot(hikari.GatewayBot):
         )
 
     async def exec_code(
-        self,
-        code: str,
-        glbls: dict[str, Any] | None = None,
+        self, code: str, glbls: dict[str, Any] | None = None
     ) -> tuple[str, Any]:
         code = indent(code, "    ")
         code = (

@@ -43,7 +43,4 @@ class PermRole(apgorm.Model):
 
     pgid_fk = apgorm.ForeignKey(permgroup_id, PermGroup.id)
 
-    primary_key = (
-        permgroup_id,
-        role_id,
-    )
+    primary_key = (permgroup_id, role_id)

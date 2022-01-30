@@ -78,13 +78,9 @@ async def embed_message(
             color=color,
             timestamp=message.created_at,
         )
-        .set_author(
-            name=name,
-            icon=avatar,
-        )
+        .set_author(name=name, icon=avatar)
         .add_field(
-            name=ZWS,
-            value=f"[Go to Message]({message.make_link(guild_id)})",
+            name=ZWS, value=f"[Go to Message]({message.make_link(guild_id)})"
         )
     )
 
@@ -132,10 +128,7 @@ async def _extract_reply(
 ) -> None:
     if (ref := message.referenced_message) is not None:
         name, _ = await _get_name_and_avatar(
-            bot,
-            guild_id,
-            ref.author,
-            nicknames,
+            bot, guild_id, ref.author, nicknames
         )
         embed.add_field(
             name=f"Replying To {name}", value=ref.content or "*file only*"

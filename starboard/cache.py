@@ -71,13 +71,7 @@ class Cache(CacheImpl):
         if (ic := self.get_member(guild, user)) is not None:
             return ic
 
-        c = self.__members.get(
-            (
-                int(guild),
-                int(user),
-            ),
-            UNDEF.UNDEF,
-        )
+        c = self.__members.get((int(guild), int(user)), UNDEF.UNDEF)
         if c is not UNDEF.UNDEF:
             return c
 
@@ -86,12 +80,7 @@ class Cache(CacheImpl):
         except hikari.NotFoundError:
             obj = None
 
-        self.__members[
-            (
-                int(guild),
-                int(user),
-            )
-        ] = obj
+        self.__members[(int(guild), int(user))] = obj
         return obj
 
     async def gof_message(
@@ -115,8 +104,7 @@ class Cache(CacheImpl):
         return obj
 
     async def gof_guild_channel_wnsfw(
-        self,
-        channel: hikari.SnowflakeishOr[hikari.PartialChannel],
+        self, channel: hikari.SnowflakeishOr[hikari.PartialChannel]
     ) -> hikari.GuildChannel | None:
         cached = self.get_guild_channel(channel)
         if cached is None:

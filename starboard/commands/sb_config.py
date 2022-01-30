@@ -94,10 +94,7 @@ async def add_starboard(
     if exists:
         return await ctx.respond(f"<#{channel.id}> is already a starboard.")
 
-    await Starboard(
-        id=channel.id,
-        guild_id=ctx.guild_id,
-    ).create()
+    await Starboard(id=channel.id, guild_id=ctx.guild_id).create()
 
     await ctx.respond(f"<#{channel.id}> is now a starboard.")
 
@@ -156,23 +153,17 @@ else:
 
 
 @starboards.with_command
-@str_option(
-    "color",
-    "The color of the embeds.",
-    converters=none_or(hex_color),
-)
+@str_option("color", "The color of the embeds.", converters=none_or(hex_color))
 @str_option(
     "display_emoji",
     "The emoji shown next to the point count.",
     converters=none_or(any_emoji_str),
 )
 @bool_option(
-    "ping_author",
-    "Whether to ping the author when their post is starboarded.",
+    "ping_author", "Whether to ping the author when their post is starboarded."
 )
 @bool_option(
-    "use_nicknames",
-    "Whether to use nicknames instead of usernames on embeds.",
+    "use_nicknames", "Whether to use nicknames instead of usernames on embeds."
 )
 @bool_option(
     "use_webhook",
@@ -197,10 +188,7 @@ else:
     "required_remove",
     "The fewest number of stars a message can have before it is removed.",
 )
-@bool_option(
-    "self_star",
-    "Whether or not users can star their own messages.",
-)
+@bool_option("self_star", "Whether or not users can star their own messages.")
 @bool_option(
     "allow_bots", "Whether or not messages by bots can be starboarded."
 )
@@ -275,9 +263,7 @@ starboards.add_command(emojis)
 
 @emojis.with_command
 @tanjun.with_str_slash_option(
-    "emoji",
-    "The emoji to add.",
-    converters=any_emoji_str,
+    "emoji", "The emoji to add.", converters=any_emoji_str
 )
 @tanjun.with_channel_slash_option(
     "starboard",
@@ -307,9 +293,7 @@ async def add_star_emoji(
 
 @emojis.with_command
 @tanjun.with_str_slash_option(
-    "emoji",
-    "The emoji to remove.",
-    converters=any_emoji_str,
+    "emoji", "The emoji to remove.", converters=any_emoji_str
 )
 @tanjun.with_channel_slash_option(
     "starboard",
@@ -345,8 +329,7 @@ async def remove_star_emoji(
 )
 @tanjun.as_slash_command("reset_regex", "Reset `regex` for a starboard.")
 async def reset_regex(
-    ctx: tanjun.abc.SlashContext,
-    starboard: hikari.InteractionChannel,
+    ctx: tanjun.abc.SlashContext, starboard: hikari.InteractionChannel
 ):
     s = await Starboard.exists(id=starboard.id)
     if not s:
@@ -367,8 +350,7 @@ async def reset_regex(
     "reset_exclude_regex", "Reset `exclude_regex` for a starboard."
 )
 async def reset_exclude_regex(
-    ctx: tanjun.abc.SlashContext,
-    starboard: hikari.InteractionChannel,
+    ctx: tanjun.abc.SlashContext, starboard: hikari.InteractionChannel
 ):
     s = await Starboard.exists(id=starboard.id)
     if not s:

@@ -1,5 +1,6 @@
 [tool.black]
 line-length=79
+skip-magic-trailing-comma=true
 
 [tool.poetry]
 name = "starboard"

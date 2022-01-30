@@ -57,8 +57,7 @@ def hex_color(text: str) -> int:
 
 
 def none_or(
-    func: Callable[[str], Any],
-    nonefirst: bool = False,
+    func: Callable[[str], Any], nonefirst: bool = False
 ) -> Callable[[str], Any]:
     def wrapper(text: str) -> Any:
         if nonefirst and text.lower() in ["none", "default"]:
