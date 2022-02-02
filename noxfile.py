@@ -49,10 +49,10 @@ def flake8(session: nox.Session) -> None:
 @nox.session
 def black(session: nox.Session) -> None:
     session.install("black")
-    session.run("black", ".")
+    session.run("black", ".", "--check")
 
 
 @nox.session
 def isort(session: nox.Session) -> None:
     session.install("isort")
-    session.run("isort", ".")
+    session.run("isort", ".", "--check")
