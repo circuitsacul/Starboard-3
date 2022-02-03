@@ -20,7 +20,7 @@ hikari-clusters = "^0.1.1"
 apgorm = "^1.0.0b3"
 emoji = "^1.6.3"
 types-emoji = "^1.2.7"
-hikari-miru = "^0.6.2"
+hikari-miru = "^1.0.0"
 
 [tool.poetry.dev-dependencies]
 black = "^22.1"
