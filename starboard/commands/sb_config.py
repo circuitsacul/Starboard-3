@@ -22,7 +22,7 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Type, cast, TypeVar
+from typing import TYPE_CHECKING, Type, cast, TypeVar
 
 import hikari
 import crescent
@@ -120,7 +120,7 @@ class DeleteStarboard:
     )
 
     async def callback(self, ctx: crescent.Context) -> None:
-        confirm = Confirm(cast("Bot", ctx.app), ctx.user.id)
+        confirm = Confirm(ctx.user.id)
         await ctx.respond(
             "Are you sure? All data will be lost **permanently**.",
             components=confirm.build(),
@@ -211,7 +211,9 @@ class EditStarboard:
     )
 
     async def callback(self, ctx: crescent.Context) -> None:
-        kwargs: dict[str, Any] = {}  # assume this is the options passed
+        kwargs = self.__dict__.copy()
+        del kwargs["callback"]
+        del kwargs["starboard"]
 
         s = await Starboard.exists(id=self.starboard.id)
         if not s:
