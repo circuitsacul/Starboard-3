@@ -33,9 +33,7 @@ if TYPE_CHECKING:
     from starboard.bot import Bot
 
 
-async def owner_only(
-    ctx: crescent.Context, options
-) -> None:
+async def owner_only(ctx: crescent.Context, options) -> None:
     bot = cast("Bot", ctx.app)
     if ctx.user.id not in bot.config.owners:
         raise CheckErr("Only owners can use this command.")
@@ -43,9 +41,7 @@ async def owner_only(
     return None
 
 
-async def guild_only(
-    ctx: crescent.Context, options
-) -> None:
+async def guild_only(ctx: crescent.Context, options) -> None:
     if not ctx.guild_id:
         raise CheckErr("This command can only be used inside servers.")
 
@@ -54,12 +50,8 @@ async def guild_only(
 
 def has_guild_perms(
     perms: hikari.Permissions,
-) -> Callable[
-    [crescent.Context, Any], Awaitable[None]
-]:
-    async def check(
-        ctx: crescent.Context, options
-    ) -> None:
+) -> Callable[[crescent.Context, Any], Awaitable[None]]:
+    async def check(ctx: crescent.Context, options) -> None:
         await guild_only(ctx, options)
         assert ctx.guild_id is not None
         assert ctx.member is not None

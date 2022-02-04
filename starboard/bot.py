@@ -31,8 +31,8 @@ from textwrap import indent
 from typing import TYPE_CHECKING, Any
 
 import aiohttp
-import hikari
 import crescent
+import hikari
 from hikari_clusters import Brain, Cluster, ClusterLauncher, Server
 
 from .cache import Cache

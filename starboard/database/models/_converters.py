@@ -22,9 +22,8 @@
 
 from __future__ import annotations
 
-from typing import Sequence
-
 from decimal import Decimal
+from typing import Sequence
 
 import apgorm
 

@@ -22,18 +22,18 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Type, cast, TypeVar
+from typing import TYPE_CHECKING, Type, TypeVar, cast
 
-import hikari
 import crescent
+import hikari
 
 from starboard.database import Starboard, goc_guild
+from starboard.exceptions import StarboardNotFound
 from starboard.undefined import UNDEF
 from starboard.views import Confirm
 
-from ._converters import any_emoji_str
 from ._checks import has_guild_perms
-from starboard.exceptions import StarboardNotFound
+from ._converters import any_emoji_str
 
 if TYPE_CHECKING:
     from starboard.bot import Bot
@@ -151,10 +151,7 @@ _T = TypeVar("_T")
 
 def optiond(type: Type[_T], *args, **kwargs) -> _T | UNDEF:
     return crescent.option(
-        type,  # type: ignore
-        *args,
-        **kwargs,
-        default=UNDEF.UNDEF,
+        type, *args, **kwargs, default=UNDEF.UNDEF  # type: ignore
     )
 
 
@@ -265,7 +262,7 @@ class AddStarEmoji:
 class RemoveStarEmoji:
     starboard = crescent.option(
         hikari.TextableGuildChannel,
-        "The starboard to remove the star emoji from"
+        "The starboard to remove the star emoji from",
     )
     emoji = crescent.option(str, "The star emoji to remove")
 

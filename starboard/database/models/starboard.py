@@ -25,11 +25,11 @@ from __future__ import annotations
 import apgorm
 from apgorm import types
 
-from ._converters import DecimalArrayC, DecimalC, NullDecimalC
-from ._checks import str_length, int_range, valid_emoji
-from .guild import Guild
-
 from starboard.config import CONFIG
+
+from ._checks import int_range, str_length, valid_emoji
+from ._converters import DecimalArrayC, DecimalC, NullDecimalC
+from .guild import Guild
 
 
 class Starboard(apgorm.Model):
