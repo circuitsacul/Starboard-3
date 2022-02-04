@@ -22,343 +22,265 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, cast
+from typing import TYPE_CHECKING, Any, Type, cast, TypeVar
 
 import hikari
-import tanjun
+import crescent
 
 from starboard.database import Starboard, goc_guild
 from starboard.undefined import UNDEF
 from starboard.views import Confirm
 
-from ._converters import any_emoji_str, hex_color, none_or, none_or_str
+from ._converters import any_emoji_str
+from ._checks import has_guild_perms
+from starboard.exceptions import StarboardNotFound
 
 if TYPE_CHECKING:
     from starboard.bot import Bot
 
 
-C = tanjun.Component()
+plugin = crescent.Plugin("starboard-config")
 
 
-starboards = tanjun.slash_command_group("starboards", "Manage Starboards")
-starboards = tanjun.with_guild_check(starboards)
-starboards = tanjun.with_author_permission_check(
-    hikari.Permissions.MANAGE_GUILD
-)(starboards)
-starboards = C.with_command(starboards)
-
-
-@starboards.with_command
-@tanjun.with_channel_slash_option(
-    "starboard",
-    "The starboard to view info for. Leave blank to view all.",
-    default=None,
-    types=(hikari.TextableGuildChannel,),
+starboards = crescent.Group(
+    "starboards",
+    "Manage Starboards",
+    hooks=[has_guild_perms(hikari.Permissions.MANAGE_GUILD)],
 )
-@tanjun.as_slash_command(
-    "view", "View starboards or settings for a starboard."
-)
-async def view_starboard_settings(
-    ctx: tanjun.abc.SlashContext, starboard: hikari.InteractionChannel | None
-):
-    bot = cast("Bot", ctx.interaction.app)
-    if starboard is None:
-        all_starboards = await Starboard.fetch_query().fetchmany()
-        if len(all_starboards) == 0:
-            return await ctx.respond("There are no starboards in this guild.")
-        embed = bot.embed(
-            title="Starboards",
-            description="\n".join([f"<#{s.id}>" for s in all_starboards]),
-        )
-        await ctx.respond(embed=embed)
-    else:
-        s = await Starboard.exists(id=starboard.id)
-        if not s:
-            return await ctx.respond(f"<#{starboard.id}> is not a starboard.")
-        await ctx.respond(repr(s))
 
 
-@starboards.with_command
-@tanjun.with_channel_slash_option(
-    "channel",
-    "The channel to make a starboard.",
-    types=(hikari.TextableGuildChannel,),
-)
-@tanjun.as_slash_command("add", "Add a Starboard.")
-async def add_starboard(
-    ctx: tanjun.abc.SlashContext, channel: hikari.InteractionChannel
-):
-    assert ctx.guild_id
-    await goc_guild(ctx.guild_id)
-    exists = await Starboard.exists(id=channel.id)
-    if exists:
-        return await ctx.respond(f"<#{channel.id}> is already a starboard.")
-
-    await Starboard(id=channel.id, guild_id=ctx.guild_id).create()
-
-    await ctx.respond(f"<#{channel.id}> is now a starboard.")
-
-
-@starboards.with_command
-@tanjun.with_channel_slash_option(
-    "starboard",
-    "The starboard to remove.",
-    types=(hikari.TextableGuildChannel,),
-)
-@tanjun.as_slash_command("remove", "Remove a starboard.")
-async def remove_starboard(
-    ctx: tanjun.abc.SlashContext, starboard: hikari.InteractionChannel
-):
-    confirm = Confirm(
-        cast("Bot", ctx.interaction.app), int(ctx.interaction.user.id)
+@plugin.include
+@starboards.child
+@crescent.command(name="view", description="View a starboard")
+class ViewStarboard:
+    starboard = crescent.option(
+        hikari.TextableGuildChannel, "The starboard to view", default=None
     )
-    msg = await ctx.respond(
-        "Are you sure?", components=confirm.build(), ensure_result=True
-    )
-    confirm.start(msg)
-    await confirm.wait()
 
-    if confirm.result is True:
-        res = await Starboard.delete_query().where(id=starboard.id).execute()
-        if len(res) == 0:
-            await msg.edit(
-                f"<#{starboard.id}> is not a starboard.", components=[]
+    async def callback(self, ctx: crescent.Context) -> None:
+        assert ctx.guild_id
+        bot = cast("Bot", ctx.app)
+
+        if self.starboard is None:
+            all_starboards = (
+                await Starboard.fetch_query()
+                .where(guild_id=ctx.guild_id)
+                .fetchmany()
             )
+            if len(all_starboards) == 0:
+                await ctx.respond(
+                    "There are no starboards in this server.", ephemeral=True
+                )
+                return
+
+            embed = bot.embed(
+                title="Starboards",
+                description="\n".join(f"<#{s.id}>" for s in all_starboards),
+            )
+            await ctx.respond(embed=embed)
+
         else:
-            await msg.edit(
-                f"Deleted starboard <#{starboard.id}>.", components=[]
+            s = await Starboard.exists(id=self.starboard.id)
+            if not s:
+                raise StarboardNotFound(self.starboard.id)
+
+            await ctx.respond(repr(s))
+
+
+@plugin.include
+@starboards.child
+@crescent.command(name="add", description="Add a starboard")
+class AddStarboard:
+    channel = crescent.option(
+        hikari.TextableGuildChannel, "Channel to use as starboard"
+    )
+
+    async def callback(self, ctx: crescent.Context) -> None:
+        exists = await Starboard.exists(id=self.channel.id)
+        if exists:
+            await ctx.respond(
+                f"<#{self.channel.id}> is already a starboard.", ephemeral=True
             )
-    else:
-        await msg.edit("Cancelled.", components=[])
+            return
+
+        assert ctx.guild_id
+        await goc_guild(ctx.guild_id)
+
+        await Starboard(id=self.channel.id, guild_id=ctx.guild_id).create()
+
+        await ctx.respond(f"<#{self.channel.id}> is not a starboard.")
 
 
-if TYPE_CHECKING:
-    str_option = tanjun.with_str_slash_option
-    bool_option = tanjun.with_bool_slash_option
-    int_option = tanjun.with_int_slash_option
+@plugin.include
+@starboards.child
+@crescent.command(name="delete", description="Remove a starboard")
+class DeleteStarboard:
+    starboard = crescent.option(
+        hikari.TextableGuildChannel, "Starboard to delete."
+    )
 
-else:
-
-    def str_option(*args, **kwargs):
-        kwargs.setdefault("default", UNDEF.UNDEF)
-        return tanjun.with_str_slash_option(*args, **kwargs)
-
-    def bool_option(*args, **kwargs):
-        kwargs.setdefault("default", UNDEF.UNDEF)
-        return tanjun.with_bool_slash_option(*args, **kwargs)
-
-    def int_option(*args, **kwargs):
-        kwargs.setdefault("default", UNDEF.UNDEF)
-        return tanjun.with_int_slash_option(*args, **kwargs)
-
-
-@starboards.with_command
-@str_option("color", "The color of the embeds.", converters=none_or(hex_color))
-@str_option(
-    "display_emoji",
-    "The emoji shown next to the point count.",
-    converters=none_or(any_emoji_str),
-)
-@bool_option(
-    "ping_author", "Whether to ping the author when their post is starboarded."
-)
-@bool_option(
-    "use_nicknames", "Whether to use nicknames instead of usernames on embeds."
-)
-@bool_option(
-    "use_webhook",
-    "Whether to use webhooks to send messages to this starboard.",
-    default=UNDEF.UNDEF,
-)
-@str_option(
-    "webhook_name",
-    "The name to use for webhook messages.",
-    default=UNDEF.UNDEF,
-)
-@str_option(
-    "webhook_avatar",
-    "The url to the avatar to use. Use 'none' to use default.",
-    converters=none_or_str,
-)
-@int_option(
-    "required",
-    "The number of stars a message needs before it is sent to the starboard.",
-)
-@int_option(
-    "required_remove",
-    "The fewest number of stars a message can have before it is removed.",
-)
-@bool_option("self_star", "Whether or not users can star their own messages.")
-@bool_option(
-    "allow_bots", "Whether or not messages by bots can be starboarded."
-)
-@bool_option(
-    "images_only",
-    "If enabled, only messages that include images can be starboarded.",
-)
-@str_option(
-    "regex",
-    "Specify regex that all messages must match. Use the `reset_regex` "
-    "command to disable.",
-)
-@str_option(
-    "exclude_regex",
-    "Specify regex that all messages must *not* match. Use the "
-    "`reset_exclude_regex` command to disable.",
-)
-@bool_option(
-    "autoreact",
-    "Whether to automatically react to messages once sent to the starboard.",
-)
-@bool_option(
-    "remove_invalid", "Whether to remove invalid reactions (e.g. self stars)."
-)
-@bool_option(
-    "link_deletes",
-    "If enabled, if a message is deleted then that message will also be "
-    "removed from this starboard.",
-)
-@bool_option(
-    "link_edits",
-    "If disabled, then once a message is sent to the starboard its content "
-    "will not change.",
-)
-@bool_option(
-    "disable_xp",
-    "If true, then reactions for this starboard will not count towards the "
-    "authors XP.",
-)
-@bool_option(
-    "allow_explore",
-    "If true, then commands such as `random` and `moststarred` can pull "
-    "messages from this starboard.",
-)
-@tanjun.with_channel_slash_option(
-    "starboard",
-    "The starboard to modify.",
-    types=(hikari.TextableGuildChannel,),
-)
-@tanjun.as_slash_command("edit", "Modify a starboard.")
-async def edit_starboard(
-    ctx: tanjun.abc.SlashContext,
-    starboard: hikari.InteractionChannel,
-    **kwargs,
-):
-    s = await Starboard.exists(id=starboard.id)
-    if not s:
-        return await ctx.respond(f"<#{starboard.id}> is not a starboard.")
-
-    for k, v in kwargs.items():
-        if v is UNDEF.UNDEF:
-            continue
-        setattr(s, k, v)
-
-    await s.save()
-    await ctx.respond(f"Settings for <#{starboard.id}> updated.")
-
-
-emojis = tanjun.slash_command_group("emojis", "Modify emojis for a starboard.")
-starboards.add_command(emojis)
-
-
-@emojis.with_command
-@tanjun.with_str_slash_option(
-    "emoji", "The emoji to add.", converters=any_emoji_str
-)
-@tanjun.with_channel_slash_option(
-    "starboard",
-    "The starboard to add a star emoji too.",
-    types=(hikari.TextableGuildChannel,),
-)
-@tanjun.as_slash_command("add", "Add a star emoji.")
-async def add_star_emoji(
-    ctx: tanjun.abc.SlashContext,
-    starboard: hikari.InteractionChannel,
-    emoji: str,
-):
-    s = await Starboard.exists(id=starboard.id)
-    if not s:
-        return await ctx.respond(f"<#{starboard.id}> is not a starboard.")
-
-    emojis = s.star_emojis.copy()
-    if emoji in emojis:
-        return await ctx.respond(
-            f"{emoji} is already a star emoji for <#{starboard.id}>."
+    async def callback(self, ctx: crescent.Context) -> None:
+        confirm = Confirm(cast("Bot", ctx.app), ctx.user.id)
+        await ctx.respond(
+            "Are you sure? All data will be lost **permanently**.",
+            components=confirm.build(),
         )
-    emojis.append(emoji)
-    s.star_emojis = emojis
-    await s.save()
-    await ctx.respond("Done.")
-
-
-@emojis.with_command
-@tanjun.with_str_slash_option(
-    "emoji", "The emoji to remove.", converters=any_emoji_str
-)
-@tanjun.with_channel_slash_option(
-    "starboard",
-    "The starboard to remove the star emoji from.",
-    types=(hikari.TextableGuildChannel,),
-)
-@tanjun.as_slash_command("remove", "Remove a star emoji.")
-async def remove_star_emoji(
-    ctx: tanjun.abc.SlashContext,
-    starboard: hikari.InteractionChannel,
-    emoji: str,
-):
-    s = await Starboard.exists(id=starboard.id)
-    if not s:
-        return await ctx.respond(f"<#{starboard.id}> is not a starboard.")
-
-    emojis = s.star_emojis.copy()
-    if emoji not in emojis:
-        return await ctx.respond(
-            f"{emoji} is not a star emoji for <#{starboard.id}>."
+        msg = await ctx.app.rest.fetch_interaction_response(
+            ctx.application_id, ctx.token
         )
-    emojis.remove(emoji)
-    s.star_emojis = emojis
-    await s.save()
-    await ctx.respond("Done.")
+        confirm.start(msg)
+        await confirm.wait()
+
+        if not confirm.result:
+            await msg.edit("Cancelled.", components=[])
+            return
+
+        res = (
+            await Starboard.delete_query()
+            .where(id=self.starboard.id)
+            .execute()
+        )
+        if len(res) == 0:
+            raise StarboardNotFound(self.starboard.id)
+
+        await msg.edit(f"Deleted <#{self.starboard.id}>.", components=[])
 
 
-@starboards.with_command
-@tanjun.with_channel_slash_option(
-    "starboard",
-    "The starboard to reset `regex` on.",
-    types=(hikari.TextableGuildChannel,),
-)
-@tanjun.as_slash_command("reset_regex", "Reset `regex` for a starboard.")
-async def reset_regex(
-    ctx: tanjun.abc.SlashContext, starboard: hikari.InteractionChannel
-):
-    s = await Starboard.exists(id=starboard.id)
-    if not s:
-        return await ctx.respond(f"<#{starboard.id}> is not a starboard.")
-
-    s.regex = None
-    await s.save()
-    await ctx.respond("Done.")
+_T = TypeVar("_T")
 
 
-@starboards.with_command
-@tanjun.with_channel_slash_option(
-    "starboard",
-    "The starboard to reset `exclude_regex` on.",
-    types=(hikari.TextableGuildChannel,),
-)
-@tanjun.as_slash_command(
-    "reset_exclude_regex", "Reset `exclude_regex` for a starboard."
-)
-async def reset_exclude_regex(
-    ctx: tanjun.abc.SlashContext, starboard: hikari.InteractionChannel
-):
-    s = await Starboard.exists(id=starboard.id)
-    if not s:
-        return await ctx.respond(f"<#{starboard.id}> is not a starboard.")
-
-    s.exclude_regex = None
-    await s.save()
-    await ctx.respond("Done.")
+def optiond(type: Type[_T], *args, **kwargs) -> _T | UNDEF:
+    return crescent.option(
+        type,  # type: ignore
+        *args,
+        **kwargs,
+        default=UNDEF.UNDEF,
+    )
 
 
-load = C.make_loader()
+@plugin.include
+@starboards.child
+@crescent.command(name="edit", description="Modify a starboard")
+class EditStarboard:
+    starboard = crescent.option(
+        hikari.TextableGuildChannel, "The starboard to edit"
+    )
+
+    color = optiond(str, "The color of the starboard embeds")
+    display_emoji = optiond(str, "The emoji next to the point count")
+    ping_author = optiond(
+        bool, "Whether to ping users when their post is starboarded"
+    )
+    use_nicknames = optiond(bool, "Whether to use nicknames")
+    use_webhook = optiond(
+        bool, "Whether to use webhooks for starboard messages"
+    )
+    webhook_name = optiond(str, "The name for webhooks, if enabled")
+    webhook_avatar = optiond(str, "The avatar for webhooks, if enabled")
+    required = optiond(
+        int, "The number of reactions required for a message to be starboarded"
+    )
+    required_remove = optiond(
+        int,
+        "The fewest number of stars a message can have before it is removed",
+    )
+    self_star = optiond(
+        bool, "Whether to allow users to star their own messages"
+    )
+    allow_bots = optiond(
+        bool, "Whether to allow messages from bots to be starboarded"
+    )
+    images_only = optiond(
+        bool, "Whether to require messages to include an image"
+    )
+    autoreact = optiond(
+        bool,
+        "Whether to automatically react to messages sent to the starboard",
+    )
+    remove_invalid = optiond(bool, "Whether to remove invalid reactions")
+    link_deletes = optiond(
+        bool, "Whether to unstarboard messages if the original was deleted"
+    )
+    link_edits = optiond(
+        bool,
+        "Whether to update the starboard message if the original is edited",
+    )
+    disable_xp = optiond(bool, "Whether to disable XP for a starboard")
+    allow_explore = optiond(
+        bool, "Whether `random` and `moststarred` can pull from this starboard"
+    )
+
+    async def callback(self, ctx: crescent.Context) -> None:
+        kwargs: dict[str, Any] = {}  # assume this is the options passed
+
+        s = await Starboard.exists(id=self.starboard.id)
+        if not s:
+            raise StarboardNotFound(self.starboard.id)
+
+        for k, v in kwargs.items():
+            if v is UNDEF.UNDEF:
+                continue
+            setattr(s, k, v)
+
+        await s.save()
+        await ctx.respond(f"Settings for <#{s.id}> updated.")
+
+
+emojis = starboards.sub_group("emojis", "Modify emojis for a starboard.")
+
+
+@plugin.include
+@emojis.child
+@crescent.command(name="add", description="Add a star emoji")
+class AddStarEmoji:
+    starboard = crescent.option(
+        hikari.TextableGuildChannel, "The starboard to add the star emoji to"
+    )
+    emoji = crescent.option(str, "The star emoji to add")
+
+    async def callback(self, ctx: crescent.Context) -> None:
+        s = await Starboard.exists(id=self.starboard.id)
+        if not s:
+            raise StarboardNotFound(self.starboard.id)
+
+        e = any_emoji_str(self.emoji)
+        emojis = list(s.star_emojis)
+        if e in emojis:
+            await ctx.respond(
+                f"{e} is already a star emoji for <#{s.id}>.", ephemeral=True
+            )
+            return
+
+        emojis.append(e)
+        s.star_emojis = emojis
+        await s.save()
+        await ctx.respond("Done.")
+
+
+@plugin.include
+@emojis.child
+@crescent.command(name="remove", description="Remove a star emoji")
+class RemoveStarEmoji:
+    starboard = crescent.option(
+        hikari.TextableGuildChannel,
+        "The starboard to remove the star emoji from"
+    )
+    emoji = crescent.option(str, "The star emoji to remove")
+
+    async def callback(self, ctx: crescent.Context) -> None:
+        s = await Starboard.exists(id=self.starboard.id)
+        if not s:
+            raise StarboardNotFound(self.starboard.id)
+
+        e = any_emoji_str(self.emoji)
+        emojis = list(s.star_emojis)
+        if e not in emojis:
+            await ctx.respond(
+                f"{e} is not a star emoji on <#{s.id}>", ephemeral=True
+            )
+            return
+
+        emojis.remove(e)
+        s.star_emojis = emojis
+        await s.save()
+        await ctx.respond("Done.")

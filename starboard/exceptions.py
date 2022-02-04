@@ -20,25 +20,24 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-import sys
-
-from . import bot
-from .config import CONFIG
+from __future__ import annotations
 
 
-def _show_usage():
-    print("Usage: python -m starboard <server|brain>")
-    exit(1)
+class BaseErr(Exception):
+    def __init__(self, msg: str) -> None:
+        self.msg = msg
+        super().__init__(msg)
 
 
-try:
-    type_ = sys.argv[1]
-except IndexError:
-    _show_usage()
+class StarboardNotFound(BaseErr):
+    def __init__(self, channel_id: int) -> None:
+        self.channel_id = channel_id
+        super().__init__(f"<#{channel_id}> is not a starboard.")
 
-if type_ == "brain":
-    bot.get_brain(CONFIG).run()
-elif type_ == "server":
-    bot.get_server(CONFIG).run()
-else:
-    _show_usage()
+
+class ConverterErr(BaseErr):
+    pass
+
+
+class CheckErr(BaseErr):
+    pass

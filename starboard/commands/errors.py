@@ -20,25 +20,29 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-import sys
+from __future__ import annotations
 
-from . import bot
-from .config import CONFIG
+import crescent
+from apgorm.exceptions import InvalidFieldValue
+
+from starboard import exceptions
+
+plugin = crescent.Plugin("error-handler")
 
 
-def _show_usage():
-    print("Usage: python -m starboard <server|brain>")
-    exit(1)
+@plugin.include
+@crescent.catch(
+    exceptions.StarboardNotFound, exceptions.ConverterErr, exceptions.CheckErr
+)
+async def basic_handler(
+    exc: exceptions.BaseErr, ctx: crescent.Context, **k
+) -> None:
+    await ctx.respond(exc.msg)
 
 
-try:
-    type_ = sys.argv[1]
-except IndexError:
-    _show_usage()
-
-if type_ == "brain":
-    bot.get_brain(CONFIG).run()
-elif type_ == "server":
-    bot.get_server(CONFIG).run()
-else:
-    _show_usage()
+@plugin.include
+@crescent.catch(InvalidFieldValue)
+async def invalid_field_value(
+    exc: InvalidFieldValue, ctx: crescent.Context, **k
+) -> None:
+    await ctx.respond(exc.message)

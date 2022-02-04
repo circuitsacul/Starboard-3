@@ -23,13 +23,21 @@
 import inspect
 import json
 import secrets
-from dataclasses import asdict, dataclass
+from dataclasses import asdict, dataclass, field
 from pathlib import Path
-from typing import List, Literal, Optional, Union, cast
+from typing import List, Optional, cast
 
 
 @dataclass
 class Config:
+    # settings restrictions
+    max_whn_len: int = 32
+    max_wha_len: int = 512
+    min_required: int = 1
+    max_required: int = 512
+    min_required_remove: int = -1
+    max_required_remove: int = 500
+
     # bot style
     color: int = int("FFE19C", 16)
 
@@ -44,7 +52,8 @@ class Config:
 
     # discord
     discord_token: str = "DISCORD TOKEN"
-    testing_guilds: Union[List[int], Literal[False]] = False
+    testing_guild: Optional[int] = None
+    owners: List[int] = field(default_factory=list)
 
     # database
     db_name: str = "DATABASE NAME"
@@ -78,3 +87,6 @@ class Config:
 
         c.save()
         return c
+
+
+CONFIG = Config.load()

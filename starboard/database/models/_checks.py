@@ -22,21 +22,43 @@
 
 from __future__ import annotations
 
-import hikari
-import crescent
+from typing import Callable, Union
 
-from starboard.core import reactions
-
-plugin = crescent.Plugin("reaction-events")
+import emoji
+from apgorm.exceptions import InvalidFieldValue
 
 
-@plugin.include
-@crescent.event
-async def on_reaction_add(event: hikari.GuildReactionAddEvent):
-    await reactions.handle_reaction_add(event)
+def str_length(name: str, max: int) -> Callable[[Union[str, None]], bool]:
+    def check(value: str | None) -> bool:
+        if value and len(value) > max:
+            raise InvalidFieldValue(
+                f"`{name}` cannot be longer than {max} characters."
+            )
+
+        return True
+
+    return check
 
 
-@plugin.include
-@crescent.event
-async def on_reaction_delete(event: hikari.GuildReactionDeleteEvent):
-    await reactions.handle_reaction_remove(event)
+def int_range(
+    name: str, max: int | None = None, min: int | None = None
+) -> Callable[[Union[int, None]], bool]:
+    def check(value: int | None) -> bool:
+        if value is not None:
+            if max is not None and value > max:
+                raise InvalidFieldValue(
+                    f"`{name}` cannot be greater than {max}."
+                )
+            if min is not None and value < min:
+                raise InvalidFieldValue(f"`{name}` cannot be less than {min}.")
+
+        return True
+
+    return check
+
+
+def valid_emoji(value: str | None) -> bool:
+    if value is not None and not emoji.is_emoji(value):  # type: ignore
+        raise InvalidFieldValue(f"{value} is not a valid emoji.")
+
+    return True

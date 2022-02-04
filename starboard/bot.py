@@ -32,19 +32,19 @@ from typing import TYPE_CHECKING, Any
 
 import aiohttp
 import hikari
-import tanjun
+import crescent
 from hikari_clusters import Brain, Cluster, ClusterLauncher, Server
 
 from .cache import Cache
-from .config import Config
+from .config import CONFIG, Config
 from .database import Database
 
 
-class Bot(hikari.GatewayBot):
+class Bot(crescent.Bot):
     cluster: Cluster
 
     def __init__(self) -> None:
-        self.config = Config.load()
+        self.config = CONFIG
 
         super().__init__(token=self.config.discord_token)
 
@@ -52,9 +52,6 @@ class Bot(hikari.GatewayBot):
         self.database = Database()
         self._cache = Cache(self, self._cache._settings)
         self._event_manager._cache = self._cache
-        self.tjbot = tanjun.Client.from_gateway_bot(
-            self, declare_global_commands=self.config.testing_guilds
-        )
 
         # "locks"
         self.refresh_message_lock: set[int] = set()
@@ -66,7 +63,7 @@ class Bot(hikari.GatewayBot):
                 name = "{}.{}".format(
                     str(parent).replace("/", "."), module.name.strip(".py")
                 )
-                self.tjbot.load_modules(name)
+                self.load_module(name)
 
         load_modules(Path("starboard/commands"))
         load_modules(Path("starboard/events"))

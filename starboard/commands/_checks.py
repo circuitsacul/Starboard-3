@@ -22,53 +22,55 @@
 
 from __future__ import annotations
 
-from typing import Any, Callable
+from typing import TYPE_CHECKING, Any, Awaitable, Callable, cast
 
+import crescent
 import hikari
 
-from starboard.exceptions import ConverterErr
+from starboard.exceptions import CheckErr
+
+if TYPE_CHECKING:
+    from starboard.bot import Bot
 
 
-def any_emoji(text: str) -> hikari.CustomEmoji | hikari.UnicodeEmoji:
-    try:
-        return hikari.CustomEmoji.parse(text)
-    except ValueError:
-        pass
+async def owner_only(
+    ctx: crescent.Context, options
+) -> None:
+    bot = cast("Bot", ctx.app)
+    if ctx.user.id not in bot.config.owners:
+        raise CheckErr("Only owners can use this command.")
 
-    return hikari.UnicodeEmoji.parse(text)
-
-
-def any_emoji_str(text: str) -> str:
-    e = any_emoji(text)
-    if isinstance(e, hikari.CustomEmoji):
-        return str(e.id)
-    return str(e)
+    return None
 
 
-def hex_color(text: str) -> int:
-    try:
-        return int(text.replace("#", ""), base=16)
-    except ValueError:
-        raise ConverterErr(f"'{text}' is not a valid hex color.")
+async def guild_only(
+    ctx: crescent.Context, options
+) -> None:
+    if not ctx.guild_id:
+        raise CheckErr("This command can only be used inside servers.")
+
+    return None
 
 
-def none_or(
-    func: Callable[[str], Any], nonefirst: bool = False
-) -> Callable[[str], Any]:
-    def wrapper(text: str) -> Any:
-        if nonefirst and text.lower() in ["none", "default"]:
-            return text
-        try:
-            return func(text)
-        except Exception as e:
-            if not nonefirst and text.lower() in ["none", "default"]:
-                return None
-            raise e
+def has_guild_perms(
+    perms: hikari.Permissions,
+) -> Callable[
+    [crescent.Context, Any], Awaitable[None]
+]:
+    async def check(
+        ctx: crescent.Context, options
+    ) -> None:
+        await guild_only(ctx, options)
+        assert ctx.guild_id is not None
+        assert ctx.member is not None
+        assert isinstance(member := ctx.member, hikari.InteractionMember)
 
-    return wrapper
+        guild = ctx.app.cache.get_guild(ctx.guild_id)
+        assert guild is not None
 
+        if perms not in member.permissions:
+            raise CheckErr("You don't have permission to use this command.")
 
-def none_or_str(text: str) -> None | str:
-    if text.lower() in ["none", "default"]:
         return None
-    return text
+
+    return check
