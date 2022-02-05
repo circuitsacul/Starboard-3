@@ -23,7 +23,7 @@
 import sys
 
 from . import bot
-from .config import Config
+from .config import CONFIG
 
 
 def _show_usage():
@@ -36,11 +36,9 @@ try:
 except IndexError:
     _show_usage()
 
-config = Config.load()
-
 if type_ == "brain":
-    bot.get_brain(config).run()
+    bot.get_brain(CONFIG).run()
 elif type_ == "server":
-    bot.get_server(config).run()
+    bot.get_server(CONFIG).run()
 else:
     _show_usage()

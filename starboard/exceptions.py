@@ -22,41 +22,22 @@
 
 from __future__ import annotations
 
-from decimal import Decimal
-from typing import Sequence
 
-import apgorm
-
-
-class NullDecimalC(apgorm.Converter["Decimal | None", "int | None"]):
-    def from_stored(self, value: Decimal | None) -> int | None:
-        if value is None:
-            return value
-        return int(value)
-
-    def to_stored(self, value: int | None) -> Decimal | None:
-        if value is None:
-            return value
-        return Decimal(value)
+class BaseErr(Exception):
+    def __init__(self, msg: str) -> None:
+        self.msg = msg
+        super().__init__(msg)
 
 
-class DecimalC(apgorm.Converter[Decimal, int]):
-    def from_stored(self, value: Decimal) -> int:
-        return int(value)
-
-    def to_stored(self, value: int) -> Decimal:
-        return Decimal(value)
+class StarboardNotFound(BaseErr):
+    def __init__(self, channel_id: int) -> None:
+        self.channel_id = channel_id
+        super().__init__(f"<#{channel_id}> is not a starboard.")
 
 
-class DecimalArrayC(
-    apgorm.Converter["Sequence[Decimal | None]", "Sequence[int | None]"]
-):
-    def from_stored(
-        self, value: Sequence[Decimal | None]
-    ) -> Sequence[int | None]:
-        return [v if v is None else int(v) for v in value]
+class ConverterErr(BaseErr):
+    pass
 
-    def to_stored(
-        self, value: Sequence[int | None]
-    ) -> Sequence[Decimal | None]:
-        return [v if v is None else Decimal(v) for v in value]
+
+class CheckErr(BaseErr):
+    pass

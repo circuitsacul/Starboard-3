@@ -11,16 +11,16 @@ license = "MIT"
 
 [tool.poetry.dependencies]
 python = ">=3.9,<3.11"
-hikari = "^2.0.0-alpha.105"
-hikari-tanjun = "^2.3.0-alpha.1"
 aiohttp = "^3.8.1"
 cachetools = "^5.0.0"
 types-cachetools = "^4.2.9"
 hikari-clusters = "^0.1.1"
-apgorm = "^1.0.0b3"
 emoji = "^1.6.3"
 types-emoji = "^1.2.7"
-hikari-miru = "^0.6.2"
+hikari = "^2.0.0-alpha.106"
+hikari-miru = "^1.0.1"
+apgorm = "^1.0.0-beta.4"
+hikari-crescent = "^0.1.0-beta.1"
 
 [tool.poetry.dev-dependencies]
 black = "^22.1"

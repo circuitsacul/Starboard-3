@@ -22,53 +22,43 @@
 
 from __future__ import annotations
 
-from typing import Any, Callable
+from typing import Awaitable, Callable
 
+import crescent
 import hikari
 
-from starboard.exceptions import ConverterErr
+from starboard.config import CONFIG
+from starboard.exceptions import CheckErr
 
 
-def any_emoji(text: str) -> hikari.CustomEmoji | hikari.UnicodeEmoji:
-    try:
-        return hikari.CustomEmoji.parse(text)
-    except ValueError:
-        pass
+async def owner_only(ctx: crescent.Context) -> None:
+    if ctx.user.id not in CONFIG.owners:
+        raise CheckErr("Only owners can use this command.")
 
-    return hikari.UnicodeEmoji.parse(text)
+    return None
 
 
-def any_emoji_str(text: str) -> str:
-    e = any_emoji(text)
-    if isinstance(e, hikari.CustomEmoji):
-        return str(e.id)
-    return str(e)
+async def guild_only(ctx: crescent.Context) -> None:
+    if not ctx.guild_id:
+        raise CheckErr("This command can only be used inside servers.")
+
+    return None
 
 
-def hex_color(text: str) -> int:
-    try:
-        return int(text.replace("#", ""), base=16)
-    except ValueError:
-        raise ConverterErr(f"'{text}' is not a valid hex color.")
+def has_guild_perms(
+    perms: hikari.Permissions,
+) -> Callable[[crescent.Context], Awaitable[None]]:
+    async def check(ctx: crescent.Context) -> None:
+        assert ctx.guild_id is not None
+        assert ctx.member is not None
+        assert isinstance(member := ctx.member, hikari.InteractionMember)
 
+        guild = ctx.app.cache.get_guild(ctx.guild_id)
+        assert guild is not None
 
-def none_or(
-    func: Callable[[str], Any], nonefirst: bool = False
-) -> Callable[[str], Any]:
-    def wrapper(text: str) -> Any:
-        if nonefirst and text.lower() in ["none", "default"]:
-            return text
-        try:
-            return func(text)
-        except Exception as e:
-            if not nonefirst and text.lower() in ["none", "default"]:
-                return None
-            raise e
+        if perms not in member.permissions:
+            raise CheckErr("You don't have permission to use this command.")
 
-    return wrapper
-
-
-def none_or_str(text: str) -> None | str:
-    if text.lower() in ["none", "default"]:
         return None
-    return text
+
+    return check

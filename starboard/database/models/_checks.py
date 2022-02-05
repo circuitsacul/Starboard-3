@@ -22,41 +22,43 @@
 
 from __future__ import annotations
 
-from decimal import Decimal
-from typing import Sequence
+from typing import Callable, Union
 
-import apgorm
-
-
-class NullDecimalC(apgorm.Converter["Decimal | None", "int | None"]):
-    def from_stored(self, value: Decimal | None) -> int | None:
-        if value is None:
-            return value
-        return int(value)
-
-    def to_stored(self, value: int | None) -> Decimal | None:
-        if value is None:
-            return value
-        return Decimal(value)
+import emoji
+from apgorm.exceptions import InvalidFieldValue
 
 
-class DecimalC(apgorm.Converter[Decimal, int]):
-    def from_stored(self, value: Decimal) -> int:
-        return int(value)
+def str_length(name: str, max: int) -> Callable[[Union[str, None]], bool]:
+    def check(value: str | None) -> bool:
+        if value and len(value) > max:
+            raise InvalidFieldValue(
+                f"`{name}` cannot be longer than {max} characters."
+            )
 
-    def to_stored(self, value: int) -> Decimal:
-        return Decimal(value)
+        return True
+
+    return check
 
 
-class DecimalArrayC(
-    apgorm.Converter["Sequence[Decimal | None]", "Sequence[int | None]"]
-):
-    def from_stored(
-        self, value: Sequence[Decimal | None]
-    ) -> Sequence[int | None]:
-        return [v if v is None else int(v) for v in value]
+def int_range(
+    name: str, max: int | None = None, min: int | None = None
+) -> Callable[[Union[int, None]], bool]:
+    def check(value: int | None) -> bool:
+        if value is not None:
+            if max is not None and value > max:
+                raise InvalidFieldValue(
+                    f"`{name}` cannot be greater than {max}."
+                )
+            if min is not None and value < min:
+                raise InvalidFieldValue(f"`{name}` cannot be less than {min}.")
 
-    def to_stored(
-        self, value: Sequence[int | None]
-    ) -> Sequence[Decimal | None]:
-        return [v if v is None else Decimal(v) for v in value]
+        return True
+
+    return check
+
+
+def valid_emoji(value: str | None) -> bool:
+    if value is not None and not emoji.is_emoji(value):  # type: ignore
+        raise InvalidFieldValue(f"{value} is not a valid emoji.")
+
+    return True

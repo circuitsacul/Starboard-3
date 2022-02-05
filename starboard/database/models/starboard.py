@@ -22,24 +22,14 @@
 
 from __future__ import annotations
 
-from typing import Callable
-
 import apgorm
 from apgorm import types
 
+from starboard.config import CONFIG
+
+from ._checks import int_range, str_length, valid_emoji
 from ._converters import DecimalArrayC, DecimalC, NullDecimalC
 from .guild import Guild
-
-
-def limit_length(max_length: int, name: str) -> Callable[[str | None], bool]:
-    def check(text: str | None) -> bool:
-        if text is not None and len(text) > max_length:
-            raise apgorm.exceptions.InvalidFieldValue(
-                f"{name} must be no more than {max_length} chars."
-            )
-        return True
-
-    return check
 
 
 class Starboard(apgorm.Model):
@@ -55,17 +45,13 @@ class Starboard(apgorm.Model):
     ping_author = types.Boolean().field(default=False)
     use_nicknames = types.Boolean().field(default=False)
     use_webhook = types.Boolean().field(default=False)
-
     webhook_name = types.Text().field(default="Starboard")
-    webhook_name.add_validator(limit_length(32, "Webhook name"))
-
     webhook_avatar = types.Text().nullablefield()
-    webhook_avatar.add_validator(limit_length(512, "Webhook avatar"))
 
     # Requirements
     required = types.SmallInt().field(default=3)
     required_remove = types.SmallInt().field(default=0)
-    star_emojis = types.Array(types.Text()).field(default=[])
+    star_emojis = types.Array(types.Text()).field(default_factory=list)
     self_star = types.Boolean().field(default=False)
     allow_bots = types.Boolean().field(default=True)
     images_only = types.Boolean().field(default=False)
@@ -75,12 +61,12 @@ class Starboard(apgorm.Model):
 
     channel_bl = (
         types.Array(types.Numeric())
-        .field(default=[])
+        .field(default_factory=list)
         .with_converter(DecimalArrayC)
     )
     channel_wl = (
         types.Array(types.Numeric())
-        .field(default=[])
+        .field(default_factory=list)
         .with_converter(DecimalArrayC)
     )
 
@@ -91,6 +77,23 @@ class Starboard(apgorm.Model):
     link_edits = types.Boolean().field(default=True)
     disable_xp = types.Boolean().field(default=False)
     allow_explore = types.Boolean().field(default=True)
+
+    # validators
+    webhook_name.add_validator(str_length("webhook_name", CONFIG.max_whn_len))
+    webhook_avatar.add_validator(
+        str_length("webhook_avatar", CONFIG.max_wha_len)
+    )
+    required.add_validator(
+        int_range("required", CONFIG.max_required, CONFIG.min_required)
+    )
+    required_remove.add_validator(
+        int_range(
+            "required_remove",
+            CONFIG.max_required_remove,
+            CONFIG.min_required_remove,
+        )
+    )
+    display_emoji.add_validator(valid_emoji)
 
     # ForeignKeys & PrimaryKey
     guild_id_fk = apgorm.ForeignKey(guild_id, Guild.id)

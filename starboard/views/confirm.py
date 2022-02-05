@@ -27,21 +27,21 @@ import miru
 
 
 class Confirm(miru.View):
-    def __init__(self, bot: hikari.GatewayBot, user_id: int) -> None:
-        super().__init__(bot, timeout=30)
+    def __init__(self, user_id: int) -> None:
+        super().__init__(timeout=30)
 
         self.user_id = user_id
         self.result: bool | None = None
 
-    async def view_check(self, ctx: miru.Interaction) -> bool:
-        return int(ctx.user.id) == self.user_id
+    async def view_check(self, ctx: miru.Context) -> bool:
+        return ctx.user.id == self.user_id
 
     @miru.button(label="Confirm", style=hikari.ButtonStyle.SUCCESS)
-    async def confirm(self, btn: miru.Button, ctx: miru.Interaction) -> None:
+    async def confirm(self, btn: miru.Button, ctx: miru.Context) -> None:
         self.result = True
         self.stop()
 
     @miru.button(label="Cancel", style=hikari.ButtonStyle.DANGER)
-    async def cancel(self, btn: miru.Button, ctx: miru.Interaction) -> None:
+    async def cancel(self, btn: miru.Button, ctx: miru.Context) -> None:
         self.result = False
         self.stop()

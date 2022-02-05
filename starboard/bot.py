@@ -31,30 +31,27 @@ from textwrap import indent
 from typing import TYPE_CHECKING, Any
 
 import aiohttp
+import crescent
 import hikari
-import tanjun
 from hikari_clusters import Brain, Cluster, ClusterLauncher, Server
 
 from .cache import Cache
-from .config import Config
+from .config import CONFIG, Config
 from .database import Database
 
 
-class Bot(hikari.GatewayBot):
+class Bot(crescent.Bot):
     cluster: Cluster
 
     def __init__(self) -> None:
-        self.config = Config.load()
-
-        super().__init__(token=self.config.discord_token)
+        super().__init__(
+            token=CONFIG.discord_token, default_guild=CONFIG.testing_guild
+        )
 
         self._aiohttp_session: aiohttp.ClientSession | None = None
         self.database = Database()
         self._cache = Cache(self, self._cache._settings)
         self._event_manager._cache = self._cache
-        self.tjbot = tanjun.Client.from_gateway_bot(
-            self, declare_global_commands=self.config.testing_guilds
-        )
 
         # "locks"
         self.refresh_message_lock: set[int] = set()
@@ -66,7 +63,7 @@ class Bot(hikari.GatewayBot):
                 name = "{}.{}".format(
                     str(parent).replace("/", "."), module.name.strip(".py")
                 )
-                self.tjbot.load_modules(name)
+                self.load_module(name)
 
         load_modules(Path("starboard/commands"))
         load_modules(Path("starboard/events"))
@@ -89,9 +86,9 @@ class Bot(hikari.GatewayBot):
 
     async def start(self, **kwargs) -> None:
         await self.database.connect(
-            database=self.config.db_name,
-            user=self.config.db_user,
-            password=self.config.db_password,
+            database=CONFIG.db_name,
+            user=CONFIG.db_user,
+            password=CONFIG.db_password,
         )
         await super().start(**kwargs)
 
@@ -111,7 +108,7 @@ class Bot(hikari.GatewayBot):
             title=title,
             description=description,
             url=url,
-            color=self.config.color,
+            color=CONFIG.color,
             timestamp=timestamp,
         )
 

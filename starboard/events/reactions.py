@@ -22,22 +22,21 @@
 
 from __future__ import annotations
 
+import crescent
 import hikari
-import tanjun
 
 from starboard.core import reactions
 
-C = tanjun.Component()
+plugin = crescent.Plugin("reaction-events")
 
 
-@C.with_listener(hikari.GuildReactionAddEvent)
+@plugin.include
+@crescent.event
 async def on_reaction_add(event: hikari.GuildReactionAddEvent):
     await reactions.handle_reaction_add(event)
 
 
-@C.with_listener(hikari.GuildReactionDeleteEvent)
+@plugin.include
+@crescent.event
 async def on_reaction_delete(event: hikari.GuildReactionDeleteEvent):
     await reactions.handle_reaction_remove(event)
-
-
-load = C.make_loader()

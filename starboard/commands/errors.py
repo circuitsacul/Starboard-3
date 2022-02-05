@@ -22,41 +22,27 @@
 
 from __future__ import annotations
 
-from decimal import Decimal
-from typing import Sequence
+import crescent
+from apgorm.exceptions import InvalidFieldValue
 
-import apgorm
+from starboard import exceptions
 
-
-class NullDecimalC(apgorm.Converter["Decimal | None", "int | None"]):
-    def from_stored(self, value: Decimal | None) -> int | None:
-        if value is None:
-            return value
-        return int(value)
-
-    def to_stored(self, value: int | None) -> Decimal | None:
-        if value is None:
-            return value
-        return Decimal(value)
+plugin = crescent.Plugin("error-handler")
 
 
-class DecimalC(apgorm.Converter[Decimal, int]):
-    def from_stored(self, value: Decimal) -> int:
-        return int(value)
+@plugin.include
+@crescent.catch(
+    exceptions.StarboardNotFound, exceptions.ConverterErr, exceptions.CheckErr
+)
+async def basic_handler(
+    exc: exceptions.BaseErr, ctx: crescent.Context, **k
+) -> None:
+    await ctx.respond(exc.msg)
 
-    def to_stored(self, value: int) -> Decimal:
-        return Decimal(value)
 
-
-class DecimalArrayC(
-    apgorm.Converter["Sequence[Decimal | None]", "Sequence[int | None]"]
-):
-    def from_stored(
-        self, value: Sequence[Decimal | None]
-    ) -> Sequence[int | None]:
-        return [v if v is None else int(v) for v in value]
-
-    def to_stored(
-        self, value: Sequence[int | None]
-    ) -> Sequence[Decimal | None]:
-        return [v if v is None else Decimal(v) for v in value]
+@plugin.include
+@crescent.catch(InvalidFieldValue)
+async def invalid_field_value(
+    exc: InvalidFieldValue, ctx: crescent.Context, **k
+) -> None:
+    await ctx.respond(exc.message)
