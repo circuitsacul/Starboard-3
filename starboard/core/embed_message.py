@@ -27,6 +27,8 @@ from typing import TYPE_CHECKING
 
 import hikari
 
+from starboard.core.gifs import get_gif_url
+
 if TYPE_CHECKING:
     from starboard.bot import Bot
 
@@ -74,7 +76,7 @@ async def embed_message(
 
     embed = (
         hikari.Embed(
-            description=_get_main_content(message),
+            description=_extract_main_content(message),
             color=color,
             timestamp=message.created_at,
         )
@@ -83,6 +85,10 @@ async def embed_message(
             name=ZWS, value=f"[Go to Message]({message.make_link(guild_id)})"
         )
     )
+
+    image_urls = await _extract_images(bot, message)
+    if image_urls and len(image_urls):
+        embed.set_image(image_urls[0])
 
     await _extract_reply(bot, message, guild_id, nicknames, embed)
 
@@ -131,41 +137,97 @@ async def _extract_reply(
             bot, guild_id, ref.author, nicknames
         )
         embed.add_field(
-            name=f"Replying To {name}", value=ref.content or "*file only*"
+            name=f"Replying To {name}",
+            value=_extract_main_content(ref) or "*file only*",
         )
 
 
-def _str_embed(embed: hikari.Embed) -> str:
-    return indent(
-        (
-            "\n\n"
-            + (
-                (
-                    f"**__{embed.title}__**\n"
-                    if not embed.url
-                    else f"**__[{embed.title}]({embed.url})__**\n"
-                )
-                if embed.title
-                else ""
-            )
-            + (f"{embed.description}\n" if embed.description else "")
-            + (
-                "\n".join(
-                    [
-                        (f"**{field.name}**\n{field.value}")
-                        for field in embed.fields
-                    ]
-                )
-            )
-        ),
-        "> ",
+def _is_rich(embed: hikari.Embed) -> bool:
+    if embed.title:
+        return True
+    if embed.description:
+        return True
+    if embed.fields:
+        return True
+    return False
+
+
+async def _get_gifv(bot: Bot, embed: hikari.Embed) -> str | None:
+    if _is_rich(embed) or embed.url is None:
+        return None
+
+    gif_url = await get_gif_url(bot, embed.url)
+    if not gif_url:
+        return None
+
+    return gif_url
+
+
+def _str_embed(embed: hikari.Embed) -> str | None:
+    content = ""
+    if embed.title:
+        content += (
+            f"**__{embed.title}__**\n"
+            if not embed.url
+            else f"**__[{embed.title}]({embed.url})__**\n"
+        )
+    if embed.description:
+        content += embed.description + "\n"
+
+    if not _is_rich(embed):
+        return None
+
+    if embed.image:
+        content += f"[Embed Image]({embed.image.url})\n"
+    if embed.thumbnail:
+        content += f"[Embed Thumbnail]({embed.thumbnail.url})\n"
+
+    content += "\n".join(
+        [f"**{field.name}**\n{field.value}" for field in embed.fields]
     )
 
+    return indent(content, "> ")
 
-def _get_main_content(message: hikari.Message) -> str | None:
+
+def _extract_main_content(message: hikari.Message) -> str | None:
     raw_content = message.content or ""
 
     for e in message.embeds:
-        raw_content += _str_embed(e)
+        _se = _str_embed(e)
+        if _se:
+            raw_content += "\n\n" + _se
+
+    filestr = _extract_file_str(message)
+    if filestr:
+        raw_content += "\n\n" + filestr
 
     return raw_content or None
+
+
+def _extract_file_str(message: hikari.Message) -> str | None:
+    files: list[str] = []
+
+    files.extend(f"[{a.filename}]({a.url})" for a in message.attachments)
+
+    return "\n".join(files) or None
+
+
+async def _extract_images(bot: Bot, message: hikari.Message) -> list[str]:
+    urls = [
+        a.url
+        for a in message.attachments
+        if a.media_type is not None
+        and a.media_type.lower().startswith("image")
+    ]
+
+    for embed in message.embeds:
+        gif_url = await _get_gifv(bot, embed)
+        if gif_url is not None:
+            urls.append(gif_url)
+        else:
+            if embed.image:
+                urls.append(embed.image.url)
+            if embed.thumbnail:
+                urls.append(embed.thumbnail.url)
+
+    return urls
