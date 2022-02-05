@@ -62,7 +62,7 @@ class Eval:
 @crescent.command(name="restart", description="Restart all clusters")
 async def restart_clusters(ctx: crescent.Context) -> None:
     bot = cast("Bot", ctx.app)
-    await ctx.respond("Restarting all clusters...")
+    await ctx.respond("Restarting all clusters...", ephemeral=True)
     await asyncio.sleep(1)
     await bot.cluster.ipc.send_command(
         bot.cluster.ipc.cluster_uids, "cluster_stop"
@@ -99,4 +99,4 @@ class RunSQL:
         except Exception as e:
             result = str(e)
 
-        await ctx.respond(result)
+        await ctx.respond(result, ephemeral=True)
