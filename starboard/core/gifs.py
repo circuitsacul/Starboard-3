@@ -65,9 +65,7 @@ async def _get_tenor(bot: Bot, gifid: str) -> Optional[str]:
         return None
 
     try:
-        data = await _get(
-            bot, TENOR_BASE.format(gifid, CONFIG.tenor_token)
-        )
+        data = await _get(bot, TENOR_BASE.format(gifid, CONFIG.tenor_token))
         return cast(str, data["results"][0]["media"][0]["gif"]["url"])
     except Exception:
         return None

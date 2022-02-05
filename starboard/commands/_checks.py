@@ -27,8 +27,8 @@ from typing import Awaitable, Callable
 import crescent
 import hikari
 
-from starboard.exceptions import CheckErr
 from starboard.config import CONFIG
+from starboard.exceptions import CheckErr
 
 
 async def owner_only(ctx: crescent.Context) -> None:
