@@ -37,7 +37,7 @@ plugin = crescent.Plugin("error-handler")
 async def basic_handler(
     exc: exceptions.BaseErr, ctx: crescent.Context, **k
 ) -> None:
-    await ctx.respond(exc.msg)
+    await ctx.respond(exc.msg, ephemeral=True)
 
 
 @plugin.include
@@ -45,4 +45,4 @@ async def basic_handler(
 async def invalid_field_value(
     exc: InvalidFieldValue, ctx: crescent.Context, **k
 ) -> None:
-    await ctx.respond(exc.message)
+    await ctx.respond(exc.message, ephemeral=True)
