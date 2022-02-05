@@ -56,9 +56,6 @@ class Starboard(apgorm.Model):
     allow_bots = types.Boolean().field(default=True)
     images_only = types.Boolean().field(default=False)
 
-    regex = types.Text().nullablefield()
-    exclude_regex = types.Text().nullablefield()
-
     channel_bl = (
         types.Array(types.Numeric())
         .field(default_factory=list)
