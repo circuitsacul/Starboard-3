@@ -121,12 +121,10 @@ class DeleteStarboard:
 
     async def callback(self, ctx: crescent.Context) -> None:
         confirm = Confirm(ctx.user.id)
-        await ctx.respond(
+        msg = await ctx.respond(
             "Are you sure? All data will be lost **permanently**.",
             components=confirm.build(),
-        )
-        msg = await ctx.app.rest.fetch_interaction_response(
-            ctx.application_id, ctx.token
+            ensure_message=True,
         )
         confirm.start(msg)
         await confirm.wait()
