@@ -22,11 +22,20 @@
 
 from __future__ import annotations
 
-from typing import Any, Callable
+from typing import Any, Callable, TypeVar
 
 import hikari
 
 from starboard.exceptions import ConverterErr
+from starboard.undefined import UNDEF
+
+
+_T = TypeVar("_T")
+
+
+def convert(key: str, dct: dict[str, Any], func: Callable[[Any], Any]) -> None:
+    if key in dct and (v := dct[key]) is not UNDEF.UNDEF:
+        dct[key] = func(v)
 
 
 def any_emoji(text: str) -> hikari.CustomEmoji | hikari.UnicodeEmoji:
@@ -53,11 +62,11 @@ def hex_color(text: str) -> int:
 
 
 def none_or(
-    func: Callable[[str], Any], nonefirst: bool = False
-) -> Callable[[str], Any]:
-    def wrapper(text: str) -> Any:
+    func: Callable[[str], _T], nonefirst: bool = True,
+) -> Callable[[str], _T | None]:
+    def wrapper(text: str) -> _T | None:
         if nonefirst and text.lower() in ["none", "default"]:
-            return text
+            return None
         try:
             return func(text)
         except Exception as e:

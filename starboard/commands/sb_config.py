@@ -33,7 +33,8 @@ from starboard.undefined import UNDEF
 from starboard.views import Confirm
 
 from ._checks import has_guild_perms
-from ._converters import any_emoji_str
+from ._converters import any_emoji_str, hex_color, none_or, convert
+from ._utils import pretty_emoji_str
 
 if TYPE_CHECKING:
     from starboard.bot import Bot
@@ -75,16 +76,94 @@ class ViewStarboard:
 
             embed = bot.embed(
                 title="Starboards",
-                description="\n".join(f"<#{s.id}>" for s in all_starboards),
+                description=(
+                    "This shows all starboards and their most important "
+                    "settings. To view all settings, run this command for a "
+                    "specific starboard instead."
+                ),
             )
+
+            for sb in all_starboards:
+                channel = bot.cache.get_guild_channel(sb.id)
+                if not channel:
+                    name = f"Deleted Channel {sb.id}"
+                else:
+                    assert channel.name is not None
+                    name = channel.name
+
+                emoji_str = pretty_emoji_str(*sb.star_emojis, bot=bot)
+                embed.add_field(
+                    name=name,
+                    value=(
+                        f"required: {sb.required}\n"
+                        f"self-star: {sb.self_star}\n"
+                        f"emojis: {emoji_str}"
+                    ),
+                    inline=True,
+                )
             await ctx.respond(embed=embed)
 
         else:
-            s = await Starboard.exists(id=self.starboard.id)
-            if not s:
+            starboard = await Starboard.exists(id=self.starboard.id)
+            if not starboard:
                 raise StarboardNotFound(self.starboard.id)
 
-            await ctx.respond(repr(s))
+            channel = bot.cache.get_guild_channel(self.starboard.id)
+            if channel is None:
+                name = f"Deleted Channel {self.starboard.id}"
+            else:
+                assert channel.name is not None
+                name = channel.name
+            embed = bot.embed(title=name)
+
+            de = pretty_emoji_str(starboard.display_emoji, bot=bot)
+            wha = (
+                f"[view]({starboard.webhook_avatar})"
+                if starboard.webhook_avatar
+                else "none"
+            )
+            embed.add_field(
+                name="Appearance",
+                value=(
+                    f"color: {starboard.color}\n"
+                    f"display-emoji: {de}\n"
+                    f"ping-author: {starboard.ping_author}\n"
+                    f"use-nicknames: {starboard.use_nicknames}\n"
+                    f"use-webhook: {starboard.use_webhook}\n"
+                    f"webhook-name: {starboard.webhook_name}\n"
+                    f"webhook-avatar: {wha}\n"
+                ),
+                inline=True,
+            )
+
+            se = pretty_emoji_str(*starboard.star_emojis, bot=bot)
+            embed.add_field(
+                name="Requirements",
+                value=(
+                    f"required: {starboard.required}\n"
+                    f"required-remove: {starboard.required_remove}\n"
+                    f"star-emojis: {se}\n"
+                    f"self-star: {starboard.self_star}\n"
+                    f"allow-bots: {starboard.allow_bots}\n"
+                    f"images-only: {starboard.images_only}\n"
+                ),
+                inline=True,
+            )
+
+            embed.add_field(
+                name="Behaviour",
+                value=(
+                    f"autoreact: {starboard.autoreact}\n"
+                    f"remove-invalid: {starboard.remove_invalid}\n"
+                    f"link-deletes: {starboard.link_deletes}\n"
+                    f"link-edits: {starboard.link_edits}\n"
+                    f"disable-xp: {starboard.disable_xp}\n"
+                    f"allow-explore: {starboard.allow_explore}\n"
+                ),
+                inline=True,
+            )
+
+            await ctx.respond(embed=embed)
 
 
 @plugin.include
@@ -108,7 +187,7 @@ class AddStarboard:
 
         await Starboard(id=self.channel.id, guild_id=ctx.guild_id).create()
 
-        await ctx.respond(f"<#{self.channel.id}> is not a starboard.")
+        await ctx.respond(f"Created starboard <#{self.channel.id}>.")
 
 
 @plugin.include
@@ -162,52 +241,84 @@ class EditStarboard:
     )
 
     color = optiond(str, "The color of the starboard embeds")
-    display_emoji = optiond(str, "The emoji next to the point count")
+    display_emoji = optiond(
+        str, "The emoji next to the point count", name="display-emoji"
+    )
     ping_author = optiond(
-        bool, "Whether to ping users when their post is starboarded"
+        bool,
+        "Whether to ping users when their post is starboarded",
+        name="ping-author",
     )
-    use_nicknames = optiond(bool, "Whether to use nicknames")
+    use_nicknames = optiond(
+        bool, "Whether to use nicknames", name="use-nicknames"
+    )
     use_webhook = optiond(
-        bool, "Whether to use webhooks for starboard messages"
+        bool,
+        "Whether to use webhooks for starboard messages",
+        name="use-webhook",
     )
-    webhook_name = optiond(str, "The name for webhooks, if enabled")
-    webhook_avatar = optiond(str, "The avatar for webhooks, if enabled")
+    webhook_name = optiond(
+        str, "The name for webhooks, if enabled", name="webhook-name"
+    )
+    webhook_avatar = optiond(
+        str, "The avatar for webhooks, if enabled", name="webhook-avatar"
+    )
     required = optiond(
         int, "The number of reactions required for a message to be starboarded"
     )
     required_remove = optiond(
         int,
         "The fewest number of stars a message can have before it is removed",
+        name="required-remove",
     )
     self_star = optiond(
-        bool, "Whether to allow users to star their own messages"
+        bool,
+        "Whether to allow users to star their own messages",
+        name="self-star",
     )
     allow_bots = optiond(
-        bool, "Whether to allow messages from bots to be starboarded"
+        bool,
+        "Whether to allow messages from bots to be starboarded",
+        name="allow-bots",
     )
     images_only = optiond(
-        bool, "Whether to require messages to include an image"
+        bool,
+        "Whether to require messages to include an image",
+        name="images-only",
     )
     autoreact = optiond(
         bool,
         "Whether to automatically react to messages sent to the starboard",
     )
-    remove_invalid = optiond(bool, "Whether to remove invalid reactions")
+    remove_invalid = optiond(
+        bool, "Whether to remove invalid reactions", name="remove-invalid"
+    )
     link_deletes = optiond(
-        bool, "Whether to unstarboard messages if the original was deleted"
+        bool,
+        "Whether to unstarboard messages if the original was deleted",
+        name="link-deletes",
     )
     link_edits = optiond(
         bool,
         "Whether to update the starboard message if the original is edited",
+        name="link-edits",
     )
-    disable_xp = optiond(bool, "Whether to disable XP for a starboard")
+    disable_xp = optiond(
+        bool, "Whether to disable XP for a starboard", name="disable-xp"
+    )
     allow_explore = optiond(
-        bool, "Whether `random` and `moststarred` can pull from this starboard"
+        bool,
+        "Whether `random` and `moststarred` can pull from this starboard",
+        name="allow-explore",
     )
 
     async def callback(self, ctx: crescent.Context) -> None:
-        params = ctx.options.copy()
+        params = self.__dict__.copy()
         del params["starboard"]
+
+        # conversion
+        convert("color", params, none_or(hex_color))
+        convert("display_emoji", params, none_or(any_emoji_str))
 
         s = await Starboard.exists(id=self.starboard.id)
         if not s:

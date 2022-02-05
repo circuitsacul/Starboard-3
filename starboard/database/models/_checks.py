@@ -58,7 +58,13 @@ def int_range(
 
 
 def valid_emoji(value: str | None) -> bool:
-    if value is not None and not emoji.is_emoji(value):  # type: ignore
-        raise InvalidFieldValue(f"{value} is not a valid emoji.")
+    if value is None:
+        return True
 
-    return True
+    if value.isalnum():
+        return True
+
+    if emoji.is_emoji(value):  # type: ignore
+        return True
+
+    raise InvalidFieldValue(f"{value} is not a valid emoji.")
