@@ -37,8 +37,6 @@ class AutoStarChannel(apgorm.Model):
     min_chars = types.SmallInt().field(default=0)
     max_chars = types.SmallInt().nullablefield()
     require_image = types.Boolean().field(default=False)
-    regex = types.VarChar(512).field(default="")
-    exclude_regex = types.VarChar(512).field(default="")
     delete_invalid = types.Boolean().field(default=False)
 
     guild_id_fk = apgorm.ForeignKey(guild_id, Guild.id)
