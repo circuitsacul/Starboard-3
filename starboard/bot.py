@@ -34,6 +34,7 @@ import aiohttp
 import crescent
 import hikari
 from hikari_clusters import Brain, Cluster, ClusterLauncher, Server
+import miru
 
 from .cache import Cache
 from .config import CONFIG, Config
@@ -52,6 +53,8 @@ class Bot(crescent.Bot):
         self.database = Database()
         self._cache = Cache(self, self._cache._settings)
         self._event_manager._cache = self._cache
+
+        miru.load(self)
 
         # "locks"
         self.refresh_message_lock: set[int] = set()
