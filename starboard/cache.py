@@ -38,11 +38,15 @@ class Cache(CacheImpl):
     def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
 
-        self.__messages = TTLCache[int, "hikari.Message | None"](5000, 120)
-        self.__members = TTLCache["tuple[int, int]", "hikari.Member | None"](
+        self.__messages: TTLCache[int, hikari.Message | None] = TTLCache(
             5000, 120
         )
-        self.__webhooks = TTLCache[int, hikari.ExecutableWebhook](5000, 120)
+        self.__members: TTLCache[
+            tuple[int, int], hikari.Member | None
+        ] = TTLCache(5000, 120)
+        self.__webhooks: TTLCache[int, hikari.ExecutableWebhook] = TTLCache(
+            5000, 120
+        )
 
         if TYPE_CHECKING:
             self._app = cast(Bot, self._app)

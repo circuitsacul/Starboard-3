@@ -208,15 +208,14 @@ class EditStarboard:
     )
 
     async def callback(self, ctx: crescent.Context) -> None:
-        kwargs = self.__dict__.copy()
-        del kwargs["callback"]
-        del kwargs["starboard"]
+        params = ctx.options.copy()
+        del params["starboard"]
 
         s = await Starboard.exists(id=self.starboard.id)
         if not s:
             raise StarboardNotFound(self.starboard.id)
 
-        for k, v in kwargs.items():
+        for k, v in params.items():
             if v is UNDEF.UNDEF:
                 continue
             setattr(s, k, v)

@@ -27,6 +27,7 @@ from typing import TYPE_CHECKING
 import hikari
 
 from starboard.database import Message, SBMessage, Starboard
+from starboard.config import CONFIG
 
 from .embed_message import embed_message, get_raw_message_text
 from .emojis import stored_to_emoji
@@ -64,7 +65,7 @@ async def get_sbmsg_content(
             bot,
             dis_orig_msg,
             starboard.guild_id,
-            starboard.color or bot.config.color,
+            starboard.color or CONFIG.color,
             _display_emoji(),
             starboard.use_nicknames,
             starboard.ping_author,

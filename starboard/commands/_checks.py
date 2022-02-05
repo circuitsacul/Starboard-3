@@ -22,26 +22,23 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Awaitable, Callable, cast
+from typing import Awaitable, Callable
 
 import crescent
 import hikari
 
 from starboard.exceptions import CheckErr
-
-if TYPE_CHECKING:
-    from starboard.bot import Bot
+from starboard.config import CONFIG
 
 
-async def owner_only(ctx: crescent.Context, options) -> None:
-    bot = cast("Bot", ctx.app)
-    if ctx.user.id not in bot.config.owners:
+async def owner_only(ctx: crescent.Context) -> None:
+    if ctx.user.id not in CONFIG.owners:
         raise CheckErr("Only owners can use this command.")
 
     return None
 
 
-async def guild_only(ctx: crescent.Context, options) -> None:
+async def guild_only(ctx: crescent.Context) -> None:
     if not ctx.guild_id:
         raise CheckErr("This command can only be used inside servers.")
 
@@ -50,9 +47,8 @@ async def guild_only(ctx: crescent.Context, options) -> None:
 
 def has_guild_perms(
     perms: hikari.Permissions,
-) -> Callable[[crescent.Context, Any], Awaitable[None]]:
-    async def check(ctx: crescent.Context, options) -> None:
-        await guild_only(ctx, options)
+) -> Callable[[crescent.Context], Awaitable[None]]:
+    async def check(ctx: crescent.Context) -> None:
         assert ctx.guild_id is not None
         assert ctx.member is not None
         assert isinstance(member := ctx.member, hikari.InteractionMember)

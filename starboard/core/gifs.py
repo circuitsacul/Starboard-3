@@ -25,6 +25,8 @@ from __future__ import annotations
 import re
 from typing import TYPE_CHECKING, Optional, Tuple, cast
 
+from starboard.config import CONFIG
+
 if TYPE_CHECKING:
     from starboard.bot import Bot
 
@@ -59,12 +61,12 @@ async def _get(bot: Bot, url: str, *args, **kwargs) -> dict:
 
 
 async def _get_tenor(bot: Bot, gifid: str) -> Optional[str]:
-    if not bot.config.tenor_token:
+    if not CONFIG.tenor_token:
         return None
 
     try:
         data = await _get(
-            bot, TENOR_BASE.format(gifid, bot.config.tenor_token)
+            bot, TENOR_BASE.format(gifid, CONFIG.tenor_token)
         )
         return cast(str, data["results"][0]["media"][0]["gif"]["url"])
     except Exception:
@@ -72,11 +74,11 @@ async def _get_tenor(bot: Bot, gifid: str) -> Optional[str]:
 
 
 async def _get_giphy(bot: Bot, gifid: str) -> Optional[str]:
-    if not bot.config.giphy_token:
+    if not CONFIG.giphy_token:
         return None
 
     try:
-        params = {"api_key": bot.config.giphy_token}
+        params = {"api_key": CONFIG.giphy_token}
         data = await _get(bot, GIPHY_BASE.format(gifid), params=params)
         return cast(str, data["data"]["images"]["fixed_height"]["url"])
     except Exception:

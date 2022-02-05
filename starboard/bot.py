@@ -44,9 +44,9 @@ class Bot(crescent.Bot):
     cluster: Cluster
 
     def __init__(self) -> None:
-        self.config = CONFIG
-
-        super().__init__(token=self.config.discord_token)
+        super().__init__(
+            token=CONFIG.discord_token, default_guild=CONFIG.testing_guild
+        )
 
         self._aiohttp_session: aiohttp.ClientSession | None = None
         self.database = Database()
@@ -86,9 +86,9 @@ class Bot(crescent.Bot):
 
     async def start(self, **kwargs) -> None:
         await self.database.connect(
-            database=self.config.db_name,
-            user=self.config.db_user,
-            password=self.config.db_password,
+            database=CONFIG.db_name,
+            user=CONFIG.db_user,
+            password=CONFIG.db_password,
         )
         await super().start(**kwargs)
 
@@ -108,7 +108,7 @@ class Bot(crescent.Bot):
             title=title,
             description=description,
             url=url,
-            color=self.config.color,
+            color=CONFIG.color,
             timestamp=timestamp,
         )
 
