@@ -33,8 +33,8 @@ from typing import TYPE_CHECKING, Any
 import aiohttp
 import crescent
 import hikari
-from hikari_clusters import Brain, Cluster, ClusterLauncher, Server
 import miru
+from hikari_clusters import Brain, Cluster, ClusterLauncher, Server
 
 from .cache import Cache
 from .config import CONFIG, Config
