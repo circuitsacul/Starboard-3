@@ -39,7 +39,11 @@ def pretty_emoji_str(*emojis: str | None, bot: Bot) -> str:
         if e is not None  # make mypy happy
     ]
 
-    return ", ".join(
-        e.mention if isinstance(e, hikari.CustomEmoji) else str(e)
-        for e in converted if e is not None
-    ) or "none"
+    return (
+        ", ".join(
+            e.mention if isinstance(e, hikari.CustomEmoji) else str(e)
+            for e in converted
+            if e is not None
+        )
+        or "none"
+    )

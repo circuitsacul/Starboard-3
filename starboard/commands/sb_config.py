@@ -33,7 +33,7 @@ from starboard.undefined import UNDEF
 from starboard.views import Confirm
 
 from ._checks import has_guild_perms
-from ._converters import any_emoji_str, hex_color, none_or, convert
+from ._converters import any_emoji_str, convert, hex_color, none_or
 from ._utils import pretty_emoji_str
 
 if TYPE_CHECKING:

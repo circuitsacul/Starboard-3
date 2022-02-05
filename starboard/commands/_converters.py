@@ -29,7 +29,6 @@ import hikari
 from starboard.exceptions import ConverterErr
 from starboard.undefined import UNDEF
 
-
 _T = TypeVar("_T")
 
 
@@ -62,7 +61,7 @@ def hex_color(text: str) -> int:
 
 
 def none_or(
-    func: Callable[[str], _T], nonefirst: bool = True,
+    func: Callable[[str], _T], nonefirst: bool = True
 ) -> Callable[[str], _T | None]:
     def wrapper(text: str) -> _T | None:
         if nonefirst and text.lower() in ["none", "default"]:
