@@ -61,7 +61,7 @@ class FreezeMessage:
         msg.frozen = True
         await msg.save()
         await refresh_message(cast("Bot", ctx.app), msg, force=True)
-        await ctx.respond("Message frozen.")
+        await ctx.respond("Message frozen.", ephemeral=True)
 
 
 @plugin.include
@@ -81,7 +81,7 @@ class UnfreezeMessage:
         msg.frozen = False
         await msg.save()
         await refresh_message(cast("Bot", ctx.app), msg, force=True)
-        await ctx.respond("Message unfrozen.")
+        await ctx.respond("Message unfrozen.", ephemeral=True)
 
 
 @plugin.include
