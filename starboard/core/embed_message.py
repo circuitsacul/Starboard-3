@@ -204,7 +204,9 @@ def _extract_main_content(message: hikari.Message) -> str | None:
         if _se:
             raw_content += "\n\n" + _se
 
-    return raw_content or None
+    if raw_content:
+        return _truncate(raw_content, EMBED_DESC_LEN)
+    return None
 
 
 def _extract_file_str(message: hikari.Message) -> str | None:
