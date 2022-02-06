@@ -22,7 +22,6 @@
 
 from __future__ import annotations
 
-import asyncio
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Awaitable
 
@@ -38,19 +37,22 @@ if TYPE_CHECKING:
 
 
 async def refresh_message(
-    bot: Bot, orig_message: Message, sbids: list[int] | None = None
+    bot: Bot,
+    orig_message: Message,
+    sbids: list[int] | None = None,
+    force: bool = False,
 ) -> None:
     if orig_message.id in bot.refresh_message_lock:
         return
     bot.refresh_message_lock.add(orig_message.id)
     try:
-        await _refresh_message(bot, orig_message, sbids)
+        await _refresh_message(bot, orig_message, sbids, force)
     finally:
         bot.refresh_message_lock.remove(orig_message.id)
 
 
 async def _refresh_message(
-    bot: Bot, orig_message: Message, sbids: list[int] | None
+    bot: Bot, orig_message: Message, sbids: list[int] | None, force: bool
 ) -> None:
     if sbids:
         starboards = (
@@ -66,11 +68,11 @@ async def _refresh_message(
         )
 
     for sb in starboards:
-        await _refresh_message_for_starboard(bot, orig_message, sb)
+        await _refresh_message_for_starboard(bot, orig_message, sb, force)
 
 
 async def _refresh_message_for_starboard(
-    bot: Bot, orig_msg: Message, starboard: Starboard
+    bot: Bot, orig_msg: Message, starboard: Starboard, force: bool
 ) -> None:
     orig_msg_obj = await bot.cache.gof_message(
         orig_msg.channel_id, orig_msg.id
@@ -86,6 +88,7 @@ async def _refresh_message_for_starboard(
         sbmsg is not None
         and sbmsg.last_known_star_count == starcount
         and not action.remove
+        and not force
     ):
         return
     if not sbmsg:
@@ -146,7 +149,6 @@ async def _refresh_message_for_starboard(
                 await _edit(bot, starboard, sbmsg_obj, content, embed)
             else:
                 await _edit(bot, starboard, sbmsg_obj, content, None)
-            await asyncio.sleep(5)
         else:
             content, _ = await get_sbmsg_content(
                 bot, starboard, None, orig_msg, starcount

@@ -60,6 +60,9 @@ async def get_sbmsg_content(
             else None
         )
 
+    frozen = sql_orig_msg.frozen
+    forced = starboard.id in sql_orig_msg.forced_to
+
     if dis_orig_msg is not None:
         return await embed_message(
             bot,
@@ -70,6 +73,8 @@ async def get_sbmsg_content(
             starboard.use_nicknames,
             starboard.ping_author,
             starcount,
+            frozen,
+            forced,
         )
 
     return (
@@ -79,6 +84,8 @@ async def get_sbmsg_content(
             _display_emoji(),
             starboard.ping_author,
             starcount,
+            frozen,
+            forced,
         ),
         None,
     )

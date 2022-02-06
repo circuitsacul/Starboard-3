@@ -44,6 +44,8 @@ def get_raw_message_text(
     display_emoji: hikari.UnicodeEmoji | hikari.CustomEmoji | None,
     ping_author: bool,
     point_count: int,
+    frozen: bool,
+    forced: bool,
 ) -> str:
     text = ""
     if display_emoji:
@@ -53,6 +55,11 @@ def get_raw_message_text(
 
     if ping_author:
         text += f" **(**<@{author_id}>**)**"
+
+    if frozen:
+        text += " ❄️"
+    if forced:
+        text += " 🔒"
 
     return text
 
@@ -66,6 +73,8 @@ async def embed_message(
     nicknames: bool,
     ping_author: bool,
     point_count: int,
+    frozen: bool,
+    forced: bool,
 ) -> tuple[str, hikari.Embed]:
     channel = await bot.cache.gof_guild_channel_wnsfw(message.channel_id)
     assert channel is not None
@@ -106,6 +115,8 @@ async def embed_message(
             display_emoji,
             ping_author,
             point_count,
+            frozen,
+            forced,
         ),
         embed,
     )

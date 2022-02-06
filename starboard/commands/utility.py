@@ -22,20 +22,28 @@
 
 from __future__ import annotations
 
+from typing import cast, TYPE_CHECKING
+
 from hikari import Permissions
 import crescent
+import hikari
 
 from starboard.exceptions import CommandErr
+from starboard.core.starboards import refresh_message
+from starboard.core.messages import get_orig_message
 
 from ._checks import has_guild_perms
 from ._converters import db_orig_message
 
+if TYPE_CHECKING:
+    from starboard.bot import Bot
+
+
 manage_messages = crescent.hook(has_guild_perms(Permissions.MANAGE_MESSAGES))
-
-
 plugin = crescent.Plugin("utility-commands")
 
 
+# FREEZING
 @plugin.include
 @manage_messages
 @crescent.command(name="freeze", description="Freeze a message")
@@ -52,6 +60,7 @@ class FreezeMessage:
 
         msg.frozen = True
         await msg.save()
+        await refresh_message(cast("Bot", ctx.app), msg, force=True)
         await ctx.respond("Message frozen.")
 
 
@@ -71,4 +80,40 @@ class UnfreezeMessage:
 
         msg.frozen = False
         await msg.save()
+        await refresh_message(cast("Bot", ctx.app), msg, force=True)
         await ctx.respond("Message unfrozen.")
+
+
+@plugin.include
+@manage_messages
+@crescent.message_command(name="Freeze Message")
+async def freeze_message(
+    ctx: crescent.Context, message: hikari.Message
+) -> None:
+    msg = await get_orig_message(message.id)
+    if not msg:
+        raise CommandErr("Message does not exist in database.")
+
+    if msg.frozen:
+        raise CommandErr("That message is already frozen.")
+
+    msg.frozen = True
+    await msg.save()
+    await refresh_message(cast("Bot", ctx.app), msg, force=True)
+    await ctx.respond("Message frozen.", ephemeral=True)
+
+
+@plugin.include
+@manage_messages
+@crescent.message_command(name="Unfreeze Message")
+async def unfreeze_message(
+    ctx: crescent.Context, message: hikari.Message
+) -> None:
+    msg = await get_orig_message(message.id)
+    if not msg or not msg.frozen:
+        raise CommandErr("That message is not frozen.")
+
+    msg.frozen = False
+    await msg.save()
+    await refresh_message(cast("Bot", ctx.app), msg, force=True)
+    await ctx.respond("Message unfrozen.", ephemeral=True)
