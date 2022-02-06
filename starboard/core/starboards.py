@@ -86,6 +86,11 @@ async def _refresh_message(
 async def _refresh_message_for_starboard(
     bot: Bot, orig_msg: Message, starboard: Starboard, force: bool
 ) -> None:
+    if orig_msg.is_nsfw:
+        sbchannel = await bot.cache.gof_guild_channel_wnsfw(starboard.id)
+        if sbchannel is None or sbchannel.is_nsfw is False:
+            return
+
     orig_msg_obj = await bot.cache.gof_message(
         orig_msg.channel_id, orig_msg.id
     )
