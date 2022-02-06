@@ -31,6 +31,7 @@ from hikari import Permissions
 from starboard.core.messages import get_orig_message
 from starboard.core.starboards import refresh_message
 from starboard.exceptions import CommandErr
+from starboard.database import goc_message
 
 from ._checks import has_guild_perms
 from ._converters import db_orig_message
@@ -129,12 +130,96 @@ async def unfreeze_message(
 @utils.child
 @crescent.command(
     name="trash",
-    description="Trash a message so it won't appear on starboards.",
+    description="Trash a message so it won't appear on starboards",
 )
 class TrashMessage:
     message_link = crescent.option(
         str, "Link to the message to trash", name="message-link"
     )
+    reason = crescent.option(
+        str, "Reason for trashing the message", default="No reason"
+    )
 
     async def callback(self, ctx: crescent.Context) -> None:
-        pass
+        msg = await db_orig_message(self.message_link)
+
+        if msg.trashed:
+            raise CommandErr("That message is already trashed.")
+
+        msg.trashed = True
+        msg.trash_reason = self.reason
+        await msg.save()
+        await ctx.respond("Message trashed.", ephemeral=True)
+        await refresh_message(cast("Bot", ctx.app), msg, force=True)
+
+
+@plugin.include
+@utils.child
+@crescent.command(
+    name="untrash",
+    description="Untrash a message so it can appear on starboards",
+)
+class UntrashMessage:
+    message_link = crescent.option(
+        str, "Link to the message to untrash", name="message-link"
+    )
+
+    async def callback(self, ctx: crescent.Context) -> None:
+        msg = await db_orig_message(self.message_link)
+
+        if not msg.trashed:
+            raise CommandErr("That message is not trashed.")
+
+        msg.trashed = False
+        msg.trash_reason = None
+        await msg.save()
+        await ctx.respond("Message untrashed.", ephemeral=True)
+        await refresh_message(cast("Bot", ctx.app), msg, force=True)
+
+
+@plugin.include
+@manage_messages
+@crescent.message_command(name="Trash Message")
+async def trash_message(
+    ctx: crescent.Context, message: hikari.Message
+) -> None:
+    bot = cast("Bot", ctx.app)
+    msg = await get_orig_message(message.id)
+
+    if msg is None:
+        assert ctx.guild_id
+        channel = await bot.cache.gof_guild_channel_wnsfw(message.channel_id)
+        if not channel:
+            raise CommandErr("Something went wrong.")
+        assert channel.is_nsfw is not None
+        msg = await goc_message(
+            ctx.guild_id,
+            channel.id,
+            message.id,
+            channel.is_nsfw,
+            message.author.id,
+            message.author.is_bot,
+        )
+
+    msg.trashed = True
+    msg.trash_reason = f"Trashed using message commands by {ctx.user}"
+    await msg.save()
+    await ctx.respond("Message trashed.", ephemeral=True)
+    await refresh_message(bot, msg, force=True)
+
+
+@plugin.include
+@manage_messages
+@crescent.message_command(name="Untrash Message")
+async def untrash_message(
+    ctx: crescent.Context, message: hikari.Message
+) -> None:
+    msg = await get_orig_message(message.id)
+    if msg is None or not msg.trashed:
+        raise CommandErr("Message is not trashed.")
+
+    msg.trashed = False
+    msg.trash_reason = None
+    await msg.save()
+    await ctx.respond("Message untrashed.", ephemeral=True)
+    await refresh_message(cast("Bot", ctx.app), msg, force=True)
