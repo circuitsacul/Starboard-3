@@ -41,11 +41,16 @@ if TYPE_CHECKING:
 
 manage_messages = crescent.hook(has_guild_perms(Permissions.MANAGE_MESSAGES))
 plugin = crescent.Plugin("utility-commands")
+utils = crescent.Group(
+    "utils",
+    "Utility Commands",
+    hooks=[has_guild_perms(Permissions.MANAGE_MESSAGES)],
+)
 
 
 # FREEZING
 @plugin.include
-@manage_messages
+@utils.child
 @crescent.command(name="freeze", description="Freeze a message")
 class FreezeMessage:
     message_link = crescent.option(
@@ -60,12 +65,12 @@ class FreezeMessage:
 
         msg.frozen = True
         await msg.save()
-        await refresh_message(cast("Bot", ctx.app), msg, force=True)
         await ctx.respond("Message frozen.", ephemeral=True)
+        await refresh_message(cast("Bot", ctx.app), msg, force=True)
 
 
 @plugin.include
-@manage_messages
+@utils.child
 @crescent.command(name="unfreeze", description="Unfreeze a message")
 class UnfreezeMessage:
     message_link = crescent.option(
@@ -80,8 +85,8 @@ class UnfreezeMessage:
 
         msg.frozen = False
         await msg.save()
-        await refresh_message(cast("Bot", ctx.app), msg, force=True)
         await ctx.respond("Message unfrozen.", ephemeral=True)
+        await refresh_message(cast("Bot", ctx.app), msg, force=True)
 
 
 @plugin.include
@@ -99,8 +104,8 @@ async def freeze_message(
 
     msg.frozen = True
     await msg.save()
-    await refresh_message(cast("Bot", ctx.app), msg, force=True)
     await ctx.respond("Message frozen.", ephemeral=True)
+    await refresh_message(cast("Bot", ctx.app), msg, force=True)
 
 
 @plugin.include
@@ -115,5 +120,21 @@ async def unfreeze_message(
 
     msg.frozen = False
     await msg.save()
-    await refresh_message(cast("Bot", ctx.app), msg, force=True)
     await ctx.respond("Message unfrozen.", ephemeral=True)
+    await refresh_message(cast("Bot", ctx.app), msg, force=True)
+
+
+# TRASHING
+@plugin.include
+@utils.child
+@crescent.command(
+    name="trash",
+    description="Trash a message so it won't appear on starboards.",
+)
+class TrashMessage:
+    message_link = crescent.option(
+        str, "Link to the message to trash", name="message-link"
+    )
+
+    async def callback(self, ctx: crescent.Context) -> None:
+        pass

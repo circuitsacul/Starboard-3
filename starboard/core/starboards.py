@@ -21,6 +21,7 @@
 # SOFTWARE.
 
 from __future__ import annotations
+import asyncio
 
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Awaitable
@@ -41,9 +42,13 @@ async def refresh_message(
     orig_message: Message,
     sbids: list[int] | None = None,
     force: bool = False,
+    _nest: int = 0,
 ) -> None:
     if orig_message.id in bot.refresh_message_lock:
-        return
+        if _nest >= 4:
+            return
+        await asyncio.sleep(5)
+        return await refresh_message(bot, orig_message, sbids, force, _nest+1)
     bot.refresh_message_lock.add(orig_message.id)
     try:
         await _refresh_message(bot, orig_message, sbids, force)
@@ -67,8 +72,15 @@ async def _refresh_message(
             .fetchmany()
         )
 
+    tasks: list[asyncio.Task] = []
     for sb in starboards:
-        await _refresh_message_for_starboard(bot, orig_message, sb, force)
+        t = asyncio.create_task(
+            _refresh_message_for_starboard(
+                bot, orig_message, sb, force
+            )
+        )
+        tasks.append(t)
+    await asyncio.gather(*tasks)
 
 
 async def _refresh_message_for_starboard(
@@ -154,6 +166,8 @@ async def _refresh_message_for_starboard(
                 bot, starboard, None, orig_msg, starcount
             )
             await _edit(bot, starboard, sbmsg_obj, content, None)
+
+        await asyncio.sleep(10)
 
     else:
         sbmsg.sb_message_id = None
@@ -297,6 +311,10 @@ def _get_action(
     # check deletion
     if deleted and starboard.link_deletes:
         add_trib = False
+
+    # check if frozen
+    if orig_msg.frozen:
+        add_trib = None
 
     # check if forced
     if starboard.id in orig_msg.forced_to:
