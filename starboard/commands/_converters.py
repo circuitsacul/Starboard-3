@@ -23,11 +23,11 @@
 from __future__ import annotations
 
 import re
-from typing import Any, Callable, TypeVar, TYPE_CHECKING
+from typing import TYPE_CHECKING, Any, Callable, TypeVar
 
 import hikari
-from starboard.core.messages import get_orig_message
 
+from starboard.core.messages import get_orig_message
 from starboard.exceptions import ConverterErr, MessageNotFound
 from starboard.undefined import UNDEF
 

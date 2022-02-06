@@ -85,14 +85,11 @@ async def embed_message(
         bot, guild_id, message.author, nicknames
     )
 
-    embed = (
-        hikari.Embed(
-            description=_extract_main_content(message),
-            color=color,
-            timestamp=message.created_at,
-        )
-        .set_author(name=name, icon=avatar)
-    )
+    embed = hikari.Embed(
+        description=_extract_main_content(message),
+        color=color,
+        timestamp=message.created_at,
+    ).set_author(name=name, icon=avatar)
 
     filestr = _extract_file_str(message)
     if filestr:
@@ -263,9 +260,7 @@ def _default_ddd(count: int) -> str:
 
 
 def _trunc_list(
-    texts: list[str],
-    max: int,
-    ddd: Callable[[int], str] = _default_ddd
+    texts: list[str], max: int, ddd: Callable[[int], str] = _default_ddd
 ) -> list[str]:
     if sum(len(t) for t in texts) <= max:
         return texts

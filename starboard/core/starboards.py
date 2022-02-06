@@ -21,8 +21,8 @@
 # SOFTWARE.
 
 from __future__ import annotations
-import asyncio
 
+import asyncio
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Awaitable
 
@@ -48,7 +48,9 @@ async def refresh_message(
         if _nest >= 4:
             return
         await asyncio.sleep(5)
-        return await refresh_message(bot, orig_message, sbids, force, _nest+1)
+        return await refresh_message(
+            bot, orig_message, sbids, force, _nest + 1
+        )
     bot.refresh_message_lock.add(orig_message.id)
     try:
         await _refresh_message(bot, orig_message, sbids, force)
@@ -75,9 +77,7 @@ async def _refresh_message(
     tasks: list[asyncio.Task] = []
     for sb in starboards:
         t = asyncio.create_task(
-            _refresh_message_for_starboard(
-                bot, orig_message, sb, force
-            )
+            _refresh_message_for_starboard(bot, orig_message, sb, force)
         )
         tasks.append(t)
     await asyncio.gather(*tasks)
