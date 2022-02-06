@@ -23,7 +23,7 @@
 from __future__ import annotations
 
 from textwrap import indent
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Callable
 
 import hikari
 
@@ -34,6 +34,8 @@ if TYPE_CHECKING:
 
 
 ZWS = "​"
+EMBED_FIELD_LEN = 1024
+EMBED_DESC_LEN = 4096
 
 
 def get_raw_message_text(
@@ -81,9 +83,14 @@ async def embed_message(
             timestamp=message.created_at,
         )
         .set_author(name=name, icon=avatar)
-        .add_field(
-            name=ZWS, value=f"[Go to Message]({message.make_link(guild_id)})"
-        )
+    )
+
+    filestr = _extract_file_str(message)
+    if filestr:
+        embed.add_field(name=ZWS, value=filestr)
+
+    embed.add_field(
+        name=ZWS, value=f"[Go to Message]({message.make_link(guild_id)})"
     )
 
     image_urls = await _extract_images(bot, message)
@@ -197,19 +204,14 @@ def _extract_main_content(message: hikari.Message) -> str | None:
         if _se:
             raw_content += "\n\n" + _se
 
-    filestr = _extract_file_str(message)
-    if filestr:
-        raw_content += "\n\n" + filestr
-
     return raw_content or None
 
 
 def _extract_file_str(message: hikari.Message) -> str | None:
-    files: list[str] = []
+    files = [f"[{a.filename}]({a.url})\n" for a in message.attachments]
+    files = _trunc_list(files, EMBED_FIELD_LEN)
 
-    files.extend(f"[{a.filename}]({a.url})" for a in message.attachments)
-
-    return "\n".join(files) or None
+    return "".join(files) or None
 
 
 async def _extract_images(bot: Bot, message: hikari.Message) -> list[str]:
@@ -231,3 +233,40 @@ async def _extract_images(bot: Bot, message: hikari.Message) -> list[str]:
                 urls.append(embed.thumbnail.url)
 
     return urls
+
+
+def _truncate(text: str, max: int, ddd: str = "...") -> str:
+    if len(text) <= max:
+        return text
+
+    to_remove = len(text) + len(ddd) - max
+    return text[:-to_remove] + ddd
+
+
+def _default_ddd(count: int) -> str:
+    if count == 1:
+        return "\nand 1 other"
+    return f"\nand {count} other"
+
+
+def _trunc_list(
+    texts: list[str],
+    max: int,
+    ddd: Callable[[int], str] = _default_ddd
+) -> list[str]:
+    if sum(len(t) for t in texts) <= max:
+        return texts
+
+    texts = texts.copy()
+    oklist: list[str] = []
+
+    while (
+        texts
+        and sum(len(t) for t in oklist)
+        + len(ddd(len(texts) - 1))
+        + len(texts[0])
+        <= max
+    ):
+        oklist.append(texts.pop(0))
+
+    return oklist + [ddd(len(texts))]
