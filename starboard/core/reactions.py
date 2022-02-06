@@ -30,7 +30,7 @@ import hikari
 from starboard.database import Starboard, goc_member, goc_message
 from starboard.database.models.user import User
 
-from .sb_messages import get_orig_message
+from .messages import get_orig_message
 from .starboards import refresh_message
 from .stars import add_stars, is_star_valid_for, remove_stars
 
@@ -116,6 +116,8 @@ async def handle_reaction_remove(
 ) -> None:
     orig_msg = await get_orig_message(event.message_id)
     if not orig_msg:
+        return
+    if orig_msg.frozen:
         return
 
     emoji_str = _get_emoji_str_from_event(event)

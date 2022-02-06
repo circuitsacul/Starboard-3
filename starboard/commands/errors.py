@@ -32,7 +32,11 @@ plugin = crescent.Plugin("error-handler")
 
 @plugin.include
 @crescent.catch(
-    exceptions.StarboardNotFound, exceptions.ConverterErr, exceptions.CheckErr
+    exceptions.StarboardNotFound,
+    exceptions.MessageNotFound,
+    exceptions.ConverterErr,
+    exceptions.CheckErr,
+    exceptions.CommandErr,
 )
 async def basic_handler(
     exc: exceptions.BaseErr, ctx: crescent.Context, **k

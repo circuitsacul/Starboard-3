@@ -35,6 +35,20 @@ class StarboardNotFound(BaseErr):
         super().__init__(f"<#{channel_id}> is not a starboard.")
 
 
+class MessageNotFound(BaseErr):
+    def __init__(self, mid: int) -> None:
+        self.mid = mid
+        super().__init__(
+            f"No message with the id `{mid}` was found in the database. "
+            "Either the id is invalid, or this message just hasn't received "
+            "any stars yet."
+        )
+
+
+class CommandErr(BaseErr):
+    pass
+
+
 class ConverterErr(BaseErr):
     pass
 

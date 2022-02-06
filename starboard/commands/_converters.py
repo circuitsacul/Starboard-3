@@ -22,12 +22,17 @@
 
 from __future__ import annotations
 
-from typing import Any, Callable, TypeVar
+import re
+from typing import Any, Callable, TypeVar, TYPE_CHECKING
 
 import hikari
+from starboard.core.messages import get_orig_message
 
-from starboard.exceptions import ConverterErr
+from starboard.exceptions import ConverterErr, MessageNotFound
 from starboard.undefined import UNDEF
+
+if TYPE_CHECKING:
+    from starboard.database import Message
 
 _T = TypeVar("_T")
 
@@ -80,3 +85,32 @@ def none_or_str(text: str) -> None | str:
     if text.lower() in ["none", "default"]:
         return None
     return text
+
+
+QUICK_ID = re.compile(r"(?P<message_id>[0-9]+)-(?P<channel_id>[0-9]+)$")
+MSG_LINK = re.compile(
+    r"^https:\/\/discord.com\/channels\/[0-9]+\/(?P<channel_id>[0-9]+)\/"
+    r"(?P<message_id>[0-9]+)$"
+)
+
+
+def message_id(text: str) -> int:
+    try:
+        return int(text)
+    except ValueError:
+        pass
+    if (m := MSG_LINK.match(text)) is not None:
+        return int(m["message_id"])
+    if (m := QUICK_ID.match(text)) is not None:
+        return int(m["message_id"])
+
+    raise ConverterErr(f"`{text}` is not a valid message link or id.")
+
+
+async def db_orig_message(text: str) -> Message:
+    mid = message_id(text)
+    msg = await get_orig_message(mid)
+    if not msg:
+        raise MessageNotFound(mid)
+
+    return msg

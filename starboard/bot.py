@@ -64,7 +64,7 @@ class Bot(crescent.Bot):
                 if module.name.startswith("_"):
                     continue
                 name = "{}.{}".format(
-                    str(parent).replace("/", "."), module.name.strip(".py")
+                    str(parent).replace("/", "."), module.name[:-3]
                 )
                 self.load_module(name)
 

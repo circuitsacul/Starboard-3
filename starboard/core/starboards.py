@@ -31,7 +31,7 @@ from apgorm import sql
 
 from starboard.database import Message, SBMessage, Star, Starboard
 
-from .sb_messages import get_sbmsg_content
+from .messages import get_sbmsg_content
 
 if TYPE_CHECKING:
     from starboard.bot import Bot
