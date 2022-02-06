@@ -70,7 +70,7 @@ async def get_sbmsg_content(
             starboard.guild_id,
             starboard.color or CONFIG.color,
             _display_emoji(),
-            starboard.use_nicknames,
+            starboard.use_server_profile,
             starboard.ping_author,
             starcount,
             frozen,

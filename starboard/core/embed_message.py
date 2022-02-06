@@ -70,7 +70,7 @@ async def embed_message(
     guild_id: int,
     color: int,
     display_emoji: hikari.CustomEmoji | hikari.UnicodeEmoji | None,
-    nicknames: bool,
+    server_profile: bool,
     ping_author: bool,
     point_count: int,
     frozen: bool,
@@ -82,7 +82,7 @@ async def embed_message(
     assert nsfw is not None
 
     name, avatar = await _get_name_and_avatar(
-        bot, guild_id, message.author, nicknames
+        bot, guild_id, message.author, server_profile
     )
 
     embed = hikari.Embed(
@@ -103,7 +103,7 @@ async def embed_message(
     if image_urls and len(image_urls):
         embed.set_image(image_urls[0])
 
-    await _extract_reply(bot, message, guild_id, nicknames, embed)
+    await _extract_reply(bot, message, guild_id, server_profile, embed)
 
     return (
         get_raw_message_text(
@@ -123,9 +123,9 @@ async def _get_name_and_avatar(
     bot: Bot,
     guild: hikari.SnowflakeishOr[hikari.PartialGuild],
     user: hikari.User,
-    nicknames: bool,
+    server_profile: bool,
 ) -> tuple[str, hikari.URL]:
-    if not nicknames:
+    if not server_profile:
         return (user.username, user.avatar_url or user.default_avatar_url)
 
     member = await bot.cache.gof_member(guild, user)
@@ -144,12 +144,12 @@ async def _extract_reply(
     bot: Bot,
     message: hikari.Message,
     guild_id: int,
-    nicknames: bool,
+    server_profile: bool,
     embed: hikari.Embed,
 ) -> None:
     if (ref := message.referenced_message) is not None:
         name, _ = await _get_name_and_avatar(
-            bot, guild_id, ref.author, nicknames
+            bot, guild_id, ref.author, server_profile
         )
         embed.add_field(
             name=f"Replying To {name}",

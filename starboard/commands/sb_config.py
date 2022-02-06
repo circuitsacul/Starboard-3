@@ -128,7 +128,7 @@ class ViewStarboard:
                     f"color: {starboard.color}\n"
                     f"display-emoji: {de}\n"
                     f"ping-author: {starboard.ping_author}\n"
-                    f"use-nicknames: {starboard.use_nicknames}\n"
+                    f"use-server-profile: {starboard.use_server_profile}\n"
                     f"use-webhook: {starboard.use_webhook}\n"
                     f"webhook-name: {starboard.webhook_name}\n"
                     f"webhook-avatar: {wha}\n"
@@ -249,8 +249,10 @@ class EditStarboard:
         "Whether to ping users when their post is starboarded",
         name="ping-author",
     )
-    use_nicknames = optiond(
-        bool, "Whether to use nicknames", name="use-nicknames"
+    use_server_profile = optiond(
+        bool,
+        "Whether to use nicknames and server avatars",
+        name="use-server-profile",
     )
     use_webhook = optiond(
         bool,
