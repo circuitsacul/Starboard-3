@@ -64,22 +64,20 @@ async def refresh_message(
 
 async def _handle_trashed_message(bot: Bot, orig_message: Message) -> None:
     starboards = {
-        sb.id: sb for sb in
-        await Starboard.fetch_query().where(
-            guild_id=orig_message.guild_id
-        ).fetchmany()
+        sb.id: sb
+        for sb in await Starboard.fetch_query()
+        .where(guild_id=orig_message.guild_id)
+        .fetchmany()
     }
     for sid, sb in starboards.items():
         sbmsg = await SBMessage.exists(
-            message_id=orig_message.id,
-            starboard_id=sid,
+            message_id=orig_message.id, starboard_id=sid
         )
         if not sbmsg or not sbmsg.sb_message_id:
             continue
 
         sbmsg_obj = await bot.cache.gof_message(
-            sbmsg.starboard_id,
-            sbmsg.sb_message_id,
+            sbmsg.starboard_id, sbmsg.sb_message_id
         )
         if not sbmsg_obj:
             continue
@@ -92,7 +90,7 @@ async def _handle_trashed_message(bot: Bot, orig_message: Message) -> None:
             embed=hikari.Embed(
                 title="Trashed Message",
                 description="This message was trashed by a moderator.",
-            )
+            ),
         )
 
     await asyncio.sleep(10)

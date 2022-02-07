@@ -375,7 +375,9 @@ class RefreshMessage:
 
     async def callback(self, ctx: crescent.Context) -> None:
         msg = await db_orig_message(self.message_link)
-        await ctx.respond("Message should update momentarily...", ephemeral=True)
+        await ctx.respond(
+            "Message should update momentarily...", ephemeral=True
+        )
         if msg:
             await refresh_message(cast("Bot", ctx.app), msg, force=True)
 
