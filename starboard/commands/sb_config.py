@@ -129,6 +129,7 @@ class ViewStarboard:
                     f"display-emoji: {de}\n"
                     f"ping-author: {starboard.ping_author}\n"
                     f"use-server-profile: {starboard.use_server_profile}\n"
+                    f"extra-embeds: {starboard.extra_embeds}\n"
                     f"use-webhook: {starboard.use_webhook}\n"
                     f"webhook-name: {starboard.webhook_name}\n"
                     f"webhook-avatar: {wha}\n"
@@ -312,6 +313,11 @@ class EditStarboard:
         bool,
         "Whether to prevent `random` and `moststarred` from using this "
         "starboard",
+    )
+    extra_embeds = optiond(
+        bool,
+        "Whether to add extra embeds below the main message content",
+        name="extra-embeds",
     )
 
     async def callback(self, ctx: crescent.Context) -> None:

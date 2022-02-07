@@ -64,7 +64,7 @@ async def get_sbmsg_content(
     forced = starboard.id in sql_orig_msg.forced_to
 
     if dis_orig_msg is not None:
-        return await embed_message(
+        c, e, es = await embed_message(
             bot,
             dis_orig_msg,
             starboard.guild_id,
@@ -76,6 +76,9 @@ async def get_sbmsg_content(
             frozen,
             forced,
         )
+        if starboard.extra_embeds:
+            return c, e, es
+        return c, e, []
 
     return (
         get_raw_message_text(
