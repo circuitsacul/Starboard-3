@@ -38,8 +38,6 @@ class User(apgorm.Model):
     id = types.Numeric().field().with_converter(DecimalC)
 
     is_bot = types.Boolean().field()
-    locale = types.VarChar(16).field(default="en_US")
-    public = types.Boolean().field(default=True)
     votes = types.Int().field(default=0)
     credits = types.Int().field(default=0)
     total_donated = types.Money().field(default="$0")

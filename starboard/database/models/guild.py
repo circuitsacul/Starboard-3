@@ -37,10 +37,6 @@ class Guild(apgorm.Model):
     log_channel_id = (
         types.Numeric().nullablefield().with_converter(NullDecimalC)
     )
-    lvl_channel_id = (
-        types.Numeric().nullablefield().with_converter(NullDecimalC)
-    )
-    ping_on_lvlup = types.Boolean().field(default=False)
 
     premium_end = types.Timestamp().nullablefield()
 

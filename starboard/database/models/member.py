@@ -32,10 +32,8 @@ class Member(apgorm.Model):
     user_id = types.Numeric().field().with_converter(DecimalC)
     guild_id = types.Numeric().field().with_converter(DecimalC)
 
-    stars_given = types.Int().field(default=0)
-    stars_received = types.Int().field(default=0)
     xp = types.Int().field(default=0)
-    level = types.SmallInt().field(default=0)
+    xp_given = types.Int().field(default=0)
 
     autoredeem_enabled = types.Boolean().field(default=False)
 
