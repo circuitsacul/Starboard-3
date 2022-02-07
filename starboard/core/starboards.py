@@ -24,7 +24,7 @@ from __future__ import annotations
 
 import asyncio
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Awaitable
+from typing import TYPE_CHECKING, Awaitable, Sequence
 
 import hikari
 from apgorm import sql
@@ -40,7 +40,7 @@ if TYPE_CHECKING:
 async def refresh_message(
     bot: Bot,
     orig_message: Message,
-    sbids: list[int] | None = None,
+    sbids: Sequence[int] | None = None,
     force: bool = False,
     _nest: int = 0,
 ) -> None:
@@ -59,7 +59,7 @@ async def refresh_message(
 
 
 async def _refresh_message(
-    bot: Bot, orig_message: Message, sbids: list[int] | None, force: bool
+    bot: Bot, orig_message: Message, sbids: Sequence[int] | None, force: bool
 ) -> None:
     if sbids:
         starboards = (

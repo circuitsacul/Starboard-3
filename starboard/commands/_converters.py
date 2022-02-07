@@ -94,15 +94,25 @@ MSG_LINK = re.compile(
 )
 
 
+def msg_ch_id(text: str) -> tuple[int, int]:
+    if (m := MSG_LINK.match(text)) is not None:
+        return int(m["message_id"]), int(m["channel_id"])
+    if (m := QUICK_ID.match(text)) is not None:
+        return int(m["message_id"]), int(m["channel_id"])
+
+    raise ConverterErr(f"`{text}` is not a valid message link.")
+
+
 def message_id(text: str) -> int:
     try:
         return int(text)
     except ValueError:
         pass
-    if (m := MSG_LINK.match(text)) is not None:
-        return int(m["message_id"])
-    if (m := QUICK_ID.match(text)) is not None:
-        return int(m["message_id"])
+
+    try:
+        return msg_ch_id(text)[0]
+    except ConverterErr:
+        pass
 
     raise ConverterErr(f"`{text}` is not a valid message link or id.")
 
