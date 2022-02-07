@@ -30,8 +30,8 @@ from hikari import Permissions
 
 from starboard.core.messages import get_orig_message
 from starboard.core.starboards import refresh_message
+from starboard.database import Starboard, goc_message
 from starboard.exceptions import CommandErr, StarboardNotFound
-from starboard.database import goc_message, Starboard
 
 from ._checks import has_guild_perms
 from ._converters import db_orig_message, msg_ch_id
