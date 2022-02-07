@@ -173,8 +173,7 @@ async def trash_message(
     if msg is None:
         assert ctx.guild_id
         channel = await bot.cache.gof_guild_channel_wnsfw(message.channel_id)
-        if not channel:
-            raise CommandErr("Something went wrong.")
+        assert channel
         assert channel.is_nsfw is not None
         msg = await goc_message(
             ctx.guild_id,
