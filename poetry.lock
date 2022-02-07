@@ -255,8 +255,8 @@ speedups = ["aiodns (>=3.0,<4.0)", "cchardet (>=2.1,<3.0)", "Brotli (>=1.0,<2.0)
 
 [[package]]
 name = "hikari-clusters"
-version = "0.1.1.post2"
-description = "Tool for clustering with hikari."
+version = "0.2.1"
+description = "An advanced yet easy-to-use clustering tool for Hikari."
 category = "main"
 optional = false
 python-versions = ">=3.8.0,<3.11"
@@ -592,7 +592,7 @@ multidict = ">=4.0"
 [metadata]
 lock-version = "1.1"
 python-versions = ">=3.9,<3.11"
-content-hash = "edfba62ee494f7e43c2c75b5ca973f37eb83f0e5926e2a1870bda968a9230f5b"
+content-hash = "fb2589c87a3dedec81da8fc1bbc7313661a6e76511a48be4412c57c59a571719"
 
 [metadata.files]
 aiohttp = [
@@ -890,8 +890,8 @@ hikari = [
     {file = "hikari-2.0.0.dev106.tar.gz", hash = "sha256:e04a02f2e0b13cd60ec78e16a024f8d2f8f04636689b7c806140a1a639bf7f8f"},
 ]
 hikari-clusters = [
-    {file = "hikari-clusters-0.1.1.post2.tar.gz", hash = "sha256:1898d96f2f8b9cbe6369f153f2fb1df3e2c3c4ba03f4a3ba9fc1b0f2a16841ca"},
-    {file = "hikari_clusters-0.1.1.post2-py3-none-any.whl", hash = "sha256:7cc71518f46fc2aa1a910f3030e294a9cdbf7950b861e9953c3749cfc056099f"},
+    {file = "hikari-clusters-0.2.1.tar.gz", hash = "sha256:dc4e7827c62e368c1155dd2eba3889a2b67609186cf6116b3ce64f84877ff00d"},
+    {file = "hikari_clusters-0.2.1-py3-none-any.whl", hash = "sha256:c471a3b3830b517b8551231c9367f23e78bfacbc8c439a143aaa3050d9a6e535"},
 ]
 hikari-crescent = [
     {file = "hikari-crescent-0.1.0b2.tar.gz", hash = "sha256:f7a883c58555bca0d53defd091176e18fafe848ad729bb0a90e5e5195c0847da"},

@@ -59,13 +59,28 @@ class Eval:
 
 @plugin.include
 @owner.child
-@crescent.command(name="restart", description="Restart all clusters")
-async def restart_clusters(ctx: crescent.Context) -> None:
+@crescent.command(name="reconnect", description="Reconnect all clusters")
+async def reconnect_clusters(ctx: crescent.Context) -> None:
     bot = cast("Bot", ctx.app)
-    await ctx.respond("Restarting all clusters...", ephemeral=True)
+    await ctx.respond("Reconnecting all clusters...", ephemeral=True)
     await asyncio.sleep(1)
-    await bot.cluster.ipc.send_command(
+    await bot.cluster.ipc.send_event(
         bot.cluster.ipc.cluster_uids, "cluster_stop"
+    )
+
+
+@plugin.include
+@owner.child
+@crescent.command(name="restart", description="Restart the bot")
+async def restart_bot(ctx: crescent.Context) -> None:
+    bot = cast("Bot", ctx.app)
+    if not bot.cluster.ipc.brain_uid:
+        await ctx.respond("Brain UID is undefined...", ephemeral=True)
+        return
+    await ctx.respond("Restarting bot...", ephemeral=True)
+    await asyncio.sleep(1)
+    await bot.cluster.ipc.send_event(
+        [bot.cluster.ipc.brain_uid], "shutdown"
     )
 
 
