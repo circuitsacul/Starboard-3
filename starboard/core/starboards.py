@@ -87,10 +87,10 @@ async def _handle_trashed_message(bot: Bot, orig_message: Message) -> None:
             sb,
             sbmsg_obj,
             content=None,
-            embed=hikari.Embed(
+            embeds=[hikari.Embed(
                 title="Trashed Message",
                 description="This message was trashed by a moderator.",
-            ),
+            )],
         )
 
     await asyncio.sleep(10)
@@ -159,11 +159,11 @@ async def _refresh_message_for_starboard(
 
     if action.add and sbmsg_obj is None:
         if orig_msg_obj:
-            content, embed = await get_sbmsg_content(
+            content, embed, embeds = await get_sbmsg_content(
                 bot, starboard, orig_msg_obj, orig_msg, starcount
             )
             assert embed
-            sbmsg_obj = await _send(bot, starboard, content, embed)
+            sbmsg_obj = await _send(bot, starboard, content, [embed, *embeds])
             if sbmsg_obj:
                 sbmsg.sb_message_id = sbmsg_obj.id
                 await sbmsg.save()
@@ -196,16 +196,18 @@ async def _refresh_message_for_starboard(
         # edit the message
 
         if orig_msg_obj:
-            content, embed = await get_sbmsg_content(
+            content, embed, embeds = await get_sbmsg_content(
                 bot, starboard, orig_msg_obj, orig_msg, starcount
             )
             assert embed
             if starboard.link_edits:
-                await _edit(bot, starboard, sbmsg_obj, content, embed)
+                await _edit(
+                    bot, starboard, sbmsg_obj, content, [embed, *embeds]
+                )
             else:
                 await _edit(bot, starboard, sbmsg_obj, content, None)
         else:
-            content, _ = await get_sbmsg_content(
+            content, _, _ = await get_sbmsg_content(
                 bot, starboard, None, orig_msg, starcount
             )
             await _edit(bot, starboard, sbmsg_obj, content, None)
@@ -224,7 +226,7 @@ async def _edit(
     starboard: Starboard,
     message: hikari.Message,
     content: str | None,
-    embed: hikari.Embed | None,
+    embeds: list[hikari.Embed] | None,
 ) -> None:
     if message.author.id != bot.me.id:
         wh = await _webhook(bot, starboard, False)
@@ -234,13 +236,13 @@ async def _edit(
         await wh.edit_message(
             message,
             content=content or hikari.UNDEFINED,
-            embed=embed or hikari.UNDEFINED,
+            embeds=embeds or hikari.UNDEFINED,
         )
 
     else:
         await message.edit(
             content=content or hikari.UNDEFINED,
-            embed=embed or hikari.UNDEFINED,
+            embeds=embeds or hikari.UNDEFINED,
         )
 
 
@@ -264,7 +266,10 @@ async def _delete(
 
 
 async def _send(
-    bot: Bot, starboard: Starboard, content: str, embed: hikari.Embed
+    bot: Bot,
+    starboard: Starboard,
+    content: str,
+    embeds: list[hikari.Embed] | None,
 ) -> hikari.Message | None:
     webhook = await _webhook(bot, starboard)
 
@@ -274,7 +279,7 @@ async def _send(
             assert botuser
             return await webhook.execute(
                 content,
-                embed=embed,
+                embeds=embeds or hikari.UNDEFINED,
                 username=starboard.webhook_name,
                 avatar_url=(
                     starboard.webhook_avatar
@@ -287,7 +292,7 @@ async def _send(
 
     try:
         return await bot.rest.create_message(
-            starboard.id, content, embed=embed
+            starboard.id, content, embeds=embeds or hikari.UNDEFINED
         )
     except (hikari.ForbiddenError, hikari.NotFoundError):
         return None

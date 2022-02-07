@@ -22,7 +22,6 @@
 
 from __future__ import annotations
 
-from textwrap import indent
 from typing import TYPE_CHECKING
 
 import hikari
@@ -72,7 +71,7 @@ async def embed_message(
     point_count: int,
     frozen: bool,
     forced: bool,
-) -> tuple[str, hikari.Embed]:
+) -> tuple[str, hikari.Embed, list[hikari.Embed]]:
     channel = await bot.cache.gof_guild_channel_wnsfw(message.channel_id)
     assert channel is not None
     nsfw = channel.is_nsfw
@@ -113,6 +112,7 @@ async def embed_message(
             forced,
         ),
         embed,
+        _extract_extra_embeds(message),
     )
 
 
@@ -175,43 +175,48 @@ async def _get_gifv(bot: Bot, embed: hikari.Embed) -> str | None:
     return gif_url
 
 
-def _str_embed(embed: hikari.Embed) -> str | None:
-    content = ""
-    if embed.title:
-        content += (
-            f"**__{embed.title}__**\n"
-            if not embed.url
-            else f"**__[{embed.title}]({embed.url})__**\n"
-        )
-    if embed.description:
-        content += embed.description + "\n"
-
-    if not _is_rich(embed):
-        return None
-
-    if embed.image:
-        content += f"[Embed Image]({embed.image.url})\n"
-    if embed.thumbnail:
-        content += f"[Embed Thumbnail]({embed.thumbnail.url})\n"
-
-    content += "\n".join(
-        [f"**{field.name}**\n{field.value}" for field in embed.fields]
-    )
-
-    return indent(content, "> ")
-
-
 def _extract_main_content(message: hikari.Message) -> str | None:
-    raw_content = message.content or ""
-
-    for e in message.embeds:
-        _se = _str_embed(e)
-        if _se:
-            raw_content += "\n\n" + _se
-
-    if raw_content:
-        return truncate(raw_content, EMBED_DESC_LEN)
+    if message.content:
+        return truncate(message.content, EMBED_DESC_LEN)
     return None
+
+
+def _extract_extra_embeds(message: hikari.Message) -> list[hikari.Embed]:
+    embeds: list[hikari.Embed] = []
+    for e in message.embeds:
+        if not _is_rich(e):
+            continue
+        new_em = hikari.Embed(
+            title=e.title,
+            description=e.description,
+            url=e.url,
+            color=e.color,
+            timestamp=e.timestamp,
+        )
+        for f in e.fields:
+            new_em.add_field(
+                name=f.name,
+                value=f.value,
+                inline=f.is_inline,
+            )
+        if e.author:
+            new_em.set_author(
+                name=e.author.name,
+                url=e.author.url,
+                icon=e.author.icon,
+            )
+        if e.footer:
+            new_em.set_footer(
+                text=e.footer.text,
+                icon=e.footer.icon
+            )
+        if e.image:
+            new_em.set_image(e.image)
+        if e.thumbnail:
+            new_em.set_thumbnail(e.thumbnail)
+        embeds.append(new_em)
+
+    return embeds
 
 
 def _extract_file_str(message: hikari.Message) -> str | None:
@@ -233,7 +238,7 @@ async def _extract_images(bot: Bot, message: hikari.Message) -> list[str]:
         gif_url = await _get_gifv(bot, embed)
         if gif_url is not None:
             urls.append(gif_url)
-        else:
+        elif not _is_rich(embed):
             if embed.image:
                 urls.append(embed.image.url)
             if embed.thumbnail:

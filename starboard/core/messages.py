@@ -52,7 +52,7 @@ async def get_sbmsg_content(
     dis_orig_msg: hikari.Message | None,
     sql_orig_msg: Message,
     starcount: int,
-) -> tuple[str, hikari.Embed | None]:
+) -> tuple[str, hikari.Embed | None, list[hikari.Embed]]:
     def _display_emoji() -> hikari.UnicodeEmoji | hikari.CustomEmoji | None:
         return (
             stored_to_emoji(starboard.display_emoji, bot)
@@ -88,4 +88,5 @@ async def get_sbmsg_content(
             forced,
         ),
         None,
+        [],
     )
