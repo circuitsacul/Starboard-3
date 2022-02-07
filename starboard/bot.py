@@ -125,11 +125,10 @@ class Bot(crescent.Bot):
         )
 
         lcls: dict[str, Any] = {}
-        exec(code, glbls, lcls)
-
         f = StringIO()
         with redirect_stdout(f):
             try:
+                exec(code, glbls, lcls)
                 result = await lcls["result"]
             except Exception:
                 return "```py\n" + traceback.format_exc() + "\n```", None

@@ -23,19 +23,16 @@
 from __future__ import annotations
 
 from textwrap import indent
-from typing import TYPE_CHECKING, Callable
+from typing import TYPE_CHECKING
 
 import hikari
 
 from starboard.core.gifs import get_gif_url
+from starboard.utils import truncate, trunc_list
+from starboard.constants import EMBED_DESC_LEN, EMBED_FIELD_LEN, ZWS
 
 if TYPE_CHECKING:
     from starboard.bot import Bot
-
-
-ZWS = "​"
-EMBED_FIELD_LEN = 1024
-EMBED_DESC_LEN = 4096
 
 
 def get_raw_message_text(
@@ -213,13 +210,13 @@ def _extract_main_content(message: hikari.Message) -> str | None:
             raw_content += "\n\n" + _se
 
     if raw_content:
-        return _truncate(raw_content, EMBED_DESC_LEN)
+        return truncate(raw_content, EMBED_DESC_LEN)
     return None
 
 
 def _extract_file_str(message: hikari.Message) -> str | None:
     files = [f"[{a.filename}]({a.url})\n" for a in message.attachments]
-    files = _trunc_list(files, EMBED_FIELD_LEN)
+    files = trunc_list(files, EMBED_FIELD_LEN)
 
     return "".join(files) or None
 
@@ -243,38 +240,3 @@ async def _extract_images(bot: Bot, message: hikari.Message) -> list[str]:
                 urls.append(embed.thumbnail.url)
 
     return urls
-
-
-def _truncate(text: str, max: int, ddd: str = "...") -> str:
-    if len(text) <= max:
-        return text
-
-    to_remove = len(text) + len(ddd) - max
-    return text[:-to_remove] + ddd
-
-
-def _default_ddd(count: int) -> str:
-    if count == 1:
-        return "\nand 1 other"
-    return f"\nand {count} other"
-
-
-def _trunc_list(
-    texts: list[str], max: int, ddd: Callable[[int], str] = _default_ddd
-) -> list[str]:
-    if sum(len(t) for t in texts) <= max:
-        return texts
-
-    texts = texts.copy()
-    oklist: list[str] = []
-
-    while (
-        texts
-        and sum(len(t) for t in oklist)
-        + len(ddd(len(texts) - 1))
-        + len(texts[0])
-        <= max
-    ):
-        oklist.append(texts.pop(0))
-
-    return oklist + [ddd(len(texts))]

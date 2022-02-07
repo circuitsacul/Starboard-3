@@ -23,9 +23,13 @@
 from __future__ import annotations
 
 import asyncio
+import subprocess
 from typing import TYPE_CHECKING, cast
 
 import crescent
+
+from starboard.utils import truncate
+from starboard.constants import MESSAGE_LEN
 
 from ._checks import owner_only
 
@@ -59,6 +63,26 @@ class Eval:
 
 @plugin.include
 @owner.child
+@crescent.command(name="shell", description="Run a shell command")
+class ShellCommand:
+    command = crescent.option(str, "The command to run")
+
+    async def callback(self, ctx: crescent.Context) -> None:
+        await ctx.defer(True)
+        p = subprocess.Popen(
+            self.command,
+            shell=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+        )
+        out, err = p.communicate()
+        await ctx.respond(
+            "```\n" + truncate((out or err).decode(), MESSAGE_LEN - 8) + "```",
+        )
+
+
+@plugin.include
+@owner.child
 @crescent.command(name="reconnect", description="Reconnect all clusters")
 async def reconnect_clusters(ctx: crescent.Context) -> None:
     bot = cast("Bot", ctx.app)
@@ -79,9 +103,7 @@ async def restart_bot(ctx: crescent.Context) -> None:
         return
     await ctx.respond("Restarting bot...", ephemeral=True)
     await asyncio.sleep(1)
-    await bot.cluster.ipc.send_event(
-        [bot.cluster.ipc.brain_uid], "shutdown"
-    )
+    await bot.cluster.ipc.send_event([bot.cluster.ipc.brain_uid], "shutdown")
 
 
 class Rollback(Exception):
