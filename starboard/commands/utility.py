@@ -369,7 +369,7 @@ async def unforce_message(
 # REFRESHING
 @plugin.include
 @utils.child
-@crescent.command(name="refresh-message", description="Refresh a message")
+@crescent.command(name="refresh", description="Refresh a message")
 class RefreshMessage:
     message_link = crescent.option(str, "The message to refresh")
 
