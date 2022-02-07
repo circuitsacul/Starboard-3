@@ -73,7 +73,7 @@ class Starboard(apgorm.Model):
     link_deletes = types.Boolean().field(default=False)
     link_edits = types.Boolean().field(default=True)
     disable_xp = types.Boolean().field(default=False)
-    allow_explore = types.Boolean().field(default=True)
+    private = types.Boolean().field(default=False)
 
     # validators
     webhook_name.add_validator(str_length("webhook_name", CONFIG.max_whn_len))

@@ -158,7 +158,7 @@ class ViewStarboard:
                     f"link-deletes: {starboard.link_deletes}\n"
                     f"link-edits: {starboard.link_edits}\n"
                     f"disable-xp: {starboard.disable_xp}\n"
-                    f"allow-explore: {starboard.allow_explore}\n"
+                    f"private: {starboard.private}\n"
                 ),
                 inline=True,
             )
@@ -308,10 +308,10 @@ class EditStarboard:
     disable_xp = optiond(
         bool, "Whether to disable XP for a starboard", name="disable-xp"
     )
-    allow_explore = optiond(
+    private = optiond(
         bool,
-        "Whether `random` and `moststarred` can pull from this starboard",
-        name="allow-explore",
+        "Whether to prevent `random` and `moststarred` from using this "
+        "starboard",
     )
 
     async def callback(self, ctx: crescent.Context) -> None:
