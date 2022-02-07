@@ -53,9 +53,49 @@ async def refresh_message(
         )
     bot.refresh_message_lock.add(orig_message.id)
     try:
-        await _refresh_message(bot, orig_message, sbids, force)
+        await orig_message.refetch()
+        if orig_message.trashed:
+            await _handle_trashed_message(bot, orig_message)
+        else:
+            await _refresh_message(bot, orig_message, sbids, force)
     finally:
         bot.refresh_message_lock.remove(orig_message.id)
+
+
+async def _handle_trashed_message(bot: Bot, orig_message: Message) -> None:
+    starboards = {
+        sb.id: sb for sb in
+        await Starboard.fetch_query().where(
+            guild_id=orig_message.guild_id
+        ).fetchmany()
+    }
+    for sid, sb in starboards.items():
+        sbmsg = await SBMessage.exists(
+            message_id=orig_message.id,
+            starboard_id=sid,
+        )
+        if not sbmsg or not sbmsg.sb_message_id:
+            continue
+
+        sbmsg_obj = await bot.cache.gof_message(
+            sbmsg.starboard_id,
+            sbmsg.sb_message_id,
+        )
+        if not sbmsg_obj:
+            continue
+
+        await _edit(
+            bot,
+            sb,
+            sbmsg_obj,
+            content=None,
+            embed=hikari.Embed(
+                title="Trashed Message",
+                description="This message was trashed by a moderator.",
+            )
+        )
+
+    await asyncio.sleep(10)
 
 
 async def _refresh_message(
@@ -324,10 +364,6 @@ def _get_action(
     # check if forced
     if starboard.id in orig_msg.forced_to:
         add_trib = True
-
-    # check trashed
-    if orig_msg.trashed:
-        add_trib = False
 
     # return
     if add_trib is True:
