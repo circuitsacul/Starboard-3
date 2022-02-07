@@ -163,8 +163,8 @@ class UntrashMessage:
 
 @plugin.include
 @manage_messages
-@crescent.message_command(name="Trash Message")
-async def trash_message(
+@crescent.message_command(name="Toggle Trash")
+async def toggle_trashed(
     ctx: crescent.Context, message: hikari.Message
 ) -> None:
     bot = cast("Bot", ctx.app)
@@ -184,28 +184,14 @@ async def trash_message(
             message.author.is_bot,
         )
 
-    msg.trashed = True
-    msg.trash_reason = f"Trashed using message commands by {ctx.user}"
+    msg.trashed = not msg.trashed
+    msg.trash_reason = "Trashed using message command" if msg.trashed else None
     await msg.save()
-    await ctx.respond("Message trashed.", ephemeral=True)
+    await ctx.respond(
+        "Message trashed." if msg.trashed else "Message untrashed.",
+        ephemeral=True,
+    )
     await refresh_message(bot, msg, force=True)
-
-
-@plugin.include
-@manage_messages
-@crescent.message_command(name="Untrash Message")
-async def untrash_message(
-    ctx: crescent.Context, message: hikari.Message
-) -> None:
-    msg = await get_orig_message(message.id)
-    if msg is None or not msg.trashed:
-        raise CommandErr("This message is not trashed.")
-
-    msg.trashed = False
-    msg.trash_reason = None
-    await msg.save()
-    await ctx.respond("Message untrashed.", ephemeral=True)
-    await refresh_message(cast("Bot", ctx.app), msg, force=True)
 
 
 # FORCING
@@ -378,3 +364,32 @@ async def unforce_message(
     await msg.save()
     await ctx.respond("Message unforced from all starboards.", ephemeral=True)
     await refresh_message(bot, msg, force=True)
+
+
+# REFRESHING
+@plugin.include
+@utils.child
+@crescent.command(name="refresh-message", description="Refresh a message")
+class RefreshMessage:
+    message_link = crescent.option(str, "The message to refresh")
+
+    async def callback(self, ctx: crescent.Context) -> None:
+        msg = await db_orig_message(self.message_link)
+        await ctx.respond("Message should update momentarily...", ephemeral=True)
+        if msg:
+            await refresh_message(cast("Bot", ctx.app), msg, force=True)
+
+
+@plugin.include
+@manage_messages
+@crescent.message_command(name="Refresh Message")
+async def refresh_message_cmd(
+    ctx: crescent.Context, message: hikari.Message
+) -> None:
+    bot = cast("Bot", ctx.app)
+    msg = await get_orig_message(message.id)
+
+    await ctx.respond("Message should update momentarily...", ephemeral=True)
+
+    if msg:
+        await refresh_message(bot, msg, force=True)
