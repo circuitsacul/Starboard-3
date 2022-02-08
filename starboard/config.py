@@ -56,6 +56,7 @@ class Config:
     owners: List[int] = field(default_factory=list)
 
     # database
+    db_host: str = "localhost"
     db_name: str = "DATABASE NAME"
     db_user: Optional[str] = None
     db_password: Optional[str] = None

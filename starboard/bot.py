@@ -89,6 +89,7 @@ class Bot(crescent.Bot):
 
     async def start(self, **kwargs) -> None:
         await self.database.connect(
+            host=CONFIG.db_host,
             database=CONFIG.db_name,
             user=CONFIG.db_user,
             password=CONFIG.db_password,
