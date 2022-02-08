@@ -22,48 +22,18 @@
 
 from __future__ import annotations
 
-import apgorm
+from apgorm import Model, types
 
-from .models import (
-    aschannel,
-    guild,
-    member,
-    message,
-    override,
-    posrole,
-    sb_message,
-    star,
-    starboard,
-    user,
-    xprole,
-)
+from ._converters import DecimalC, DecimalArrayC
 
 
-class Database(apgorm.Database):
-    def __init__(self):
-        super().__init__("starboard/database/migrations")
+class Override(Model):
+    id = types.Serial().field()
+    starboard_id = types.Numeric().field().with_converter(DecimalC)
+    channel_ids = (
+        types.Array(types.Numeric()).field().with_converter(DecimalArrayC)
+    )
 
-    async def connect(self, **connect_kwargs) -> None:
-        await super().connect(**connect_kwargs)
-        if self.must_create_migrations():
-            self.create_migrations()
-        if await self.must_apply_migrations():
-            await self.apply_migrations()
+    overrides = types.Json().field(default="{}")
 
-    guilds = guild.Guild
-    users = user.User
-    members = member.Member
-
-    starboards = starboard.Starboard
-    overrides = override.Override
-    aschannels = aschannel.AutoStarChannel
-
-    xproles = xprole.XPRole
-    posroles = posrole.PosRole
-    posrole_members = posrole.PosRoleMember
-
-    messages = message.Message
-    sb_messages = sb_message.SBMessage
-    stars = star.Star
-
-    indexes = [apgorm.Index(sb_messages, sb_messages.sb_message_id)]
+    primary_key = (id,)
