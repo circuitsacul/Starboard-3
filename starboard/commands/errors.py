@@ -37,6 +37,7 @@ plugin = crescent.Plugin("error-handler")
     exceptions.ConverterErr,
     exceptions.CheckErr,
     exceptions.CommandErr,
+    exceptions.BaseErr,
 )
 async def basic_handler(
     exc: exceptions.BaseErr, ctx: crescent.Context, **k

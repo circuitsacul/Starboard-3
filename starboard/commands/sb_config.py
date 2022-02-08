@@ -31,6 +31,7 @@ from starboard.database import Starboard, goc_guild
 from starboard.exceptions import StarboardNotFound
 from starboard.undefined import UNDEF
 from starboard.views import Confirm
+from starboard.core.config import validate_changes
 
 from ._checks import has_guild_perms
 from ._converters import any_emoji_str, convert, hex_color, none_or
@@ -327,6 +328,8 @@ class EditStarboard:
         # conversion
         convert("color", params, hex_color)
         convert("display_emoji", params, none_or(any_emoji_str))
+
+        await validate_changes(**params)
 
         s = await Starboard.exists(id=self.starboard.id)
         if not s:
