@@ -325,7 +325,7 @@ class EditStarboard:
         del params["starboard"]
 
         # conversion
-        convert("color", params, none_or(hex_color))
+        convert("color", params, hex_color)
         convert("display_emoji", params, none_or(any_emoji_str))
 
         s = await Starboard.exists(id=self.starboard.id)

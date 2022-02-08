@@ -40,7 +40,7 @@ class Starboard(apgorm.Model):
     locked = types.Boolean().field(default=False)
 
     # Appearance
-    color = types.Int().nullablefield()
+    color = types.Int().field(default=CONFIG.color)
     display_emoji = types.Text().nullablefield()
     ping_author = types.Boolean().field(default=False)
     use_server_profile = types.Boolean().field(default=True)
