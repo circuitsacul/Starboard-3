@@ -28,7 +28,7 @@ from apgorm import types
 from starboard.config import CONFIG
 
 from ._checks import int_range, str_length, valid_emoji
-from ._converters import DecimalC, NullDecimalC, DecimalArrayC
+from ._converters import DecimalC, NullDecimalC
 from .guild import Guild
 
 
