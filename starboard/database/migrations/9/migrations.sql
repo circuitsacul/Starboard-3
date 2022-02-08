@@ -1,2 +1,0 @@
-UPDATE starboards SET color=16769436;
-ALTER TABLE starboards ALTER COLUMN color SET NOT NULL;
