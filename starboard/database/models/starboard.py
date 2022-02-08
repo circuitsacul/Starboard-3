@@ -37,7 +37,6 @@ class Starboard(apgorm.Model):
     guild_id = types.Numeric().field().with_converter(DecimalC)
 
     webhook_id = types.Numeric().nullablefield().with_converter(NullDecimalC)
-    locked = types.Boolean().field(default=False)
 
     # Appearance
     color = types.Int().field(default=CONFIG.color)
@@ -57,18 +56,8 @@ class Starboard(apgorm.Model):
     allow_bots = types.Boolean().field(default=True)
     images_only = types.Boolean().field(default=False)
 
-    channel_bl = (
-        types.Array(types.Numeric())
-        .field(default_factory=list)
-        .with_converter(DecimalArrayC)
-    )
-    channel_wl = (
-        types.Array(types.Numeric())
-        .field(default_factory=list)
-        .with_converter(DecimalArrayC)
-    )
-
     # Behaviour
+    enabled = types.Boolean().field(default=True)
     autoreact = types.Boolean().field(default=True)
     remove_invalid = types.Boolean().field(default=True)
     link_deletes = types.Boolean().field(default=False)
