@@ -26,8 +26,6 @@ from .models.aschannel import AutoStarChannel
 from .models.guild import Guild
 from .models.member import Member
 from .models.message import Message
-from .models.permgroup import PermGroup
-from .models.permrole import PermRole
 from .models.posrole import PosRole, PosRoleMember
 from .models.sb_message import SBMessage
 from .models.star import Star
@@ -41,8 +39,6 @@ __all__ = (
     "Guild",
     "Member",
     "Message",
-    "PermGroup",
-    "PermRole",
     "PosRole",
     "PosRoleMember",
     "SBMessage",

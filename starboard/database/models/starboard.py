@@ -28,7 +28,7 @@ from apgorm import types
 from starboard.config import CONFIG
 
 from ._checks import int_range, str_length, valid_emoji
-from ._converters import DecimalArrayC, DecimalC, NullDecimalC
+from ._converters import DecimalC, NullDecimalC
 from .guild import Guild
 
 
@@ -56,17 +56,6 @@ class Starboard(apgorm.Model):
     self_star = types.Boolean().field(default=False)
     allow_bots = types.Boolean().field(default=True)
     images_only = types.Boolean().field(default=False)
-
-    channel_bl = (
-        types.Array(types.Numeric())
-        .field(default_factory=list)
-        .with_converter(DecimalArrayC)
-    )
-    channel_wl = (
-        types.Array(types.Numeric())
-        .field(default_factory=list)
-        .with_converter(DecimalArrayC)
-    )
 
     # Behaviour
     autoreact = types.Boolean().field(default=True)

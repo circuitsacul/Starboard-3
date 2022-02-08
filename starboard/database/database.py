@@ -29,8 +29,6 @@ from .models import (
     guild,
     member,
     message,
-    permgroup,
-    permrole,
     posrole,
     sb_message,
     star,
@@ -57,9 +55,6 @@ class Database(apgorm.Database):
 
     starboards = starboard.Starboard
     aschannels = aschannel.AutoStarChannel
-
-    permgroups = permgroup.PermGroup
-    permroles = permrole.PermRole
 
     xproles = xprole.XPRole
     posroles = posrole.PosRole
