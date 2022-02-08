@@ -26,9 +26,9 @@ from typing import TYPE_CHECKING
 
 import hikari
 
-from starboard.core.gifs import get_gif_url
-from starboard.utils import truncate, trunc_list
 from starboard.constants import EMBED_DESC_LEN, EMBED_FIELD_LEN, ZWS
+from starboard.core.gifs import get_gif_url
+from starboard.utils import trunc_list, truncate
 
 if TYPE_CHECKING:
     from starboard.bot import Bot
@@ -194,22 +194,13 @@ def _extract_extra_embeds(message: hikari.Message) -> list[hikari.Embed]:
             timestamp=e.timestamp,
         )
         for f in e.fields:
-            new_em.add_field(
-                name=f.name,
-                value=f.value,
-                inline=f.is_inline,
-            )
+            new_em.add_field(name=f.name, value=f.value, inline=f.is_inline)
         if e.author:
             new_em.set_author(
-                name=e.author.name,
-                url=e.author.url,
-                icon=e.author.icon,
+                name=e.author.name, url=e.author.url, icon=e.author.icon
             )
         if e.footer:
-            new_em.set_footer(
-                text=e.footer.text,
-                icon=e.footer.icon
-            )
+            new_em.set_footer(text=e.footer.text, icon=e.footer.icon)
         if e.image:
             new_em.set_image(e.image)
         if e.thumbnail:

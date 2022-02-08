@@ -87,10 +87,12 @@ async def _handle_trashed_message(bot: Bot, orig_message: Message) -> None:
             sb,
             sbmsg_obj,
             content=None,
-            embeds=[hikari.Embed(
-                title="Trashed Message",
-                description="This message was trashed by a moderator.",
-            )],
+            embeds=[
+                hikari.Embed(
+                    title="Trashed Message",
+                    description="This message was trashed by a moderator.",
+                )
+            ],
         )
 
     await asyncio.sleep(10)

@@ -28,8 +28,8 @@ from typing import TYPE_CHECKING, cast
 
 import crescent
 
-from starboard.utils import truncate
 from starboard.constants import MESSAGE_LEN
+from starboard.utils import truncate
 
 from ._checks import owner_only
 
@@ -77,7 +77,7 @@ class ShellCommand:
         )
         out, err = p.communicate()
         await ctx.respond(
-            "```\n" + truncate((out or err).decode(), MESSAGE_LEN - 8) + "```",
+            "```\n" + truncate((out or err).decode(), MESSAGE_LEN - 8) + "```"
         )
 
 
