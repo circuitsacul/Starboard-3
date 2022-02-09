@@ -156,5 +156,6 @@ async def _get_starboards_for_emoji(
         await Starboard.fetch_query()
         .where(guild_id=guild_id)
         .where(apgorm.sql(emoji_str).eq(Starboard.star_emojis.any))
+        .where(Starboard.enabled.is_true)
         .fetchmany()
     )

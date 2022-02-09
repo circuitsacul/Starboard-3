@@ -161,6 +161,7 @@ class ViewStarboard:
                     f"link-edits: {starboard.link_edits}\n"
                     f"disable-xp: {starboard.disable_xp}\n"
                     f"private: {starboard.private}\n"
+                    f"enabled: {starboard.enabled}\n"
                 ),
                 inline=True,
             )
@@ -320,6 +321,7 @@ class EditStarboard:
         "Whether to add extra embeds below the main message content",
         name="extra-embeds",
     )
+    enabled = optiond(bool, "Whether the starboard is enabled")
 
     async def callback(self, ctx: crescent.Context) -> None:
         params = self.__dict__.copy()

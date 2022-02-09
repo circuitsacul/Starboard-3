@@ -34,9 +34,6 @@ async def is_star_valid_for(
     author: User,
     star_adder: hikari.Member,
 ) -> bool:
-    if not starboard.enabled:
-        return False
-
     if (not starboard.self_star) and star_adder.id == orig_message.author_id:
         return False
 
