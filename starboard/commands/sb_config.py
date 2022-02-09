@@ -329,6 +329,10 @@ class EditStarboard:
         convert("color", params, hex_color)
         convert("display_emoji", params, none_or(any_emoji_str))
 
+        for k, v in list(params.items()):
+            if v is UNDEF.UNDEF:
+                del params[k]
+
         await validate_changes(**params)
 
         s = await Starboard.exists(id=self.starboard.id)
@@ -336,8 +340,6 @@ class EditStarboard:
             raise StarboardNotFound(self.starboard.id)
 
         for k, v in params.items():
-            if v is UNDEF.UNDEF:
-                continue
             setattr(s, k, v)
 
         await s.save()

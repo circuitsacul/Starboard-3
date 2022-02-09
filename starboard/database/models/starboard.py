@@ -39,7 +39,7 @@ class Starboard(apgorm.Model):
 
     # Appearance
     color = types.Int().field(default=CONFIG.color)
-    display_emoji = types.Text().nullablefield()
+    display_emoji = types.Text().nullablefield(default="⭐")
     ping_author = types.Boolean().field(default=False)
     use_server_profile = types.Boolean().field(default=True)
     extra_embeds = types.Boolean().field(default=True)
@@ -50,7 +50,9 @@ class Starboard(apgorm.Model):
     # Requirements
     required = types.SmallInt().field(default=3)
     required_remove = types.SmallInt().field(default=0)
-    star_emojis = types.Array(types.Text()).field(default_factory=list)
+    star_emojis = types.Array(types.Text()).field(
+        default_factory=lambda: list(["⭐"])
+    )
     self_star = types.Boolean().field(default=False)
     allow_bots = types.Boolean().field(default=True)
     images_only = types.Boolean().field(default=False)
