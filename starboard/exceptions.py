@@ -23,25 +23,25 @@
 from __future__ import annotations
 
 
-class BaseErr(Exception):
+class StarboardErr(Exception):
     def __init__(self, msg: str) -> None:
         self.msg = msg
         super().__init__(msg)
 
 
-class StarboardNotFound(BaseErr):
+class StarboardNotFound(StarboardErr):
     def __init__(self, channel_id: int) -> None:
         self.channel_id = channel_id
         super().__init__(f"<#{channel_id}> is not a starboard.")
 
 
-class OverrideNotFound(BaseErr):
+class OverrideNotFound(StarboardErr):
     def __init__(self, name: str) -> None:
         self.name = name
         super().__init__(f"No override with the name '{name}' exists.")
 
 
-class MessageNotFound(BaseErr):
+class MessageNotFound(StarboardErr):
     def __init__(self, mid: int) -> None:
         self.mid = mid
         super().__init__(
@@ -49,15 +49,3 @@ class MessageNotFound(BaseErr):
             "Either the id is invalid, or this message just hasn't received "
             "any stars yet."
         )
-
-
-class CommandErr(BaseErr):
-    pass
-
-
-class ConverterErr(BaseErr):
-    pass
-
-
-class CheckErr(BaseErr):
-    pass

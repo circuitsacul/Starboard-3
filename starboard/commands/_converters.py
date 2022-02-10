@@ -28,7 +28,7 @@ from typing import TYPE_CHECKING, Any, Callable, TypeVar
 import hikari
 
 from starboard.core.messages import get_orig_message
-from starboard.exceptions import ConverterErr, MessageNotFound
+from starboard.exceptions import MessageNotFound, StarboardErr
 from starboard.undefined import UNDEF
 
 if TYPE_CHECKING:
@@ -55,7 +55,7 @@ def hex_color(text: str) -> int:
     try:
         return int(text.replace("#", ""), base=16)
     except ValueError:
-        raise ConverterErr(f"'{text}' is not a valid hex color.")
+        raise StarboardErr(f"'{text}' is not a valid hex color.")
 
 
 CH_MENTION = re.compile(r"<#(?P<id>[0-9]+)+>")
@@ -100,7 +100,7 @@ def msg_ch_id(text: str) -> tuple[int, int]:
     if (m := QUICK_ID.match(text)) is not None:
         return int(m["message_id"]), int(m["channel_id"])
 
-    raise ConverterErr(f"`{text}` is not a valid message link.")
+    raise StarboardErr(f"`{text}` is not a valid message link.")
 
 
 def message_id(text: str) -> int:
@@ -111,10 +111,10 @@ def message_id(text: str) -> int:
 
     try:
         return msg_ch_id(text)[0]
-    except ConverterErr:
+    except StarboardErr:
         pass
 
-    raise ConverterErr(f"`{text}` is not a valid message link or id.")
+    raise StarboardErr(f"`{text}` is not a valid message link or id.")
 
 
 async def orig_msg_from_link(text: str) -> Message:

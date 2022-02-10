@@ -30,7 +30,7 @@ from apgorm.exceptions import ModelNotFound
 
 from starboard.config import CONFIG
 from starboard.database import Override
-from starboard.exceptions import BaseErr
+from starboard.exceptions import StarboardErr
 
 if TYPE_CHECKING:
     from starboard.database import Starboard
@@ -93,26 +93,26 @@ async def fetch_override(sb: int, ch: int) -> Override | None:
 
 async def validate_changes(**changes: Any) -> None:
     if (v := changes.get("webhook_name")) and len(v) > CONFIG.max_whn_len:
-        raise BaseErr(
+        raise StarboardErr(
             f"`webhook-name` cannot be longer than {CONFIG.max_wha_len} "
             "characters."
         )
     if (v := changes.get("webhook_avatar")) and len(v) > CONFIG.max_wha_len:
-        raise BaseErr(
+        raise StarboardErr(
             f"`webhook-avatar` cannot be longer than {CONFIG.max_wha_len} "
             "characters."
         )
     if (v := changes.get("required")) and (
         v > CONFIG.max_required or v < CONFIG.min_required
     ):
-        raise BaseErr(
+        raise StarboardErr(
             f"`required` must be at least {CONFIG.min_required} and at most "
             f"{CONFIG.max_required}."
         )
     if (v := changes.get("required_remove")) and (
         v > CONFIG.max_required_remove or v < CONFIG.min_required_remove
     ):
-        raise BaseErr(
+        raise StarboardErr(
             f"`required-remove` must be at least {CONFIG.min_required_remove} "
             f"and at most {CONFIG.max_required_remove}."
         )
@@ -127,4 +127,4 @@ def _validate_emoji(value: str) -> None:
     if emoji.is_emoji(value):  # type: ignore
         return
 
-    raise BaseErr(f"{value} is not a valid emoji.")
+    raise StarboardErr(f"{value} is not a valid emoji.")

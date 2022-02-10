@@ -9,9 +9,8 @@ import hikari
 from starboard.core.config import StarboardConfig, validate_changes
 from starboard.database import Override, Starboard
 from starboard.exceptions import (
-    BaseErr,
-    CommandErr,
     OverrideNotFound,
+    StarboardErr,
     StarboardNotFound,
 )
 
@@ -133,7 +132,7 @@ class CreateOverride:
         try:
             await o.create()
         except asyncpg.UniqueViolationError:
-            raise CommandErr(
+            raise StarboardErr(
                 f"There is already an override with the name '{self.name}'."
             )
         except asyncpg.ForeignKeyViolationError:
@@ -231,7 +230,7 @@ class RenameOverride:
         try:
             await ov.save()
         except asyncpg.UniqueViolationError:
-            raise BaseErr(
+            raise StarboardErr(
                 f"There is already an override with the name '{self.new}'."
             )
         await ctx.respond(

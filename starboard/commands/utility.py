@@ -31,7 +31,7 @@ from hikari import Permissions
 from starboard.core.messages import get_orig_message
 from starboard.core.starboards import refresh_message
 from starboard.database import Starboard, goc_message
-from starboard.exceptions import CommandErr, StarboardNotFound
+from starboard.exceptions import StarboardErr, StarboardNotFound
 
 from ._checks import has_guild_perms
 from ._converters import msg_ch_id, orig_msg_from_link
@@ -62,7 +62,7 @@ class FreezeMessage:
         msg = await orig_msg_from_link(self.message_link)
 
         if msg.frozen:
-            raise CommandErr("That message is already frozen.")
+            raise StarboardErr("That message is already frozen.")
 
         msg.frozen = True
         await msg.save()
@@ -82,7 +82,7 @@ class UnfreezeMessage:
         msg = await orig_msg_from_link(self.message_link)
 
         if not msg.frozen:
-            raise CommandErr("That message is not frozen.")
+            raise StarboardErr("That message is not frozen.")
 
         msg.frozen = False
         await msg.save()
@@ -98,7 +98,7 @@ async def toggle_freeze(
 ) -> None:
     msg = await get_orig_message(message.id)
     if not msg:
-        raise CommandErr("That message does not exist in my database.")
+        raise StarboardErr("That message does not exist in my database.")
 
     msg.frozen = not msg.frozen
     await msg.save()
@@ -128,7 +128,7 @@ class TrashMessage:
         msg = await orig_msg_from_link(self.message_link)
 
         if msg.trashed:
-            raise CommandErr("That message is already trashed.")
+            raise StarboardErr("That message is already trashed.")
 
         msg.trashed = True
         msg.trash_reason = self.reason
@@ -152,7 +152,7 @@ class UntrashMessage:
         msg = await orig_msg_from_link(self.message_link)
 
         if not msg.trashed:
-            raise CommandErr("That message is not trashed.")
+            raise StarboardErr("That message is not trashed.")
 
         msg.trashed = False
         msg.trash_reason = None
@@ -218,7 +218,7 @@ class ForceMessage:
         if not msg:
             obj = await bot.cache.gof_message(chid, msgid)
             if not obj:
-                raise CommandErr("I couldn't find that message.")
+                raise StarboardErr("I couldn't find that message.")
 
             channel = await bot.cache.gof_guild_channel_wnsfw(obj.channel_id)
             assert channel
@@ -247,7 +247,7 @@ class ForceMessage:
                 .fetchmany()
             ]
             if not sbids:
-                raise CommandErr(
+                raise StarboardErr(
                     "This server has no starboards, so you can't force this "
                     "message."
                 )
@@ -279,12 +279,12 @@ class UnforceMessage:
     async def callback(self, ctx: crescent.Context) -> None:
         msg = await orig_msg_from_link(self.message_link)
         if not msg.forced_to:
-            raise CommandErr("That message is not forced to any starboards.")
+            raise StarboardErr("That message is not forced to any starboards.")
 
         if self.starboard:
             ft = set(msg.forced_to)
             if self.starboard.id not in ft:
-                raise CommandErr(
+                raise StarboardErr(
                     "That message is not forced to that starboard."
                 )
 
@@ -319,7 +319,7 @@ async def force_message(
         .fetchmany()
     ]
     if not sbids:
-        raise CommandErr(
+        raise StarboardErr(
             "There are no starboards in this server, so you can't force this "
             "message."
         )
@@ -358,7 +358,7 @@ async def unforce_message(
 
     msg = await get_orig_message(message.id)
     if msg is None or not msg.forced_to:
-        raise CommandErr("That message is not forced to any starboards.")
+        raise StarboardErr("That message is not forced to any starboards.")
 
     msg.forced_to = list()
     await msg.save()

@@ -28,19 +28,19 @@ import crescent
 import hikari
 
 from starboard.config import CONFIG
-from starboard.exceptions import CheckErr
+from starboard.exceptions import StarboardErr
 
 
 async def owner_only(ctx: crescent.Context) -> None:
     if ctx.user.id not in CONFIG.owners:
-        raise CheckErr("Only owners can use this command.")
+        raise StarboardErr("Only owners can use this command.")
 
     return None
 
 
 async def guild_only(ctx: crescent.Context) -> None:
     if not ctx.guild_id:
-        raise CheckErr("This command can only be used inside servers.")
+        raise StarboardErr("This command can only be used inside servers.")
 
     return None
 
@@ -57,7 +57,9 @@ def has_guild_perms(
         assert guild is not None
 
         if perms not in member.permissions:
-            raise CheckErr("You don't have permission to use this command.")
+            raise StarboardErr(
+                "You don't have permission to use this command."
+            )
 
         return None
 
