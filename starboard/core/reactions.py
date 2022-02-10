@@ -30,6 +30,7 @@ import hikari
 from starboard.database import Starboard, goc_member, goc_message
 from starboard.database.models.user import User
 
+from .config import get_config
 from .messages import get_orig_message
 from .starboards import refresh_message
 from .stars import add_stars, is_star_valid_for, remove_stars
@@ -76,31 +77,34 @@ async def handle_reaction_add(event: hikari.GuildReactionAddEvent) -> None:
     valid_starboard_ids: list[int] = []
     remove_invalid: bool = True
     for s in starboards:
-        if not s.remove_invalid:
+        c = await get_config(s, orig_msg.channel_id)
+        if not c.remove_invalid:
             remove_invalid = False
-        if await is_star_valid_for(s, orig_msg, author, event.member):
+        if not c.enabled:
+            remove_invalid = False
+            continue
+        if await is_star_valid_for(c, orig_msg, author, event.member):
             valid_starboard_ids.append(s.id)
 
-    if len(valid_starboard_ids) == 0:
-        if remove_invalid:
-            actual_msg = await bot.cache.gof_message(
-                event.channel_id, event.message_id
-            )
-            if actual_msg:
-                try:
-                    if isinstance(event.emoji_name, hikari.UnicodeEmoji):
-                        await actual_msg.remove_reaction(
-                            event.emoji_name, user=event.member
-                        )
-                    elif (
-                        isinstance(event.emoji_name, str)
-                        and event.emoji_id is not None
-                    ):
-                        await actual_msg.remove_reaction(
-                            event.emoji_name, event.emoji_id, user=event.member
-                        )
-                except (hikari.NotFoundError, hikari.ForbiddenError):
-                    pass
+    if len(valid_starboard_ids) == 0 and remove_invalid:
+        actual_msg = await bot.cache.gof_message(
+            event.channel_id, event.message_id
+        )
+        if actual_msg:
+            try:
+                if isinstance(event.emoji_name, hikari.UnicodeEmoji):
+                    await actual_msg.remove_reaction(
+                        event.emoji_name, user=event.member
+                    )
+                elif (
+                    isinstance(event.emoji_name, str)
+                    and event.emoji_id is not None
+                ):
+                    await actual_msg.remove_reaction(
+                        event.emoji_name, event.emoji_id, user=event.member
+                    )
+            except (hikari.NotFoundError, hikari.ForbiddenError):
+                pass
         return
 
     # create a "star" for each starboard
@@ -125,10 +129,15 @@ async def handle_reaction_remove(
         return
     starboards = await _get_starboards_for_emoji(emoji_str, event.guild_id)
 
-    if len(starboards) == 0:
-        return
+    valid_sbids: list[int] = []
+    for s in starboards:
+        c = await get_config(s, orig_msg.channel_id)
+        if not c.enabled:
+            continue
+        valid_sbids.append(s.id)
 
-    valid_sbids = [sb.id for sb in starboards]
+    if not valid_sbids:
+        return
 
     await remove_stars(orig_msg.id, event.user_id, valid_sbids)
 

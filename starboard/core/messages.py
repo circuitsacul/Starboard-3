@@ -26,13 +26,14 @@ from typing import TYPE_CHECKING
 
 import hikari
 
-from starboard.database import Message, SBMessage, Starboard
+from starboard.database import Message, SBMessage
 
 from .embed_message import embed_message, get_raw_message_text
 from .emojis import stored_to_emoji
 
 if TYPE_CHECKING:
     from starboard.bot import Bot
+    from starboard.core.config import StarboardConfig
 
 
 async def get_orig_message(message_id: int) -> Message | None:
@@ -47,35 +48,35 @@ async def get_orig_message(message_id: int) -> Message | None:
 
 async def get_sbmsg_content(
     bot: Bot,
-    starboard: Starboard,
+    config: StarboardConfig,
     dis_orig_msg: hikari.Message | None,
     sql_orig_msg: Message,
     starcount: int,
 ) -> tuple[str, hikari.Embed | None, list[hikari.Embed]]:
     def _display_emoji() -> hikari.UnicodeEmoji | hikari.CustomEmoji | None:
         return (
-            stored_to_emoji(starboard.display_emoji, bot)
-            if starboard.display_emoji is not None
+            stored_to_emoji(config.display_emoji, bot)
+            if config.display_emoji is not None
             else None
         )
 
     frozen = sql_orig_msg.frozen
-    forced = starboard.id in sql_orig_msg.forced_to
+    forced = config.starboard.id in sql_orig_msg.forced_to
 
     if dis_orig_msg is not None:
         c, e, es = await embed_message(
             bot,
             dis_orig_msg,
-            starboard.guild_id,
-            starboard.color,
+            config.starboard.guild_id,
+            config.color,
             _display_emoji(),
-            starboard.use_server_profile,
-            starboard.ping_author,
+            config.use_server_profile,
+            config.ping_author,
             starcount,
             frozen,
             forced,
         )
-        if starboard.extra_embeds:
+        if config.extra_embeds:
             return c, e, es
         return c, e, []
 
@@ -84,7 +85,7 @@ async def get_sbmsg_content(
             sql_orig_msg.channel_id,
             sql_orig_msg.author_id,
             _display_emoji(),
-            starboard.ping_author,
+            config.ping_author,
             starcount,
             frozen,
             forced,

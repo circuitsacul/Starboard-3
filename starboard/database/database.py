@@ -29,6 +29,7 @@ from .models import (
     guild,
     member,
     message,
+    override,
     posrole,
     sb_message,
     star,
@@ -54,6 +55,7 @@ class Database(apgorm.Database):
     members = member.Member
 
     starboards = starboard.Starboard
+    overrides = override.Override
     aschannels = aschannel.AutoStarChannel
 
     xproles = xprole.XPRole

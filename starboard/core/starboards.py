@@ -31,6 +31,7 @@ from apgorm import sql
 
 from starboard.database import Message, SBMessage, Star, Starboard
 
+from .config import StarboardConfig, get_config
 from .messages import get_sbmsg_content
 
 if TYPE_CHECKING:
@@ -70,6 +71,7 @@ async def _handle_trashed_message(bot: Bot, orig_message: Message) -> None:
         .fetchmany()
     }
     for sid, sb in starboards.items():
+        config = await get_config(sb, orig_message.channel_id)
         sbmsg = await SBMessage.exists(
             message_id=orig_message.id, starboard_id=sid
         )
@@ -84,7 +86,7 @@ async def _handle_trashed_message(bot: Bot, orig_message: Message) -> None:
 
         await _edit(
             bot,
-            sb,
+            config,
             sbmsg_obj,
             content=None,
             embeds=[
@@ -102,32 +104,35 @@ async def _refresh_message(
     bot: Bot, orig_message: Message, sbids: Sequence[int] | None, force: bool
 ) -> None:
     if sbids:
-        starboards = (
+        _s = (
             await Starboard.fetch_query()
             .where(Starboard.id.eq(sql(sbids).any))
             .fetchmany()
         )
     else:
-        starboards = (
+        _s = (
             await Starboard.fetch_query()
             .where(guild_id=orig_message.guild_id)
             .fetchmany()
         )
+    configs = [await get_config(s, orig_message.channel_id) for s in _s]
 
     tasks: list[asyncio.Task] = []
-    for sb in starboards:
+    for c in configs:
         t = asyncio.create_task(
-            _refresh_message_for_starboard(bot, orig_message, sb, force)
+            _refresh_message_for_starboard(bot, orig_message, c, force)
         )
         tasks.append(t)
     await asyncio.gather(*tasks)
 
 
 async def _refresh_message_for_starboard(
-    bot: Bot, orig_msg: Message, starboard: Starboard, force: bool
+    bot: Bot, orig_msg: Message, config: StarboardConfig, force: bool
 ) -> None:
     if orig_msg.is_nsfw:
-        sbchannel = await bot.cache.gof_guild_channel_wnsfw(starboard.id)
+        sbchannel = await bot.cache.gof_guild_channel_wnsfw(
+            config.starboard.id
+        )
         if sbchannel is None or sbchannel.is_nsfw is False:
             return
 
@@ -135,11 +140,11 @@ async def _refresh_message_for_starboard(
         orig_msg.channel_id, orig_msg.id
     )
 
-    starcount = await _get_star_count(orig_msg.id, starboard.id)
-    action = _get_action(orig_msg, starboard, starcount, orig_msg_obj is None)
+    starcount = await _get_star_count(orig_msg.id, config.starboard.id)
+    action = _get_action(orig_msg, config, starcount, orig_msg_obj is None)
 
     sbmsg = await SBMessage.exists(
-        message_id=orig_msg.id, starboard_id=starboard.id
+        message_id=orig_msg.id, starboard_id=config.starboard.id
     )
     if (
         sbmsg is not None
@@ -150,7 +155,7 @@ async def _refresh_message_for_starboard(
         return
     if not sbmsg:
         sbmsg = await SBMessage(
-            message_id=orig_msg.id, starboard_id=starboard.id
+            message_id=orig_msg.id, starboard_id=config.starboard.id
         ).create()
     if sbmsg.sb_message_id is not None:
         sbmsg_obj = await bot.cache.gof_message(
@@ -162,15 +167,15 @@ async def _refresh_message_for_starboard(
     if action.add and sbmsg_obj is None:
         if orig_msg_obj:
             content, embed, embeds = await get_sbmsg_content(
-                bot, starboard, orig_msg_obj, orig_msg, starcount
+                bot, config, orig_msg_obj, orig_msg, starcount
             )
             assert embed
-            sbmsg_obj = await _send(bot, starboard, content, [embed, *embeds])
+            sbmsg_obj = await _send(bot, config, content, [embed, *embeds])
             if sbmsg_obj:
                 sbmsg.sb_message_id = sbmsg_obj.id
                 await sbmsg.save()
-                if starboard.autoreact:
-                    for emoji in starboard.star_emojis:
+                if config.autoreact:
+                    for emoji in config.star_emojis:
                         assert emoji
                         _emoji: hikari.UnicodeEmoji | hikari.CustomEmoji
                         try:
@@ -192,27 +197,25 @@ async def _refresh_message_for_starboard(
     elif action.remove:
         if sbmsg_obj is not None:
             sbmsg.sb_message_id = None
-            await _delete(bot, starboard, sbmsg_obj)
+            await _delete(bot, config, sbmsg_obj)
 
     elif sbmsg_obj is not None:
         # edit the message
 
         if orig_msg_obj:
             content, embed, embeds = await get_sbmsg_content(
-                bot, starboard, orig_msg_obj, orig_msg, starcount
+                bot, config, orig_msg_obj, orig_msg, starcount
             )
             assert embed
-            if starboard.link_edits:
-                await _edit(
-                    bot, starboard, sbmsg_obj, content, [embed, *embeds]
-                )
+            if config.link_edits:
+                await _edit(bot, config, sbmsg_obj, content, [embed, *embeds])
             else:
-                await _edit(bot, starboard, sbmsg_obj, content, None)
+                await _edit(bot, config, sbmsg_obj, content, None)
         else:
             content, _, _ = await get_sbmsg_content(
-                bot, starboard, None, orig_msg, starcount
+                bot, config, None, orig_msg, starcount
             )
-            await _edit(bot, starboard, sbmsg_obj, content, None)
+            await _edit(bot, config, sbmsg_obj, content, None)
 
         await asyncio.sleep(10)
 
@@ -225,13 +228,13 @@ async def _refresh_message_for_starboard(
 
 async def _edit(
     bot: Bot,
-    starboard: Starboard,
+    config: StarboardConfig,
     message: hikari.Message,
     content: str | None,
     embeds: list[hikari.Embed] | None,
 ) -> None:
     if message.author.id != bot.me.id:
-        wh = await _webhook(bot, starboard, False)
+        wh = await _webhook(bot, config, False)
         if (not wh) or wh.webhook_id != message.author.id:
             return
 
@@ -249,13 +252,13 @@ async def _edit(
 
 
 async def _delete(
-    bot: Bot, starboard: Starboard, message: hikari.Message
+    bot: Bot, config: StarboardConfig, message: hikari.Message
 ) -> None:
     if message.author.id == bot.me.id:
         return await message.delete()
 
     else:
-        wh = await _webhook(bot, starboard, False)
+        wh = await _webhook(bot, config, False)
         if wh is not None:
             await wh.delete_message(message)
 
@@ -269,22 +272,22 @@ async def _delete(
 
 async def _send(
     bot: Bot,
-    starboard: Starboard,
+    config: StarboardConfig,
     content: str,
     embeds: list[hikari.Embed] | None,
 ) -> hikari.Message | None:
-    webhook = await _webhook(bot, starboard)
+    webhook = await _webhook(bot, config)
 
-    if webhook and starboard.use_webhook:
+    if webhook and config.use_webhook:
         try:
             botuser = bot.get_me()
             assert botuser
             return await webhook.execute(
                 content,
                 embeds=embeds or hikari.UNDEFINED,
-                username=starboard.webhook_name,
+                username=config.webhook_name,
                 avatar_url=(
-                    starboard.webhook_avatar
+                    config.webhook_avatar
                     or botuser.avatar_url
                     or botuser.default_avatar_url
                 ),
@@ -294,22 +297,22 @@ async def _send(
 
     try:
         return await bot.rest.create_message(
-            starboard.id, content, embeds=embeds or hikari.UNDEFINED
+            config.id, content, embeds=embeds or hikari.UNDEFINED
         )
     except (hikari.ForbiddenError, hikari.NotFoundError):
         return None
 
 
 async def _webhook(
-    bot: Bot, starboard: Starboard, allow_create: bool = True
+    bot: Bot, config: StarboardConfig, allow_create: bool = True
 ) -> hikari.ExecutableWebhook | None:
-    create = allow_create and starboard.use_webhook
+    create = allow_create and config.use_webhook
     wh = None
-    if starboard.webhook_id is not None:
-        wh = await bot.cache.gof_webhook(starboard.webhook_id)
+    if config.starboard.webhook_id is not None:
+        wh = await bot.cache.gof_webhook(config.webhook_id)
         if not wh:
-            starboard.webhook_id = None
-            await starboard.save()
+            config.starboard.webhook_id = None
+            await config.starboard.save()
 
     if wh is not None:
         assert isinstance(wh, hikari.ExecutableWebhook)
@@ -320,15 +323,15 @@ async def _webhook(
 
     try:
         wh = await bot.rest.create_webhook(
-            starboard.id,
+            config.starboard.id,
             name="Starboard Webhook",
             reason="This starboard has use_webhook set to True.",
         )
     except (hikari.ForbiddenError, hikari.NotFoundError):
         return None
 
-    starboard.webhook_id = wh.id
-    await starboard.save()
+    config.starboard.webhook_id = wh.id
+    await config.starboard.save()
 
     return wh
 
@@ -348,18 +351,18 @@ class _Actions:
 
 
 def _get_action(
-    orig_msg: Message, starboard: Starboard, points: int, deleted: bool
+    orig_msg: Message, config: StarboardConfig, points: int, deleted: bool
 ) -> _Actions:
     add_trib: bool | None = None
 
     # check points
-    if points >= starboard.required:
+    if points >= config.required:
         add_trib = True
-    elif points <= starboard.required_remove:
+    elif points <= config.required_remove:
         add_trib = False
 
     # check deletion
-    if deleted and starboard.link_deletes:
+    if deleted and config.link_deletes:
         add_trib = False
 
     # check if frozen
@@ -367,7 +370,7 @@ def _get_action(
         add_trib = None
 
     # check if forced
-    if starboard.id in orig_msg.forced_to:
+    if config.id in orig_msg.forced_to:
         add_trib = True
 
     # return

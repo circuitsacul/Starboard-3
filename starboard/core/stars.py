@@ -25,22 +25,21 @@ from __future__ import annotations
 import apgorm
 import hikari
 
-from starboard.database import Message, Star, Starboard, User
+from starboard.database import Message, Star, User
+
+from .config import StarboardConfig
 
 
 async def is_star_valid_for(
-    starboard: Starboard,
+    config: StarboardConfig,
     orig_message: Message,
     author: User,
     star_adder: hikari.Member,
 ) -> bool:
-    if not starboard.enabled:
+    if (not config.self_star) and star_adder.id == orig_message.author_id:
         return False
 
-    if (not starboard.self_star) and star_adder.id == orig_message.author_id:
-        return False
-
-    if author.is_bot and not starboard.allow_bots:
+    if author.is_bot and not config.allow_bots:
         return False
 
     if orig_message.trashed:

@@ -42,20 +42,13 @@ def convert(key: str, dct: dict[str, Any], func: Callable[[Any], Any]) -> None:
         dct[key] = func(v)
 
 
-def any_emoji(text: str) -> hikari.CustomEmoji | hikari.UnicodeEmoji:
+def any_emoji_str(text: str) -> str:
     try:
-        return hikari.CustomEmoji.parse(text)
+        return str(hikari.CustomEmoji.parse(text).id)
     except ValueError:
         pass
 
-    return hikari.UnicodeEmoji.parse(text)
-
-
-def any_emoji_str(text: str) -> str:
-    e = any_emoji(text)
-    if isinstance(e, hikari.CustomEmoji):
-        return str(e.id)
-    return str(e)
+    return str(hikari.UnicodeEmoji.parse(text))
 
 
 def hex_color(text: str) -> int:
@@ -63,6 +56,13 @@ def hex_color(text: str) -> int:
         return int(text.replace("#", ""), base=16)
     except ValueError:
         raise ConverterErr(f"'{text}' is not a valid hex color.")
+
+
+CH_MENTION = re.compile(r"<#(?P<id>[0-9]+)+>")
+
+
+def channel_list(text: str) -> list[int]:
+    return list(int(c["id"]) for c in CH_MENTION.finditer(text))
 
 
 def none_or(
@@ -117,7 +117,7 @@ def message_id(text: str) -> int:
     raise ConverterErr(f"`{text}` is not a valid message link or id.")
 
 
-async def db_orig_message(text: str) -> Message:
+async def orig_msg_from_link(text: str) -> Message:
     mid = message_id(text)
     msg = await get_orig_message(mid)
     if not msg:

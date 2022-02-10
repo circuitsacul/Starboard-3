@@ -22,14 +22,76 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from dataclasses import dataclass
+from typing import TYPE_CHECKING, Any, Iterable
 
 import hikari
 
+from starboard.core.config import StarboardConfig
 from starboard.core.emojis import stored_to_emoji
 
 if TYPE_CHECKING:
     from starboard.bot import Bot
+
+
+@dataclass
+class _PrettyConfig:
+    appearance: str
+    behaviour: str
+    requirements: str
+
+
+def pretty_sb_config(
+    config: StarboardConfig, bot: Bot, bold: Iterable[str] | None = None
+) -> _PrettyConfig:
+    b: set[str] = set(b.replace("_", "-") for b in bold) if bold else set()
+
+    de = pretty_emoji_str(config.display_emoji, bot=bot)
+    wha = (
+        f"[view]({config.webhook_avatar})" if config.webhook_avatar else "none"
+    )
+    appearance = {
+        "color": config.color,
+        "display-emoji": de,
+        "ping-author": config.ping_author,
+        "use-server-profile": config.use_server_profile,
+        "extra-embeds": config.extra_embeds,
+        "use-webhook": config.use_webhook,
+        "webhook-name": config.webhook_name,
+        "webhook-avatar": wha,
+    }
+
+    se = pretty_emoji_str(*config.star_emojis, bot=bot)
+    requirements = {
+        "required": config.required,
+        "required-remove": config.required_remove,
+        "star-emojis": se,
+        "self-star": config.self_star,
+        "allow-bots": config.allow_bots,
+        "images-only": config.images_only,
+    }
+
+    behaviour = {
+        "autoreact": config.autoreact,
+        "remove-invalid": config.remove_invalid,
+        "link-deletes": config.link_deletes,
+        "link-edits": config.link_edits,
+        "disable-xp": config.disable_xp,
+        "private": config.private,
+        "enabled": config.enabled,
+    }
+
+    def gen(dct: dict[str, Any]) -> str:
+        return "\n".join(
+            (f"{k}: {str(v)}" if k not in b else f"**{k}**: {str(v)}")
+            for k, v in dct.items()
+        )
+
+    return _PrettyConfig(
+        appearance=gen(appearance),
+        behaviour=gen(behaviour),
+        requirements=gen(requirements),
+    )
 
 
 def pretty_emoji_str(*emojis: str | None, bot: Bot) -> str:
