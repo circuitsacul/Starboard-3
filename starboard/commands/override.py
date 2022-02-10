@@ -112,6 +112,8 @@ class CreateOverride:
     )
 
     async def callback(self, ctx: crescent.Context) -> None:
+        bot = cast("Bot", ctx.app)
+
         if self.copy_from is not None:
             ov = await Override.exists(
                 guild_id=ctx.guild_id, name=self.copy_from
@@ -126,7 +128,7 @@ class CreateOverride:
             guild_id=ctx.guild_id,
             name=self.name,
             starboard_id=self.starboard.id,
-            channel_ids=channel_list(self.channels),
+            channel_ids=channel_list(self.channels, bot).valid,
             _overrides=ov._overrides if ov else "{}",
         )
         try:
@@ -248,11 +250,12 @@ class SetOverrideChannels:
     channels = crescent.option(str, "The channels to use for the override")
 
     async def callback(self, ctx: crescent.Context) -> None:
+        bot = cast("Bot", ctx.app)
         ov = await Override.exists(guild_id=ctx.guild_id, name=self.name)
         if not ov:
             raise OverrideNotFound(self.name)
 
-        ov.channel_ids = list(set(channel_list(self.channels)))
+        ov.channel_ids = list(channel_list(self.channels, bot).valid)
         await ov.save()
         await ctx.respond(f"Updated the channels for override '{self.name}'.")
 
@@ -267,12 +270,15 @@ class RemoveOverrideChannels:
     channels = crescent.option(str, "The channels to use for the override")
 
     async def callback(self, ctx: crescent.Context) -> None:
+        bot = cast("Bot", ctx.app)
         ov = await Override.exists(guild_id=ctx.guild_id, name=self.name)
         if not ov:
             raise OverrideNotFound(self.name)
 
         ov.channel_ids = list(
-            set(ov.channel_ids).difference(channel_list(self.channels))
+            set(ov.channel_ids).difference(
+                channel_list(self.channels, bot).valid
+            )
         )
         await ov.save()
         await ctx.respond(f"Updated the channels for override '{self.name}'.")
@@ -288,12 +294,13 @@ class AddOverrideChannels:
     channels = crescent.option(str, "The channels to use for the override")
 
     async def callback(self, ctx: crescent.Context) -> None:
+        bot = cast("Bot", ctx.app)
         ov = await Override.exists(guild_id=ctx.guild_id, name=self.name)
         if not ov:
             raise OverrideNotFound(self.name)
 
         ov.channel_ids = list(
-            set(ov.channel_ids).union(channel_list(self.channels))
+            set(ov.channel_ids).union(channel_list(self.channels, bot).valid)
         )
         await ov.save()
         await ctx.respond(f"Updated the channels for override '{self.name}'.")

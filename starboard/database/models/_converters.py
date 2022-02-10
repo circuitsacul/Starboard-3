@@ -22,7 +22,7 @@
 
 from __future__ import annotations
 
-from typing import TypeVar
+from typing import Generic, TypeVar
 
 from decimal import Decimal
 from typing import Sequence
@@ -53,21 +53,22 @@ class DecimalC(apgorm.Converter[Decimal, int]):
 class DecimalArrayC(
     apgorm.Converter["Sequence[Decimal | None]", "Sequence[int]"]
 ):
-    def from_stored(
-        self, value: Sequence[Decimal | None]
-    ) -> Sequence[int]:
+    def from_stored(self, value: Sequence[Decimal | None]) -> Sequence[int]:
         return [int(v) for v in value if v is not None]
 
-    def to_stored(
-        self, value: Sequence[int]
-    ) -> Sequence[Decimal | None]:
+    def to_stored(self, value: Sequence[int]) -> Sequence[Decimal | None]:
         return [Decimal(v) for v in value]
 
 
 _T = TypeVar("_T")
 
 
-class NonNullArray(apgorm.Converter["Sequence[_T | None]", "Sequence[_T]"]):
+class NonNullArray(
+    apgorm.Converter["Sequence[_T | None]", "Sequence[_T]"], Generic[_T]
+):
+    def __init__(self, t: type[_T]) -> None:
+        pass
+
     def from_stored(self, value: Sequence[_T | None]) -> Sequence[_T]:
         return [v for v in value if v is not None]
 

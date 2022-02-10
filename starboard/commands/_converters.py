@@ -21,6 +21,7 @@
 # SOFTWARE.
 
 from __future__ import annotations
+from dataclasses import dataclass
 
 import re
 from typing import TYPE_CHECKING, Any, Callable, TypeVar
@@ -33,6 +34,7 @@ from starboard.undefined import UNDEF
 
 if TYPE_CHECKING:
     from starboard.database import Message
+    from starboard.bot import Bot
 
 _T = TypeVar("_T")
 
@@ -56,13 +58,6 @@ def hex_color(text: str) -> int:
         return int(text.replace("#", ""), base=16)
     except ValueError:
         raise StarboardErr(f"'{text}' is not a valid hex color.")
-
-
-CH_MENTION = re.compile(r"<#(?P<id>[0-9]+)+>")
-
-
-def channel_list(text: str) -> list[int]:
-    return list(int(c["id"]) for c in CH_MENTION.finditer(text))
 
 
 def none_or(
@@ -124,3 +119,32 @@ async def orig_msg_from_link(text: str) -> Message:
         raise MessageNotFound(mid)
 
     return msg
+
+
+@dataclass
+class _ValidChannels:
+    valid: set[int]
+    invalid: set[int]
+
+
+def validate_channels(channels: list[int], bot: Bot) -> _ValidChannels:
+    v: set[int] = set()
+    iv: set[int] = set()
+    for id in channels:
+        if c := bot.cache.get_guild_channel(id):
+            if isinstance(c, hikari.TextableGuildChannel):
+                v.add(id)
+                continue
+
+        iv.add(id)
+
+    return _ValidChannels(v, iv)
+
+
+CH_MENTION = re.compile(r"<#(?P<id>[0-9]+)+>")
+
+
+def channel_list(text: str, bot: Bot) -> _ValidChannels:
+    return validate_channels(
+        list(int(c["id"]) for c in CH_MENTION.finditer(text)), bot
+    )
