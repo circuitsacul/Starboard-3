@@ -185,6 +185,36 @@ class EditOverride(EditStarboardConfig):
 
 @plugin.include
 @overrides.child
+@crescent.command(
+    name="reset", description="Reset specific settings to their defaults"
+)
+class ResetOverrideSettings:
+    name = crescent.option(str, "The name of the override")
+    options = crescent.option(str, "A list of settings to reset")
+
+    async def callback(self, ctx: crescent.Context) -> None:
+        ov = await Override.exists(guild_id=ctx.guild_id, name=self.name)
+        if not ov:
+            raise OverrideNotFound(self.name)
+
+        options = set(
+            o.strip().strip(",").replace("-", "_")
+            for o in self.options.split()
+        )
+        ovd = ov.overrides
+        c = 0
+        for o in options:
+            if o not in ovd:
+                continue
+            c += 1
+            del ovd[o]
+        ov.overrides = ovd
+        await ov.save()
+        await ctx.respond(f"Reset {c} settings for override '{ov.name}'.")
+
+
+@plugin.include
+@overrides.child
 @crescent.command(name="rename", description="Rename an override")
 class RenameOverride:
     orig = crescent.option(
