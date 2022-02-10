@@ -30,9 +30,10 @@ from apgorm.exceptions import ModelNotFound
 
 from starboard.config import CONFIG
 from starboard.exceptions import BaseErr
+from starboard.database import Override
 
 if TYPE_CHECKING:
-    from starboard.database import Override, Starboard
+    from starboard.database import Starboard
 
 
 class StarboardConfig:
@@ -73,6 +74,11 @@ class StarboardConfig:
     link_edits: bool
     disable_xp: bool
     private: bool
+
+
+async def get_config(sb: Starboard, channel_id: int) -> StarboardConfig:
+    ov = await fetch_override(sb.id, channel_id)
+    return StarboardConfig(sb, ov)
 
 
 async def fetch_override(sb: int, ch: int) -> Override | None:
