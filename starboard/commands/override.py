@@ -9,6 +9,7 @@ import hikari
 from starboard.core.config import StarboardConfig, validate_changes
 from starboard.database import Override, Starboard
 from starboard.exceptions import (
+    BaseErr,
     CommandErr,
     OverrideNotFound,
     StarboardNotFound,
@@ -180,3 +181,90 @@ class EditOverride(EditStarboardConfig):
 
         await ov.save()
         await ctx.respond(f"Updated settings for override '{self.name}'.")
+
+
+@plugin.include
+@overrides.child
+@crescent.command(name="rename", description="Rename an override")
+class RenameOverride:
+    orig = crescent.option(
+        str, "The original name of the override", name="original-name"
+    )
+    new = crescent.option(str, "The new name of the override", name="new-name")
+
+    async def callback(self, ctx: crescent.Context) -> None:
+        ov = await Override.exists(guild_id=ctx.guild_id, name=self.orig)
+        if not ov:
+            raise OverrideNotFound(self.orig)
+
+        ov.name = self.new
+        try:
+            await ov.save()
+        except asyncpg.UniqueViolationError:
+            raise BaseErr(
+                f"There is already an override with the name '{self.new}'."
+            )
+        await ctx.respond(
+            f"Renamed the override '{self.orig}' to '{self.new}'."
+        )
+
+
+@plugin.include
+@overrides.child
+@crescent.command(
+    name="set-channels", description="Set the channels for an override"
+)
+class SetOverrideChannels:
+    name = crescent.option(str, "The name of the override")
+    channels = crescent.option(str, "The channels to use for the override")
+
+    async def callback(self, ctx: crescent.Context) -> None:
+        ov = await Override.exists(guild_id=ctx.guild_id, name=self.name)
+        if not ov:
+            raise OverrideNotFound(self.name)
+
+        ov.channel_ids = list(set(channel_list(self.channels)))
+        await ov.save()
+        await ctx.respond(f"Updated the channels for override '{self.name}'.")
+
+
+@plugin.include
+@overrides.child
+@crescent.command(
+    name="remove-channels", description="Removes channels from an override"
+)
+class RemoveOverrideChannels:
+    name = crescent.option(str, "The name of the override")
+    channels = crescent.option(str, "The channels to use for the override")
+
+    async def callback(self, ctx: crescent.Context) -> None:
+        ov = await Override.exists(guild_id=ctx.guild_id, name=self.name)
+        if not ov:
+            raise OverrideNotFound(self.name)
+
+        ov.channel_ids = list(
+            set(ov.channel_ids).difference(channel_list(self.channels))
+        )
+        await ov.save()
+        await ctx.respond(f"Updated the channels for override '{self.name}'.")
+
+
+@plugin.include
+@overrides.child
+@crescent.command(
+    name="add-channels", description="Adds channel to an override"
+)
+class AddOverrideChannels:
+    name = crescent.option(str, "The name of the override")
+    channels = crescent.option(str, "The channels to use for the override")
+
+    async def callback(self, ctx: crescent.Context) -> None:
+        ov = await Override.exists(guild_id=ctx.guild_id, name=self.name)
+        if not ov:
+            raise OverrideNotFound(self.name)
+
+        ov.channel_ids = list(
+            set(ov.channel_ids).union(channel_list(self.channels))
+        )
+        await ov.save()
+        await ctx.respond(f"Updated the channels for override '{self.name}'.")
