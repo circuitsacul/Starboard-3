@@ -32,8 +32,8 @@ from .embed_message import embed_message, get_raw_message_text
 from .emojis import stored_to_emoji
 
 if TYPE_CHECKING:
-    from starboard.core.config import StarboardConfig
     from starboard.bot import Bot
+    from starboard.core.config import StarboardConfig
 
 
 async def get_orig_message(message_id: int) -> Message | None:

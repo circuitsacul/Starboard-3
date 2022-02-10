@@ -29,8 +29,8 @@ from apgorm import sql
 from apgorm.exceptions import ModelNotFound
 
 from starboard.config import CONFIG
-from starboard.exceptions import BaseErr
 from starboard.database import Override
+from starboard.exceptions import BaseErr
 
 if TYPE_CHECKING:
     from starboard.database import Starboard

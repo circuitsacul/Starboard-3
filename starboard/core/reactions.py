@@ -30,10 +30,10 @@ import hikari
 from starboard.database import Starboard, goc_member, goc_message
 from starboard.database.models.user import User
 
+from .config import get_config
 from .messages import get_orig_message
 from .starboards import refresh_message
 from .stars import add_stars, is_star_valid_for, remove_stars
-from .config import get_config
 
 if TYPE_CHECKING:
     from starboard.bot import Bot

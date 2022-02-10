@@ -83,11 +83,7 @@ def pretty_sb_config(
 
     def gen(dct: dict[str, Any]) -> str:
         return "\n".join(
-            (
-                f"{k}: {str(v)}"
-                if k not in b
-                else f"**{k}**: {str(v)}"
-            )
+            (f"{k}: {str(v)}" if k not in b else f"**{k}**: {str(v)}")
             for k, v in dct.items()
         )
 
