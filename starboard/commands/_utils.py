@@ -98,7 +98,7 @@ def pretty_emoji_str(*emojis: str | None, bot: Bot) -> str:
     converted = [
         stored_to_emoji(e, bot)
         for e in emojis
-        if e is not None  # make mypy happy
+        if e is not None
     ]
 
     return (

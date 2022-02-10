@@ -25,7 +25,7 @@ from __future__ import annotations
 import apgorm
 from apgorm import types
 
-from ._converters import DecimalC
+from ._converters import DecimalC, NonNullArray
 from .guild import Guild
 
 
@@ -33,7 +33,9 @@ class AutoStarChannel(apgorm.Model):
     id = types.Numeric().field().with_converter(DecimalC)
     guild_id = types.Numeric().field().with_converter(DecimalC)
 
-    emojis = types.Array(types.Text()).field()
+    emojis = (
+        types.Array(types.Text()).field().with_converter(NonNullArray[str])
+    )
     min_chars = types.SmallInt().field(default=0)
     max_chars = types.SmallInt().nullablefield()
     require_image = types.Boolean().field(default=False)
