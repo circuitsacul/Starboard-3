@@ -23,7 +23,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any, Iterable
 
 import hikari
 
@@ -41,44 +41,60 @@ class _PrettyConfig:
     requirements: str
 
 
-def pretty_sb_config(config: StarboardConfig, bot: Bot) -> _PrettyConfig:
+def pretty_sb_config(
+    config: StarboardConfig, bot: Bot, bold: Iterable[str] | None = None
+) -> _PrettyConfig:
+    b: set[str] = set(b.replace("_", "-") for b in bold) if bold else set()
+
     de = pretty_emoji_str(config.display_emoji, bot=bot)
     wha = (
         f"[view]({config.webhook_avatar})" if config.webhook_avatar else "none"
     )
-    appearance = (
-        f"color: {config.color}\n"
-        f"display-emoji: {de}\n"
-        f"ping-author: {config.ping_author}\n"
-        f"use-server-profile: {config.use_server_profile}\n"
-        f"extra-embeds: {config.extra_embeds}\n"
-        f"use-webhook: {config.use_webhook}\n"
-        f"webhook-name: {config.webhook_name}\n"
-        f"webhook-avatar: {wha}\n"
-    )
+    appearance = {
+        "color": config.color,
+        "display-emoji": de,
+        "ping-author": config.ping_author,
+        "use-server-profile": config.use_server_profile,
+        "extra-embeds": config.extra_embeds,
+        "use-webhook": config.use_webhook,
+        "webhook-name": config.webhook_name,
+        "webhook-avatar": wha,
+    }
 
     se = pretty_emoji_str(*config.star_emojis, bot=bot)
-    requirements = (
-        f"required: {config.required}\n"
-        f"required-remove: {config.required_remove}\n"
-        f"star-emojis: {se}\n"
-        f"self-star: {config.self_star}\n"
-        f"allow-bots: {config.allow_bots}\n"
-        f"images-only: {config.images_only}\n"
-    )
+    requirements = {
+        "required": config.required,
+        "required-remove": config.required_remove,
+        "star-emojis": se,
+        "self-star": config.self_star,
+        "allow-bots": config.allow_bots,
+        "images-only": config.images_only,
+    }
 
-    behaviour = (
-        f"autoreact: {config.autoreact}\n"
-        f"remove-invalid: {config.remove_invalid}\n"
-        f"link-deletes: {config.link_deletes}\n"
-        f"link-edits: {config.link_edits}\n"
-        f"disable-xp: {config.disable_xp}\n"
-        f"private: {config.private}\n"
-        f"enabled: {config.enabled}\n"
-    )
+    behaviour = {
+        "autoreact": config.autoreact,
+        "remove-invalid": config.remove_invalid,
+        "link-deletes": config.link_deletes,
+        "link-edits": config.link_edits,
+        "disable-xp": config.disable_xp,
+        "private": config.private,
+        "enabled": config.enabled,
+    }
+
+    def gen(dct: dict[str, Any]) -> str:
+        return "\n".join(
+            (
+                f"{k}: {str(v)}"
+                if k not in b
+                else f"**{k}**: {str(v)}"
+            )
+            for k, v in dct.items()
+        )
 
     return _PrettyConfig(
-        appearance=appearance, behaviour=behaviour, requirements=requirements
+        appearance=gen(appearance),
+        behaviour=gen(behaviour),
+        requirements=gen(requirements),
     )
 
 

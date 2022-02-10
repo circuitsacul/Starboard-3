@@ -58,7 +58,7 @@ def hex_color(text: str) -> int:
         raise ConverterErr(f"'{text}' is not a valid hex color.")
 
 
-CH_MENTION = re.compile(r"<#(?P<id>[0-9])+>")
+CH_MENTION = re.compile(r"<#(?P<id>[0-9]+)+>")
 
 
 def channel_list(text: str) -> list[int]:

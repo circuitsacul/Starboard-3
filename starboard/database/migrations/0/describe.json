@@ -247,11 +247,6 @@
             "name": "overrides",
             "fields": [
                 {
-                    "name": "id",
-                    "type_": "SERIAL",
-                    "not_null": true
-                },
-                {
                     "name": "guild_id",
                     "type_": "NUMERIC",
                     "not_null": true
@@ -288,15 +283,10 @@
                 }
             ],
             "pk_constraint": {
-                "name": "_overrides_id_primary_key",
-                "raw_sql": "CONSTRAINT _overrides_id_primary_key PRIMARY KEY ( id )"
+                "name": "_overrides_guild_id_name_primary_key",
+                "raw_sql": "CONSTRAINT _overrides_guild_id_name_primary_key PRIMARY KEY ( guild_id , name )"
             },
-            "unique_constraints": [
-                {
-                    "name": "name_unique",
-                    "raw_sql": "CONSTRAINT name_unique UNIQUE ( guild_id , name )"
-                }
-            ],
+            "unique_constraints": [],
             "check_constraints": [],
             "exclude_constraints": []
         },

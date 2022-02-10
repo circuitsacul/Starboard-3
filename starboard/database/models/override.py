@@ -25,7 +25,7 @@ from __future__ import annotations
 import json
 from typing import Any
 
-from apgorm import ForeignKey, Model, Unique, types
+from apgorm import ForeignKey, Model, types
 
 from ._converters import DecimalArrayC, DecimalC
 from .guild import Guild
@@ -33,7 +33,6 @@ from .starboard import Starboard
 
 
 class Override(Model):
-    id = types.Serial().field()
     guild_id = types.Numeric().field().with_converter(DecimalC)
     name = types.VarChar(32).field()
 
@@ -47,12 +46,10 @@ class Override(Model):
 
     _overrides = types.Json().field(default="{}")
 
-    primary_key = (id,)
+    primary_key = (guild_id, name)
 
     guild_fk = ForeignKey(guild_id, Guild.id)
     starboard_fk = ForeignKey(starboard_id, Starboard.id)
-
-    name_unique = Unique(guild_id, name)
 
     @property
     def overrides(self) -> dict[str, Any]:

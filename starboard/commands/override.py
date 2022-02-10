@@ -47,13 +47,13 @@ class ViewSettingOverrides:
             sb = await Starboard.fetch(id=ov.starboard_id)
 
             config = StarboardConfig(sb, ov)
-            options = pretty_sb_config(config, bot)
+            options = pretty_sb_config(config, bot, ov.overrides.keys())
 
             cs = ", ".join(f"<#{c}>" for c in ov.channel_ids)
             embed = bot.embed(
                 title=f"Override {self.name}",
                 description=(
-                    f"These are the settings for <#{sb.id}> for the channels "
+                    f"These are the settings for <#{sb.id}> in the channels "
                     f"{cs}."
                 ),
             )
@@ -67,8 +67,6 @@ class ViewSettingOverrides:
             embed.add_field(
                 name="Behaviour", value=options.behaviour, inline=True
             )
-            s = ", ".join(ov.overrides.keys())
-            embed.add_field(name="Overriden Settings", value=s or "None yet.")
 
             await ctx.respond(embed=embed)
         else:
@@ -82,7 +80,17 @@ class ViewSettingOverrides:
                 )
                 return
 
-            await ctx.respond("- " + "\n".join(o.name for o in ovs))
+            embed = bot.embed(
+                title="Setting Overrides",
+                description="\n".join(
+                    f"{o.name}: **{len(o.overrides)}** overrwritten settings "
+                    f"for <#{o.starboard_id}> in **{len(o.channel_ids)}** "
+                    "channels."
+                    for o in ovs
+                ),
+            )
+
+            await ctx.respond(embed=embed)
 
 
 @plugin.include
