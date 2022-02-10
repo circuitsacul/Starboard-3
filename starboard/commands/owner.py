@@ -128,7 +128,7 @@ class RunSQL:
             async with bot.database.pool.acquire() as con:
                 async with con.transaction():
                     ret = await con.fetchmany(self.sql, [])
-                    result = " - " + "\n".join([repr(d) for d in ret[0:50]])
+                    result = " - " + "\n - ".join([repr(d) for d in ret[0:50]])
                     if self.rollback:
                         raise Rollback
         except Rollback:
