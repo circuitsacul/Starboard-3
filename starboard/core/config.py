@@ -22,15 +22,17 @@
 
 from __future__ import annotations
 
-from typing import Any, TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 import emoji
+from apgorm import sql
+from apgorm.exceptions import ModelNotFound
 
-from starboard.exceptions import BaseErr
 from starboard.config import CONFIG
+from starboard.exceptions import BaseErr
 
 if TYPE_CHECKING:
-    from starboard.database import Starboard, Override
+    from starboard.database import Override, Starboard
 
 
 class StarboardConfig:
@@ -71,6 +73,16 @@ class StarboardConfig:
     link_edits: bool
     disable_xp: bool
     private: bool
+
+
+async def fetch_override(sb: int, ch: int) -> Override | None:
+    q = Override.fetch_query()
+    q.where(starboard_id=sb)
+    q.where(sql(ch).eq(Override.channel_ids.any))
+    try:
+        return await q.fetchone()
+    except ModelNotFound:
+        return None
 
 
 async def validate_changes(**changes: Any) -> None:

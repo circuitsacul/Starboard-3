@@ -22,26 +22,26 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Type, TypeVar, cast
+from typing import TYPE_CHECKING, cast
 
 import crescent
 import hikari
 
+from starboard.core.config import StarboardConfig, validate_changes
 from starboard.database import Starboard, goc_guild
 from starboard.exceptions import StarboardNotFound
-from starboard.undefined import UNDEF
 from starboard.views import Confirm
-from starboard.core.config import validate_changes
 
 from ._checks import has_guild_perms
-from ._converters import any_emoji_str, convert, hex_color, none_or
-from ._utils import pretty_emoji_str
+from ._converters import any_emoji_str
+from ._sb_config import EditStarboardConfig
+from ._utils import pretty_emoji_str, pretty_sb_config
 
 if TYPE_CHECKING:
     from starboard.bot import Bot
 
 
-plugin = crescent.Plugin("starboard-config")
+plugin = crescent.Plugin("starboards")
 
 
 starboards = crescent.Group(
@@ -117,53 +117,16 @@ class ViewStarboard:
                 name = channel.name
             embed = bot.embed(title=name)
 
-            de = pretty_emoji_str(starboard.display_emoji, bot=bot)
-            wha = (
-                f"[view]({starboard.webhook_avatar})"
-                if starboard.webhook_avatar
-                else "none"
-            )
-            embed.add_field(
-                name="Appearance",
-                value=(
-                    f"color: {starboard.color}\n"
-                    f"display-emoji: {de}\n"
-                    f"ping-author: {starboard.ping_author}\n"
-                    f"use-server-profile: {starboard.use_server_profile}\n"
-                    f"extra-embeds: {starboard.extra_embeds}\n"
-                    f"use-webhook: {starboard.use_webhook}\n"
-                    f"webhook-name: {starboard.webhook_name}\n"
-                    f"webhook-avatar: {wha}\n"
-                ),
-                inline=True,
-            )
-
-            se = pretty_emoji_str(*starboard.star_emojis, bot=bot)
-            embed.add_field(
-                name="Requirements",
-                value=(
-                    f"required: {starboard.required}\n"
-                    f"required-remove: {starboard.required_remove}\n"
-                    f"star-emojis: {se}\n"
-                    f"self-star: {starboard.self_star}\n"
-                    f"allow-bots: {starboard.allow_bots}\n"
-                    f"images-only: {starboard.images_only}\n"
-                ),
-                inline=True,
-            )
+            config = pretty_sb_config(StarboardConfig(starboard, None), bot)
 
             embed.add_field(
-                name="Behaviour",
-                value=(
-                    f"autoreact: {starboard.autoreact}\n"
-                    f"remove-invalid: {starboard.remove_invalid}\n"
-                    f"link-deletes: {starboard.link_deletes}\n"
-                    f"link-edits: {starboard.link_edits}\n"
-                    f"disable-xp: {starboard.disable_xp}\n"
-                    f"private: {starboard.private}\n"
-                    f"enabled: {starboard.enabled}\n"
-                ),
-                inline=True,
+                name="Appearance", value=config.appearance, inline=True
+            )
+            embed.add_field(
+                name="Requirements", value=config.requirements, inline=True
+            )
+            embed.add_field(
+                name="Behaviour", value=config.behaviour, inline=True
             )
 
             await ctx.respond(embed=embed)
@@ -171,8 +134,8 @@ class ViewStarboard:
 
 @plugin.include
 @starboards.child
-@crescent.command(name="add", description="Add a starboard")
-class AddStarboard:
+@crescent.command(name="create", description="Add a starboard")
+class CreateStarboard:
     channel = crescent.option(
         hikari.TextableGuildChannel, "Channel to use as starboard"
     )
@@ -226,115 +189,16 @@ class DeleteStarboard:
         await msg.edit(f"Deleted <#{self.starboard.id}>.", components=[])
 
 
-_T = TypeVar("_T")
-
-
-def optiond(type: Type[_T], *args, **kwargs) -> _T | UNDEF:
-    return crescent.option(
-        type, *args, **kwargs, default=UNDEF.UNDEF  # type: ignore
-    )
-
-
 @plugin.include
 @starboards.child
 @crescent.command(name="edit", description="Modify a starboard")
-class EditStarboard:
+class EditStarboard(EditStarboardConfig):
     starboard = crescent.option(
         hikari.TextableGuildChannel, "The starboard to edit"
     )
 
-    color = optiond(str, "The color of the starboard embeds")
-    display_emoji = optiond(
-        str, "The emoji next to the point count", name="display-emoji"
-    )
-    ping_author = optiond(
-        bool,
-        "Whether to ping users when their post is starboarded",
-        name="ping-author",
-    )
-    use_server_profile = optiond(
-        bool,
-        "Whether to use nicknames and server avatars",
-        name="use-server-profile",
-    )
-    use_webhook = optiond(
-        bool,
-        "Whether to use webhooks for starboard messages",
-        name="use-webhook",
-    )
-    webhook_name = optiond(
-        str, "The name for webhooks, if enabled", name="webhook-name"
-    )
-    webhook_avatar = optiond(
-        str, "The avatar for webhooks, if enabled", name="webhook-avatar"
-    )
-    required = optiond(
-        int, "The number of reactions required for a message to be starboarded"
-    )
-    required_remove = optiond(
-        int,
-        "The fewest number of stars a message can have before it is removed",
-        name="required-remove",
-    )
-    self_star = optiond(
-        bool,
-        "Whether to allow users to star their own messages",
-        name="self-star",
-    )
-    allow_bots = optiond(
-        bool,
-        "Whether to allow messages from bots to be starboarded",
-        name="allow-bots",
-    )
-    images_only = optiond(
-        bool,
-        "Whether to require messages to include an image",
-        name="images-only",
-    )
-    autoreact = optiond(
-        bool,
-        "Whether to automatically react to messages sent to the starboard",
-    )
-    remove_invalid = optiond(
-        bool, "Whether to remove invalid reactions", name="remove-invalid"
-    )
-    link_deletes = optiond(
-        bool,
-        "Whether to unstarboard messages if the original was deleted",
-        name="link-deletes",
-    )
-    link_edits = optiond(
-        bool,
-        "Whether to update the starboard message if the original is edited",
-        name="link-edits",
-    )
-    disable_xp = optiond(
-        bool, "Whether to disable XP for a starboard", name="disable-xp"
-    )
-    private = optiond(
-        bool,
-        "Whether to prevent `random` and `moststarred` from using this "
-        "starboard",
-    )
-    extra_embeds = optiond(
-        bool,
-        "Whether to add extra embeds below the main message content",
-        name="extra-embeds",
-    )
-    enabled = optiond(bool, "Whether the starboard is enabled")
-
     async def callback(self, ctx: crescent.Context) -> None:
-        params = self.__dict__.copy()
-        del params["starboard"]
-
-        # conversion
-        convert("color", params, hex_color)
-        convert("display_emoji", params, none_or(any_emoji_str))
-
-        for k, v in list(params.items()):
-            if v is UNDEF.UNDEF:
-                del params[k]
-
+        params = self._options()
         await validate_changes(**params)
 
         s = await Starboard.exists(id=self.starboard.id)

@@ -34,7 +34,7 @@ from starboard.database import Starboard, goc_message
 from starboard.exceptions import CommandErr, StarboardNotFound
 
 from ._checks import has_guild_perms
-from ._converters import db_orig_message, msg_ch_id
+from ._converters import msg_ch_id, orig_msg_from_link
 
 if TYPE_CHECKING:
     from starboard.bot import Bot
@@ -59,7 +59,7 @@ class FreezeMessage:
     )
 
     async def callback(self, ctx: crescent.Context) -> None:
-        msg = await db_orig_message(self.message_link)
+        msg = await orig_msg_from_link(self.message_link)
 
         if msg.frozen:
             raise CommandErr("That message is already frozen.")
@@ -79,7 +79,7 @@ class UnfreezeMessage:
     )
 
     async def callback(self, ctx: crescent.Context) -> None:
-        msg = await db_orig_message(self.message_link)
+        msg = await orig_msg_from_link(self.message_link)
 
         if not msg.frozen:
             raise CommandErr("That message is not frozen.")
@@ -125,7 +125,7 @@ class TrashMessage:
     )
 
     async def callback(self, ctx: crescent.Context) -> None:
-        msg = await db_orig_message(self.message_link)
+        msg = await orig_msg_from_link(self.message_link)
 
         if msg.trashed:
             raise CommandErr("That message is already trashed.")
@@ -149,7 +149,7 @@ class UntrashMessage:
     )
 
     async def callback(self, ctx: crescent.Context) -> None:
-        msg = await db_orig_message(self.message_link)
+        msg = await orig_msg_from_link(self.message_link)
 
         if not msg.trashed:
             raise CommandErr("That message is not trashed.")
@@ -277,7 +277,7 @@ class UnforceMessage:
     )
 
     async def callback(self, ctx: crescent.Context) -> None:
-        msg = await db_orig_message(self.message_link)
+        msg = await orig_msg_from_link(self.message_link)
         if not msg.forced_to:
             raise CommandErr("That message is not forced to any starboards.")
 
@@ -374,7 +374,7 @@ class RefreshMessage:
     message_link = crescent.option(str, "The message to refresh")
 
     async def callback(self, ctx: crescent.Context) -> None:
-        msg = await db_orig_message(self.message_link)
+        msg = await orig_msg_from_link(self.message_link)
         await ctx.respond(
             "Message should update momentarily...", ephemeral=True
         )

@@ -35,6 +35,12 @@ class StarboardNotFound(BaseErr):
         super().__init__(f"<#{channel_id}> is not a starboard.")
 
 
+class OverrideNotFound(BaseErr):
+    def __init__(self, name: str) -> None:
+        self.name = name
+        super().__init__(f"No override with the name '{name}' exists.")
+
+
 class MessageNotFound(BaseErr):
     def __init__(self, mid: int) -> None:
         self.mid = mid
