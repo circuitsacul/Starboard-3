@@ -22,11 +22,10 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, Iterable
 
 import emoji
 from apgorm import sql
-from apgorm.exceptions import ModelNotFound
 
 from starboard.config import CONFIG
 from starboard.database import Override
@@ -38,14 +37,15 @@ if TYPE_CHECKING:
 
 class StarboardConfig:
     def __init__(
-        self, starboard: Starboard, override: Override | None
+        self, starboard: Starboard, overrides: Iterable[Override] | None
     ) -> None:
         self.starboard = starboard
-        self.override = override
+        self.overrides = overrides or []
 
     def __getattr__(self, key: str) -> Any:
-        if self.override and key in self.override.overrides:
-            return self.override.overrides[key]
+        for ov in self.overrides:
+            if key in ov.overrides.keys():
+                return ov.overrides[key]
         return getattr(self.starboard, key)
 
     # Appearance
@@ -77,18 +77,15 @@ class StarboardConfig:
 
 
 async def get_config(sb: Starboard, channel_id: int) -> StarboardConfig:
-    ov = await fetch_override(sb.id, channel_id)
+    ov = await fetch_overrides(sb.id, channel_id)
     return StarboardConfig(sb, ov)
 
 
-async def fetch_override(sb: int, ch: int) -> Override | None:
+async def fetch_overrides(sb: int, ch: int) -> Iterable[Override]:
     q = Override.fetch_query()
     q.where(starboard_id=sb)
     q.where(sql(ch).eq(Override.channel_ids.any))
-    try:
-        return await q.fetchone()
-    except ModelNotFound:
-        return None
+    return await q.fetchmany()
 
 
 async def validate_changes(**changes: Any) -> None:
