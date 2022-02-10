@@ -22,8 +22,7 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass
-from typing import Any, List, Optional, TYPE_CHECKING
+from typing import Any, TYPE_CHECKING
 
 import emoji
 
@@ -31,37 +30,35 @@ from starboard.exceptions import BaseErr
 from starboard.config import CONFIG
 
 if TYPE_CHECKING:
-    from starboard.database import Starboard
+    from starboard.database import Starboard, Override
 
 
-def _validate_emoji(value: str) -> None:
-    if value.isalnum():
-        return
-
-    if emoji.is_emoji(value):  # type: ignore
-        return
-
-    raise BaseErr(f"{value} is not a valid emoji.")
-
-
-@dataclass
 class StarboardConfig:
-    starboard: Starboard
+    def __init__(
+        self, starboard: Starboard, override: Override | None
+    ) -> None:
+        self.starboard = starboard
+        self.override = override
+
+    def __getattr__(self, key: str) -> Any:
+        if self.override and key in self.override.overrides:
+            return self.override.overrides[key]
+        return getattr(self.starboard, key)
 
     # Appearance
     color: int
-    display_emoji: Optional[str]
+    display_emoji: str | None
     ping_author: bool
     use_server_profile: bool
     extra_embeds: bool
     use_webhook: bool
     webhook_name: str
-    webhook_avatar: Optional[str]
+    webhook_avatar: str | None
 
     # Requirements
     required: int
     required_remove: int
-    star_emojis: List[str]
+    star_emojis: list[str]
     self_star: bool
     allow_bots: bool
     images_only: bool
@@ -101,5 +98,15 @@ async def validate_changes(**changes: Any) -> None:
             f"`required-remove` must be at least {CONFIG.min_required_remove} "
             f"and at most {CONFIG.max_required_remove}."
         )
-    if (v := changes.get("display_emoji")):
+    if v := changes.get("display_emoji"):
         _validate_emoji(v)
+
+
+def _validate_emoji(value: str) -> None:
+    if value.isalnum():
+        return
+
+    if emoji.is_emoji(value):  # type: ignore
+        return
+
+    raise BaseErr(f"{value} is not a valid emoji.")

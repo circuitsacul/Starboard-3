@@ -22,6 +22,9 @@
 
 from __future__ import annotations
 
+import json
+from typing import Any
+
 from apgorm import Model, types
 
 from ._converters import DecimalC, DecimalArrayC
@@ -34,6 +37,17 @@ class Override(Model):
         types.Array(types.Numeric()).field().with_converter(DecimalArrayC)
     )
 
-    overrides = types.Json().field(default="{}")
+    _overrides = types.Json().field(default="{}")
 
     primary_key = (id,)
+
+    @property
+    def overrides(self) -> dict[str, Any]:
+        if not hasattr(self, "__loaded_overrides"):
+            self.__loaded_overrides = json.loads(self._overrides)
+        return self.__loaded_overrides  # type: ignore
+
+    @overrides.setter
+    def overrides(self, value: dict[str, Any]) -> None:
+        self.__loaded_overrides = value
+        self._overrides = json.dumps(value)
