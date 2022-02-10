@@ -28,6 +28,29 @@ from apgorm import types
 from ._converters import DecimalArrayC, DecimalC
 from .guild import Guild
 from .user import User
+from .member import goc_member
+
+
+async def goc_message(
+    guild_id: int,
+    channel_id: int,
+    message_id: int,
+    is_nsfw: bool,
+    author_id: int,
+    is_author_bot: bool,
+) -> Message:
+    if (m := await Message.exists(id=message_id)) is not None:
+        return m
+
+    await goc_member(guild_id, author_id, is_author_bot)
+
+    return await Message(
+        guild_id=guild_id,
+        author_id=author_id,
+        channel_id=channel_id,
+        id=message_id,
+        is_nsfw=is_nsfw,
+    ).create()
 
 
 class Message(apgorm.Model):

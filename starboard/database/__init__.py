@@ -21,16 +21,15 @@
 # SOFTWARE.
 
 from .database import Database
-from .get_or_create import goc_guild, goc_member, goc_message, goc_user
 from .models.aschannel import AutoStarChannel
-from .models.guild import Guild
-from .models.member import Member
-from .models.message import Message
+from .models.guild import Guild, goc_guild
+from .models.member import Member, goc_member
+from .models.message import Message, goc_message
 from .models.override import Override
 from .models.sb_message import SBMessage
 from .models.star import Star
 from .models.starboard import Starboard
-from .models.user import User
+from .models.user import User, goc_user
 from .models.xprole import XPRole
 
 __all__ = (

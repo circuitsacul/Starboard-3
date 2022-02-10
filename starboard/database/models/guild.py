@@ -28,6 +28,12 @@ from apgorm import types
 from ._converters import DecimalC, NullDecimalC
 
 
+async def goc_guild(guild_id: int) -> Guild:
+    if (g := await Guild.exists(id=guild_id)) is not None:
+        return g
+    return await Guild(id=guild_id).create()
+
+
 class Guild(apgorm.Model):
     id = types.Numeric().field().with_converter(DecimalC)
 

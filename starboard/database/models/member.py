@@ -20,12 +20,26 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
+from __future__ import annotations
+
 import apgorm
 from apgorm import types
 
 from ._converters import DecimalC
-from .guild import Guild
-from .user import User
+from .guild import Guild, goc_guild
+from .user import User, goc_user
+
+
+async def goc_member(guild_id: int, user_id: int, is_bot: bool) -> Member:
+    if (
+        m := await Member.exists(guild_id=guild_id, user_id=user_id)
+    ) is not None:
+        return m
+
+    await goc_guild(guild_id)
+    await goc_user(user_id, is_bot)
+
+    return await Member(guild_id=guild_id, user_id=user_id).create()
 
 
 class Member(apgorm.Model):
