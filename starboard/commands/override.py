@@ -83,7 +83,7 @@ class ViewSettingOverrides:
             embed = bot.embed(
                 title="Setting Overrides",
                 description="\n".join(
-                    f"{o.name}: **{len(o.overrides)}** overrwritten settings "
+                    f"{o.name}: **{len(o.overrides)}** overwritten settings "
                     f"for <#{o.starboard_id}> in **{len(o.channel_ids)}** "
                     "channels."
                     for o in ovs
