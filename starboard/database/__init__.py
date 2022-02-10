@@ -27,7 +27,6 @@ from .models.guild import Guild
 from .models.member import Member
 from .models.message import Message
 from .models.override import Override
-from .models.posrole import PosRole, PosRoleMember
 from .models.sb_message import SBMessage
 from .models.star import Star
 from .models.starboard import Starboard
@@ -41,8 +40,6 @@ __all__ = (
     "Member",
     "Message",
     "Override",
-    "PosRole",
-    "PosRoleMember",
     "SBMessage",
     "Star",
     "Starboard",
