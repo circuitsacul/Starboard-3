@@ -40,14 +40,15 @@ class SlidingWindow:
         self.cur_count = 0
 
     def trigger(self) -> bool:
-        if (time() - self.cur_time) > self.period:
-            self.cur_time = time()
+        now = time()
+        if (now - self.cur_time) > self.period:
+            self.cur_time = now
             self.pre_count = self.cur_count
             self.cur_count = 0
 
         ec = (
             self.pre_count
-            * (self.period - (time() - self.cur_time))
+            * (self.period - (now - self.cur_time))
             / self.period
         ) + self.cur_count
 
@@ -64,7 +65,7 @@ class Cooldown:
         self.cur: dict[tuple[int, int], SlidingWindow] = {}
 
     def __getitem__(self, key: tuple[int, int]) -> SlidingWindow:
-        if v := self.old.pop(key):
+        if v := self.old.pop(key, None):
             self.cur[key] = v
         return self.cur[key]
 

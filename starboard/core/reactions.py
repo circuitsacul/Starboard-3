@@ -34,6 +34,7 @@ from .config import get_config
 from .messages import get_orig_message
 from .starboards import refresh_message
 from .stars import add_stars, is_star_valid_for, remove_stars
+from .leaderboard import add_xp
 
 if TYPE_CHECKING:
     from starboard.bot import Bot
@@ -76,6 +77,7 @@ async def handle_reaction_add(event: hikari.GuildReactionAddEvent) -> None:
     author = await User.fetch(id=orig_msg.author_id)
     valid_starboard_ids: list[int] = []
     remove_invalid: bool = True
+    allow_xp: bool = False
     for s in starboards:
         c = await get_config(s, orig_msg.channel_id)
         if not c.remove_invalid:
@@ -83,8 +85,10 @@ async def handle_reaction_add(event: hikari.GuildReactionAddEvent) -> None:
         if not c.enabled:
             remove_invalid = False
             continue
-        if await is_star_valid_for(c, orig_msg, author, event.member):
+        if await is_star_valid_for(bot, c, orig_msg, author, event.member):
             valid_starboard_ids.append(s.id)
+            if not s.disable_xp:
+                allow_xp = True
 
     if len(valid_starboard_ids) == 0 and remove_invalid:
         actual_msg = await bot.cache.gof_message(
@@ -109,6 +113,8 @@ async def handle_reaction_add(event: hikari.GuildReactionAddEvent) -> None:
 
     # create a "star" for each starboard
     await add_stars(orig_msg.id, event.user_id, valid_starboard_ids)
+    if allow_xp:
+        await add_xp(orig_msg.author_id, orig_msg.guild_id, 1)
 
     await refresh_message(
         cast("Bot", event.app), orig_msg, valid_starboard_ids
@@ -130,16 +136,21 @@ async def handle_reaction_remove(
     starboards = await _get_starboards_for_emoji(emoji_str, event.guild_id)
 
     valid_sbids: list[int] = []
+    allow_xp: bool = False
     for s in starboards:
         c = await get_config(s, orig_msg.channel_id)
         if not c.enabled:
             continue
         valid_sbids.append(s.id)
+        if not s.disable_xp:
+            allow_xp = True
 
     if not valid_sbids:
         return
 
     await remove_stars(orig_msg.id, event.user_id, valid_sbids)
+    if allow_xp:
+        await add_xp(orig_msg.author_id, orig_msg.guild_id, -1)
 
     await refresh_message(cast("Bot", event.app), orig_msg, valid_sbids)
 

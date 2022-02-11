@@ -136,7 +136,7 @@ class EditStarboardConfig:
         return params
 
 
-_RE_C = re.compile(r"(?P<count>[0-9]+).*(?P<secs>[0-9]+)")
+_RE_C = re.compile(r"(?P<count>\d+).+?(?P<secs>\d+)")
 
 
 def _parse_cooldown(text: str) -> tuple[int, float]:

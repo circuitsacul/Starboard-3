@@ -39,6 +39,9 @@ class Config:
     max_required_remove: int = 500
     max_cooldown_period: int = 60
 
+    # functionality
+    leaderboard_length: int = 50
+
     # bot style
     color: int = int("FFE19C", 16)
 

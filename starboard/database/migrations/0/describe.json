@@ -128,11 +128,6 @@
                     "not_null": true
                 },
                 {
-                    "name": "xp_given",
-                    "type_": "INTEGER",
-                    "not_null": true
-                },
-                {
                     "name": "autoredeem_enabled",
                     "type_": "BOOLEAN",
                     "not_null": true

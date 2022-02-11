@@ -21,5 +21,6 @@
 # SOFTWARE.
 
 from .confirm import Confirm
+from .paginate import Paginator
 
-__all__ = ("Confirm",)
+__all__ = ("Confirm", "Paginator",)
