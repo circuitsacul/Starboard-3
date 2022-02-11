@@ -142,7 +142,7 @@ def _parse_cooldown(text: str) -> tuple[int, float]:
     if not m:
         raise StarboardErr(
             f"'{text}' is not a valid cooldown. You need to pass both the "
-            "count and the bucket. For example, '5 6' means 5 stars per 6 "
+            "capacity and the period. For example, '5 6' means 5 stars per 6 "
             "seconds."
         )
     gd = m.groupdict()

@@ -38,6 +38,7 @@ class Config:
     min_required_remove: int = -1
     max_required_remove: int = 500
     max_cooldown_period: int = 60
+    max_cooldown_cap: int = 60
 
     # functionality
     leaderboard_length: int = 50
