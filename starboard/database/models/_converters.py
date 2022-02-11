@@ -22,10 +22,8 @@
 
 from __future__ import annotations
 
-from typing import Generic, TypeVar
-
 from decimal import Decimal
-from typing import Sequence
+from typing import Generic, Sequence, TypeVar
 
 import apgorm
 

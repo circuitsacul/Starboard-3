@@ -38,8 +38,8 @@ from hikari_clusters import Brain, Cluster, ClusterLauncher, Server
 
 from .cache import Cache
 from .config import CONFIG, Config
-from .database import Database
 from .core.cooldown import Cooldown
+from .database import Database
 
 
 class Bot(crescent.Bot):

@@ -5,8 +5,8 @@ from typing import Any, TypeVar
 
 import crescent
 
-from starboard.undefined import UNDEF
 from starboard.exceptions import StarboardErr
+from starboard.undefined import UNDEF
 
 from ._converters import any_emoji_str, convert, hex_color, none_or
 
@@ -105,9 +105,7 @@ class EditStarboardConfig:
         name="extra-embeds",
     )
     cooldown_enabled = optiond(
-        bool,
-        "Whether to enable the cooldown",
-        name="cooldown-enabled",
+        bool, "Whether to enable the cooldown", name="cooldown-enabled"
     )
     cooldown = optiond(
         str,

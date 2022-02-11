@@ -27,7 +27,7 @@ from typing import Sequence
 import crescent
 import hikari
 import miru
-from miru.ext.nav import NavigatorView, NavButton  # type: ignore
+from miru.ext.nav import NavButton, NavigatorView  # type: ignore
 
 
 class Paginator(NavigatorView):

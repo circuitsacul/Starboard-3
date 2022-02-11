@@ -23,4 +23,4 @@
 from .confirm import Confirm
 from .paginate import Paginator
 
-__all__ = ("Confirm", "Paginator",)
+__all__ = ("Confirm", "Paginator")

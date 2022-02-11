@@ -21,12 +21,14 @@
 # SOFTWARE.
 
 from __future__ import annotations
+
 from dataclasses import dataclass
 
-from apgorm import sql, raw as r
+from apgorm import raw as r
+from apgorm import sql
 
-from starboard.database import Member
 from starboard.config import CONFIG
+from starboard.database import Member
 
 
 async def add_xp(user_id: int, guild_id: int, count: int) -> None:
@@ -42,7 +44,7 @@ async def get_leaderboard(guild_id: int) -> dict[int, MemberStats]:
     q.order_by(Member.xp, reverse=True)
     ret = await q.fetchmany(limit=CONFIG.leaderboard_length)
 
-    return {m.user_id: MemberStats(m.xp, x+1) for x, m in enumerate(ret)}
+    return {m.user_id: MemberStats(m.xp, x + 1) for x, m in enumerate(ret)}
 
 
 @dataclass

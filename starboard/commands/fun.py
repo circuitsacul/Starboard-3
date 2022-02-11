@@ -22,18 +22,18 @@
 
 from __future__ import annotations
 
-from typing import cast, TYPE_CHECKING
+from typing import TYPE_CHECKING, cast
 
-from apgorm import raw as r
 import crescent
 import hikari
+from apgorm import raw as r
 
-from starboard.database import SBMessage, Starboard, Message, Member
-from starboard.exceptions import StarboardErr, StarboardNotFound
+from starboard.core.config import get_config
 from starboard.core.embed_message import embed_message
 from starboard.core.emojis import stored_to_emoji
-from starboard.core.config import get_config
 from starboard.core.leaderboard import get_leaderboard
+from starboard.database import Member, Message, SBMessage, Starboard
+from starboard.exceptions import StarboardErr, StarboardNotFound
 from starboard.views import Paginator
 
 from ._checks import guild_only
@@ -71,10 +71,7 @@ async def leaderboard(ctx: crescent.Context) -> None:
         pages.append(current_page)
 
     embeds: list[hikari.Embed] = [
-        bot.embed(
-            title="Leaderboard",
-            description=page
-        )
+        bot.embed(title="Leaderboard", description=page)
         for x, page in enumerate(pages)
     ]
 

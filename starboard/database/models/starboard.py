@@ -27,7 +27,7 @@ from apgorm import types
 
 from starboard.config import CONFIG
 
-from ._converters import DecimalC, NullDecimalC, NonNullArray
+from ._converters import DecimalC, NonNullArray, NullDecimalC
 from .guild import Guild
 
 
@@ -50,9 +50,11 @@ class Starboard(apgorm.Model):
     # Requirements
     required = types.SmallInt().field(default=3)
     required_remove = types.SmallInt().field(default=0)
-    star_emojis = types.Array(types.Text()).field(
-        default_factory=lambda: list(["⭐"])
-    ).with_converter(NonNullArray(str))
+    star_emojis = (
+        types.Array(types.Text())
+        .field(default_factory=lambda: list(["⭐"]))
+        .with_converter(NonNullArray(str))
+    )
     self_star = types.Boolean().field(default=False)
     allow_bots = types.Boolean().field(default=True)
     images_only = types.Boolean().field(default=False)

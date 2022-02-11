@@ -74,7 +74,7 @@ class Cooldown:
 
     async def loop_cycle(self) -> None:
         while True:
-            await asyncio.sleep(CONFIG.max_cooldown_period*2)
+            await asyncio.sleep(CONFIG.max_cooldown_period * 2)
 
             del self.old
             self.old = self.cur

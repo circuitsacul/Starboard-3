@@ -82,7 +82,7 @@ def pretty_sb_config(
         "private": config.private,
         "enabled": config.enabled,
         "cooldown-enabled": config.cooldown_enabled,
-        "cooldown": f"{stars} stars per {secs} seconds"
+        "cooldown": f"{stars} stars per {secs} seconds",
     }
 
     if "cooldown-seconds" in b or "cooldown-stars" in b:
@@ -102,11 +102,7 @@ def pretty_sb_config(
 
 
 def pretty_emoji_str(*emojis: str | None, bot: Bot) -> str:
-    converted = [
-        stored_to_emoji(e, bot)
-        for e in emojis
-        if e is not None
-    ]
+    converted = [stored_to_emoji(e, bot) for e in emojis if e is not None]
 
     return (
         ", ".join(
