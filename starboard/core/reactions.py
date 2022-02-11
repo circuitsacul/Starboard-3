@@ -113,7 +113,7 @@ async def handle_reaction_add(event: hikari.GuildReactionAddEvent) -> None:
 
     # create a "star" for each starboard
     await add_stars(orig_msg.id, event.user_id, valid_starboard_ids)
-    if allow_xp:
+    if allow_xp and not author.is_bot:
         await add_xp(orig_msg.author_id, orig_msg.guild_id, 1)
 
     await refresh_message(
@@ -149,7 +149,8 @@ async def handle_reaction_remove(
         return
 
     await remove_stars(orig_msg.id, event.user_id, valid_sbids)
-    if allow_xp:
+    author = await User.fetch(id=orig_msg.author_id)
+    if allow_xp and not author.is_bot:
         await add_xp(orig_msg.author_id, orig_msg.guild_id, -1)
 
     await refresh_message(cast("Bot", event.app), orig_msg, valid_sbids)
