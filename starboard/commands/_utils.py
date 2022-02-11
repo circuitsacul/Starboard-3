@@ -68,7 +68,7 @@ def pretty_sb_config(
         "star-emojis": se,
         "self-star": config.self_star,
         "allow-bots": config.allow_bots,
-        "images-only": config.images_only,
+        "require-image": config.require_image,
     }
 
     stars = config.cooldown_count

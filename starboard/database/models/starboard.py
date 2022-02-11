@@ -57,7 +57,7 @@ class Starboard(apgorm.Model):
     )
     self_star = types.Boolean().field(default=False)
     allow_bots = types.Boolean().field(default=True)
-    images_only = types.Boolean().field(default=False)
+    require_image = types.Boolean().field(default=False)
 
     # Behaviour
     enabled = types.Boolean().field(default=True)

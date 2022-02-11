@@ -471,7 +471,7 @@
                     "not_null": true
                 },
                 {
-                    "name": "images_only",
+                    "name": "require_image",
                     "type_": "BOOLEAN",
                     "not_null": true
                 },

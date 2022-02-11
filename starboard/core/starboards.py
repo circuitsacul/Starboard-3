@@ -95,6 +95,7 @@ async def _handle_trashed_message(bot: Bot, orig_message: Message) -> None:
                     description="This message was trashed by a moderator.",
                 )
             ],
+            author_id=orig_message.author_id,
         )
 
     await asyncio.sleep(10)
@@ -170,7 +171,9 @@ async def _refresh_message_for_starboard(
                 bot, config, orig_msg_obj, orig_msg, starcount
             )
             assert embed
-            sbmsg_obj = await _send(bot, config, content, [embed, *embeds])
+            sbmsg_obj = await _send(
+                bot, config, content, [embed, *embeds], orig_msg.author_id
+            )
             if sbmsg_obj:
                 sbmsg.sb_message_id = sbmsg_obj.id
                 await sbmsg.save()
@@ -208,14 +211,25 @@ async def _refresh_message_for_starboard(
             )
             assert embed
             if config.link_edits:
-                await _edit(bot, config, sbmsg_obj, content, [embed, *embeds])
+                await _edit(
+                    bot,
+                    config,
+                    sbmsg_obj,
+                    content,
+                    [embed, *embeds],
+                    orig_msg.author_id,
+                )
             else:
-                await _edit(bot, config, sbmsg_obj, content, None)
+                await _edit(
+                    bot, config, sbmsg_obj, content, None, orig_msg.author_id
+                )
         else:
             content, _, _ = await get_sbmsg_content(
                 bot, config, None, orig_msg, starcount
             )
-            await _edit(bot, config, sbmsg_obj, content, None)
+            await _edit(
+                bot, config, sbmsg_obj, content, None, orig_msg.author_id
+            )
 
         await asyncio.sleep(10)
 
@@ -232,6 +246,7 @@ async def _edit(
     message: hikari.Message,
     content: str | None,
     embeds: list[hikari.Embed] | None,
+    author_id: int,
 ) -> None:
     if message.author.id != bot.me.id:
         wh = await _webhook(bot, config, False)
@@ -242,12 +257,14 @@ async def _edit(
             message,
             content=content or hikari.UNDEFINED,
             embeds=embeds or hikari.UNDEFINED,
+            user_mentions=(author_id,),
         )
 
     else:
         await message.edit(
             content=content or hikari.UNDEFINED,
             embeds=embeds or hikari.UNDEFINED,
+            user_mentions=(author_id,),
         )
 
 
@@ -275,6 +292,7 @@ async def _send(
     config: StarboardConfig,
     content: str,
     embeds: list[hikari.Embed] | None,
+    author_id: int,
 ) -> hikari.Message | None:
     webhook = await _webhook(bot, config)
 
@@ -291,13 +309,17 @@ async def _send(
                     or botuser.avatar_url
                     or botuser.default_avatar_url
                 ),
+                user_mentions=(author_id,),
             )
         except hikari.NotFoundError:
             pass
 
     try:
         return await bot.rest.create_message(
-            config.id, content, embeds=embeds or hikari.UNDEFINED
+            config.starboard.id,
+            content,
+            embeds=embeds or hikari.UNDEFINED,
+            user_mentions=(author_id,),
         )
     except (hikari.ForbiddenError, hikari.NotFoundError):
         return None
@@ -309,7 +331,7 @@ async def _webhook(
     create = allow_create and config.use_webhook
     wh = None
     if config.starboard.webhook_id is not None:
-        wh = await bot.cache.gof_webhook(config.webhook_id)
+        wh = await bot.cache.gof_webhook(config.starboard.webhook_id)
         if not wh:
             config.starboard.webhook_id = None
             await config.starboard.save()

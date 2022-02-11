@@ -122,3 +122,22 @@ class Cache(CacheImpl):
         assert cached.is_nsfw is not None
         self.update_guild_channel(cached)
         return cached
+
+    def delete_message(
+        self, message: hikari.SnowflakeishOr[hikari.PartialMessage], /
+    ) -> hikari.Message | None:
+        id = int(message)
+        if id in self.__messages:
+            self.__messages[id] = None
+        return super().delete_message(id)
+
+    def delete_member(
+        self,
+        guild: hikari.SnowflakeishOr[hikari.PartialGuild],
+        user: hikari.SnowflakeishOr[hikari.PartialUser],
+        /,
+    ) -> hikari.Member | None:
+        key = (int(guild), int(user))
+        if key in self.__members:
+            self.__members[key] = None
+        return super().delete_member(*key)

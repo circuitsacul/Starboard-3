@@ -64,7 +64,7 @@ class StarboardConfig:
     star_emojis: list[str]
     self_star: bool
     allow_bots: bool
-    images_only: bool
+    require_image: bool
 
     # Behaviour
     enabled: bool

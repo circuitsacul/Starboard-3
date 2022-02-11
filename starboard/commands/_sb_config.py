@@ -69,10 +69,10 @@ class EditStarboardConfig:
         "Whether to allow messages from bots to be starboarded",
         name="allow-bots",
     )
-    images_only = optiond(
+    require_image = optiond(
         bool,
         "Whether to require messages to include an image",
-        name="images-only",
+        name="require-image",
     )
     autoreact = optiond(
         bool,
@@ -109,8 +109,8 @@ class EditStarboardConfig:
     )
     cooldown = optiond(
         str,
-        "Set the count and bucket of the cooldown (e.g. 5/6 means 5 stars per "
-        "6 seconds)",
+        "Set the capacity and period of the cooldown (e.g. 5/6 means 5 stars "
+        "per 6 seconds)",
     )
     enabled = optiond(bool, "Whether the starboard is enabled")
 
