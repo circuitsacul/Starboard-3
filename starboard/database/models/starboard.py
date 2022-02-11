@@ -27,7 +27,7 @@ from apgorm import types
 
 from starboard.config import CONFIG
 
-from ._converters import DecimalC, NullDecimalC, NonNullArray
+from ._converters import DecimalC, NonNullArray, NullDecimalC
 from .guild import Guild
 
 
@@ -50,9 +50,11 @@ class Starboard(apgorm.Model):
     # Requirements
     required = types.SmallInt().field(default=3)
     required_remove = types.SmallInt().field(default=0)
-    star_emojis = types.Array(types.Text()).field(
-        default_factory=lambda: list(["⭐"])
-    ).with_converter(NonNullArray(str))
+    star_emojis = (
+        types.Array(types.Text())
+        .field(default_factory=lambda: list(["⭐"]))
+        .with_converter(NonNullArray(str))
+    )
     self_star = types.Boolean().field(default=False)
     allow_bots = types.Boolean().field(default=True)
     images_only = types.Boolean().field(default=False)
@@ -65,6 +67,9 @@ class Starboard(apgorm.Model):
     link_edits = types.Boolean().field(default=True)
     disable_xp = types.Boolean().field(default=False)
     private = types.Boolean().field(default=False)
+    cooldown_enabled = types.Boolean().field(default=False)
+    cooldown_count = types.SmallInt().field(default=5)
+    cooldown_period = types.SmallInt().field(default=5)
 
     # ForeignKeys & PrimaryKey
     guild_id_fk = apgorm.ForeignKey(guild_id, Guild.id)

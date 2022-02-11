@@ -38,6 +38,7 @@ from hikari_clusters import Brain, Cluster, ClusterLauncher, Server
 
 from .cache import Cache
 from .config import CONFIG, Config
+from .core.cooldown import Cooldown
 from .database import Database
 
 
@@ -56,8 +57,9 @@ class Bot(crescent.Bot):
 
         miru.load(self)
 
-        # "locks"
+        # locks and cooldowns
         self.refresh_message_lock: set[int] = set()
+        self.star_cooldown = Cooldown()
 
         def load_modules(parent: Path):
             for module in parent.glob("*.py"):

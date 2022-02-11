@@ -22,17 +22,19 @@
 
 from __future__ import annotations
 
-from typing import cast, TYPE_CHECKING
-from apgorm import raw as r
+from typing import TYPE_CHECKING, cast
 
 import crescent
 import hikari
+from apgorm import raw as r
 
-from starboard.database import SBMessage, Starboard, Message
-from starboard.exceptions import StarboardErr, StarboardNotFound
+from starboard.core.config import get_config
 from starboard.core.embed_message import embed_message
 from starboard.core.emojis import stored_to_emoji
-from starboard.core.config import get_config
+from starboard.core.leaderboard import get_leaderboard
+from starboard.database import Member, Message, SBMessage, Starboard
+from starboard.exceptions import StarboardErr, StarboardNotFound
+from starboard.views import Paginator
 
 from ._checks import guild_only
 
@@ -41,6 +43,88 @@ if TYPE_CHECKING:
 
 
 plugin = crescent.Plugin("fun")
+
+
+@plugin.include
+@crescent.hook(guild_only)
+@crescent.command(
+    name="leaderboard", description="Shows the server's leaderboard"
+)
+async def leaderboard(ctx: crescent.Context) -> None:
+    assert ctx.guild_id
+    bot = cast("Bot", ctx.app)
+    lb = await get_leaderboard(ctx.guild_id)
+    if not lb:
+        raise StarboardErr("There is no one on the leaderboard.")
+
+    rows = [f"#{s.rank}: <@{u}> with **{s.xp}** XP" for u, s in lb.items()]
+    pages: list[str] = []
+    current_page = ""
+    for x, row in enumerate(rows):
+        if x % 10 == 0 and x != 0:
+            pages.append(current_page)
+            current_page = ""
+
+        current_page += "\n" + row
+
+    if current_page:
+        pages.append(current_page)
+
+    embeds: list[hikari.Embed] = [
+        bot.embed(title="Leaderboard", description=page)
+        for x, page in enumerate(pages)
+    ]
+
+    ctx.respond
+    nav = Paginator(ctx.user.id, embeds)
+    await nav.send(ctx)
+
+
+@plugin.include
+@crescent.hook(guild_only)
+@crescent.command(name="rank", description="Show a users rank")
+class Rank:
+    user = crescent.option(
+        hikari.User, "The user to show the rank for", default=None
+    )
+
+    async def callback(self, ctx: crescent.Context) -> None:
+        assert ctx.guild_id
+
+        user = self.user or ctx.user
+        isself = user.id == ctx.user.id
+
+        lb = await get_leaderboard(ctx.guild_id)
+        stats = lb.get(user.id)
+
+        xp: int
+        rank: int | None
+        if stats:
+            xp = stats.xp
+            rank = stats.rank
+        else:
+            rank = None
+            m = await Member.exists(user_id=user.id, guild_id=ctx.guild_id)
+            xp = m.xp if m else 0
+
+        if isself:
+            await ctx.respond(
+                f"You have **{xp}** XP"
+                + (
+                    f", and you're **#{rank}** on the leaderboard."
+                    if rank
+                    else "."
+                )
+            )
+        else:
+            await ctx.respond(
+                f"{user} has **{xp}** XP"
+                + (
+                    f", and is **#{rank}** on the leaderboard."
+                    if rank
+                    else "."
+                )
+            )
 
 
 @plugin.include

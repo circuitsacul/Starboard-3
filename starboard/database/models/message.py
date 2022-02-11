@@ -27,8 +27,8 @@ from apgorm import types
 
 from ._converters import DecimalArrayC, DecimalC
 from .guild import Guild
-from .user import User
 from .member import goc_member
+from .user import User
 
 
 async def goc_message(

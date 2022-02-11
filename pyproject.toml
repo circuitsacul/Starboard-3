@@ -19,8 +19,8 @@ types-emoji = "^1.2.7"
 hikari = "^2.0.0-alpha.106"
 hikari-miru = "^1.0.1"
 apgorm = "^1.0.0-beta.4"
-hikari-crescent = "^0.1.0-beta.1"
 hikari-clusters = "^0.2.1"
+hikari-crescent = "^0.1.0-beta.3"
 
 [tool.poetry.dev-dependencies]
 black = "^22.1"

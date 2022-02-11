@@ -80,11 +80,6 @@
                     "not_null": true
                 },
                 {
-                    "name": "locale",
-                    "type_": "VARCHAR(8)",
-                    "not_null": true
-                },
-                {
                     "name": "log_channel_id",
                     "type_": "NUMERIC",
                     "not_null": false
@@ -93,21 +88,6 @@
                     "name": "premium_end",
                     "type_": "TIMESTAMP",
                     "not_null": false
-                },
-                {
-                    "name": "enable_xp_cooldown",
-                    "type_": "BOOLEAN",
-                    "not_null": true
-                },
-                {
-                    "name": "xp_cooldown_count",
-                    "type_": "SMALLINT",
-                    "not_null": true
-                },
-                {
-                    "name": "xp_cooldown_bucket",
-                    "type_": "SMALLINT",
-                    "not_null": true
                 },
                 {
                     "name": "stack_posroles",
@@ -144,11 +124,6 @@
                 },
                 {
                     "name": "xp",
-                    "type_": "INTEGER",
-                    "not_null": true
-                },
-                {
-                    "name": "xp_given",
                     "type_": "INTEGER",
                     "not_null": true
                 },
@@ -533,6 +508,21 @@
                 {
                     "name": "private",
                     "type_": "BOOLEAN",
+                    "not_null": true
+                },
+                {
+                    "name": "cooldown_enabled",
+                    "type_": "BOOLEAN",
+                    "not_null": true
+                },
+                {
+                    "name": "cooldown_count",
+                    "type_": "SMALLINT",
+                    "not_null": true
+                },
+                {
+                    "name": "cooldown_period",
+                    "type_": "SMALLINT",
                     "not_null": true
                 }
             ],

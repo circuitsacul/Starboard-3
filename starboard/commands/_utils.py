@@ -71,6 +71,8 @@ def pretty_sb_config(
         "images-only": config.images_only,
     }
 
+    stars = config.cooldown_count
+    secs = config.cooldown_period
     behaviour = {
         "autoreact": config.autoreact,
         "remove-invalid": config.remove_invalid,
@@ -79,7 +81,12 @@ def pretty_sb_config(
         "disable-xp": config.disable_xp,
         "private": config.private,
         "enabled": config.enabled,
+        "cooldown-enabled": config.cooldown_enabled,
+        "cooldown": f"{stars} stars per {secs} seconds",
     }
+
+    if "cooldown-seconds" in b or "cooldown-stars" in b:
+        b.add("cooldown")
 
     def gen(dct: dict[str, Any]) -> str:
         return "\n".join(
@@ -95,11 +102,7 @@ def pretty_sb_config(
 
 
 def pretty_emoji_str(*emojis: str | None, bot: Bot) -> str:
-    converted = [
-        stored_to_emoji(e, bot)
-        for e in emojis
-        if e is not None
-    ]
+    converted = [stored_to_emoji(e, bot) for e in emojis if e is not None]
 
     return (
         ", ".join(

@@ -38,17 +38,10 @@ class Guild(apgorm.Model):
     id = types.Numeric().field().with_converter(DecimalC)
 
     # config options
-    locale = types.VarChar(8).field(default="en_US")
-
     log_channel_id = (
         types.Numeric().nullablefield().with_converter(NullDecimalC)
     )
-
     premium_end = types.Timestamp().nullablefield()
-
-    enable_xp_cooldown = types.Boolean().field(default=True)
-    xp_cooldown_count = types.SmallInt().field(default=3)
-    xp_cooldown_bucket = types.SmallInt().field(default=60)  # seconds/user
 
     stack_posroles = types.Boolean().field(default=False)
     stack_xproles = types.Boolean().field(default=False)

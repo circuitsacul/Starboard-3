@@ -22,6 +22,8 @@
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 import apgorm
 import hikari
 
@@ -29,8 +31,12 @@ from starboard.database import Message, Star, User
 
 from .config import StarboardConfig
 
+if TYPE_CHECKING:
+    from starboard.bot import Bot
+
 
 async def is_star_valid_for(
+    bot: Bot,
     config: StarboardConfig,
     orig_message: Message,
     author: User,
@@ -46,6 +52,14 @@ async def is_star_valid_for(
         return False
 
     if orig_message.frozen:
+        return False
+
+    # check cooldown
+    if not bot.star_cooldown.trigger(
+        (star_adder.id, star_adder.guild_id),
+        config.cooldown_count,
+        config.cooldown_period,
+    ):
         return False
 
     return True

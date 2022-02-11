@@ -22,35 +22,35 @@
 
 from __future__ import annotations
 
-import apgorm
-from apgorm import types
+from typing import Sequence
 
-from ._converters import DecimalC
-from .guild import Guild, goc_guild
-from .user import User, goc_user
-
-
-async def goc_member(guild_id: int, user_id: int, is_bot: bool) -> Member:
-    if (
-        m := await Member.exists(guild_id=guild_id, user_id=user_id)
-    ) is not None:
-        return m
-
-    await goc_guild(guild_id)
-    await goc_user(user_id, is_bot)
-
-    return await Member(guild_id=guild_id, user_id=user_id).create()
+import crescent
+import hikari
+import miru
+from miru.ext.nav import NavButton, NavigatorView  # type: ignore
 
 
-class Member(apgorm.Model):
-    user_id = types.Numeric().field().with_converter(DecimalC)
-    guild_id = types.Numeric().field().with_converter(DecimalC)
+class Paginator(NavigatorView):
+    def __init__(
+        self, user_id: int, pages: Sequence[str | hikari.Embed]
+    ) -> None:
+        self.user_id = user_id
+        super().__init__(pages=pages)
 
-    xp = types.Int().field(default=0)
+    async def view_check(self, ctx: miru.Context) -> bool:
+        return ctx.user.id == self.user_id
 
-    autoredeem_enabled = types.Boolean().field(default=False)
+    async def send(
+        self, ctx: crescent.Context, ephemeral: bool = False
+    ) -> None:
+        self.current_page = 0
+        self._ephemeral = ephemeral
 
-    userid_fk = apgorm.ForeignKey(user_id, User.id)
-    guildid_fk = apgorm.ForeignKey(guild_id, Guild.id)
+        for button in self.children:
+            if isinstance(button, NavButton):
+                await button.before_page_change()
 
-    primary_key = (user_id, guild_id)
+        payload = self._get_page_payload(self.pages[0])
+        message = await ctx.respond(**payload, ensure_message=True)
+
+        self.start(message)

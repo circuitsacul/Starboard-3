@@ -22,35 +22,32 @@
 
 from __future__ import annotations
 
-import apgorm
-from apgorm import types
+from dataclasses import dataclass
 
-from ._converters import DecimalC
-from .guild import Guild, goc_guild
-from .user import User, goc_user
+from apgorm import raw as r
+from apgorm import sql
 
-
-async def goc_member(guild_id: int, user_id: int, is_bot: bool) -> Member:
-    if (
-        m := await Member.exists(guild_id=guild_id, user_id=user_id)
-    ) is not None:
-        return m
-
-    await goc_guild(guild_id)
-    await goc_user(user_id, is_bot)
-
-    return await Member(guild_id=guild_id, user_id=user_id).create()
+from starboard.config import CONFIG
+from starboard.database import Member
 
 
-class Member(apgorm.Model):
-    user_id = types.Numeric().field().with_converter(DecimalC)
-    guild_id = types.Numeric().field().with_converter(DecimalC)
+async def add_xp(user_id: int, guild_id: int, count: int) -> None:
+    q = Member.update_query()
+    q.where(user_id=user_id, guild_id=guild_id)
+    q.set(xp=sql(Member.xp, r("+"), count))
+    await q.execute()
 
-    xp = types.Int().field(default=0)
 
-    autoredeem_enabled = types.Boolean().field(default=False)
+async def get_leaderboard(guild_id: int) -> dict[int, MemberStats]:
+    q = Member.fetch_query()
+    q.where(guild_id=guild_id)
+    q.order_by(Member.xp, reverse=True)
+    ret = await q.fetchmany(limit=CONFIG.leaderboard_length)
 
-    userid_fk = apgorm.ForeignKey(user_id, User.id)
-    guildid_fk = apgorm.ForeignKey(guild_id, Guild.id)
+    return {m.user_id: MemberStats(m.xp, x + 1) for x, m in enumerate(ret)}
 
-    primary_key = (user_id, guild_id)
+
+@dataclass
+class MemberStats:
+    xp: int
+    rank: int

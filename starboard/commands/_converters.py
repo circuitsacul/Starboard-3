@@ -21,9 +21,9 @@
 # SOFTWARE.
 
 from __future__ import annotations
-from dataclasses import dataclass
 
 import re
+from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any, Callable, TypeVar
 
 import hikari
@@ -33,8 +33,8 @@ from starboard.exceptions import MessageNotFound, StarboardErr
 from starboard.undefined import UNDEF
 
 if TYPE_CHECKING:
-    from starboard.database import Message
     from starboard.bot import Bot
+    from starboard.database import Message
 
 _T = TypeVar("_T")
 
