@@ -57,11 +57,11 @@ async def leaderboard(ctx: crescent.Context) -> None:
     if not lb:
         raise StarboardErr("There is no one on the leaderboard.")
 
-    rows = [f"#{s.rank}: <@{u} with **{s.xp}** XP" for u, s in lb.items()]
+    rows = [f"#{s.rank}: <@{u}> with **{s.xp}** XP" for u, s in lb.items()]
     pages: list[str] = []
     current_page = ""
     for x, row in enumerate(rows):
-        if x % 1 == 0 and x != 0:
+        if x % 10 == 0 and x != 0:
             pages.append(current_page)
             current_page = ""
 
