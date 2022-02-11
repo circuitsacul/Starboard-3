@@ -527,7 +527,7 @@
                 },
                 {
                     "name": "cooldown_period",
-                    "type_": "REAL",
+                    "type_": "SMALLINT",
                     "not_null": true
                 }
             ],

@@ -79,7 +79,7 @@ ALTER TABLE starboards ADD COLUMN disable_xp BOOLEAN;
 ALTER TABLE starboards ADD COLUMN private BOOLEAN;
 ALTER TABLE starboards ADD COLUMN cooldown_enabled BOOLEAN;
 ALTER TABLE starboards ADD COLUMN cooldown_count SMALLINT;
-ALTER TABLE starboards ADD COLUMN cooldown_period REAL;
+ALTER TABLE starboards ADD COLUMN cooldown_period SMALLINT;
 ALTER TABLE stars ADD COLUMN message_id NUMERIC;
 ALTER TABLE stars ADD COLUMN starboard_id NUMERIC;
 ALTER TABLE stars ADD COLUMN user_id NUMERIC;

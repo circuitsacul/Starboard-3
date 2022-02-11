@@ -37,6 +37,7 @@ class Config:
     max_required: int = 512
     min_required_remove: int = -1
     max_required_remove: int = 500
+    max_cooldown_period: int = 60
 
     # bot style
     color: int = int("FFE19C", 16)
