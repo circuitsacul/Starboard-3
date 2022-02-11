@@ -74,6 +74,9 @@ class StarboardConfig:
     link_edits: bool
     disable_xp: bool
     private: bool
+    cooldown_enabled: bool
+    cooldown_count: int
+    cooldown_period: int
 
 
 async def get_config(sb: Starboard, channel_id: int) -> StarboardConfig:

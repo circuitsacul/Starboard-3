@@ -46,7 +46,7 @@ class ViewSettingOverrides:
 
             sb = await Starboard.fetch(id=ov.starboard_id)
 
-            config = StarboardConfig(sb, ov)
+            config = StarboardConfig(sb, [ov])
             options = pretty_sb_config(config, bot, ov.overrides.keys())
 
             cs = ", ".join(f"<#{c}>" for c in ov.channel_ids)
@@ -205,6 +205,11 @@ class ResetOverrideSettings:
         ovd = ov.overrides
         c = 0
         for o in options:
+            if o == "cooldown":  # special edge case, sadly
+                c += 1
+                del ovd["cooldown_count"]
+                del ovd["cooldown_period"]
+                continue
             if o not in ovd:
                 continue
             c += 1

@@ -71,6 +71,8 @@ def pretty_sb_config(
         "images-only": config.images_only,
     }
 
+    stars = config.cooldown_count
+    secs = config.cooldown_period
     behaviour = {
         "autoreact": config.autoreact,
         "remove-invalid": config.remove_invalid,
@@ -79,7 +81,12 @@ def pretty_sb_config(
         "disable-xp": config.disable_xp,
         "private": config.private,
         "enabled": config.enabled,
+        "cooldown-enabled": config.cooldown_enabled,
+        "cooldown": f"{stars} stars per {secs} seconds"
     }
+
+    if "cooldown-seconds" in b or "cooldown-stars" in b:
+        b.add("cooldown")
 
     def gen(dct: dict[str, Any]) -> str:
         return "\n".join(

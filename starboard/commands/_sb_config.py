@@ -1,10 +1,12 @@
 from __future__ import annotations
 
+import re
 from typing import Any, TypeVar
 
 import crescent
 
 from starboard.undefined import UNDEF
+from starboard.exceptions import StarboardErr
 
 from ._converters import any_emoji_str, convert, hex_color, none_or
 
@@ -102,6 +104,16 @@ class EditStarboardConfig:
         "Whether to add extra embeds below the main message content",
         name="extra-embeds",
     )
+    cooldown_enabled = optiond(
+        bool,
+        "Whether to enable the cooldown",
+        name="cooldown-enabled",
+    )
+    cooldown = optiond(
+        str,
+        "Set the count and bucket of the cooldown (e.g. 5/6 means 5 stars per "
+        "6 seconds)",
+    )
     enabled = optiond(bool, "Whether the starboard is enabled")
 
     def _options(self) -> dict[str, Any]:
@@ -116,4 +128,37 @@ class EditStarboardConfig:
         convert("color", params, hex_color)
         convert("display_emoji", params, none_or(any_emoji_str))
 
+        if c := params.pop("cooldown", None):
+            count, secs = _parse_cooldown(c)
+            params["cooldown_count"] = count
+            params["cooldown_period"] = secs
+
         return params
+
+
+_RE_C = re.compile(r"(?P<count>[0-9]+).*(?P<secs>[0-9]+)")
+
+
+def _parse_cooldown(text: str) -> tuple[int, float]:
+    m = _RE_C.match(text)
+    if not m:
+        raise StarboardErr(
+            f"'{text}' is not a valid cooldown. You need to pass both the "
+            "count and the bucket. For example, '5 6' means 5 stars per 6 "
+            "seconds."
+        )
+    gd = m.groupdict()
+    _c = gd["count"]
+    _s = gd["secs"]
+
+    try:
+        count = int(_c)
+    except ValueError:
+        raise StarboardErr(f"{_c} is not a valid integer.")
+
+    try:
+        secs = float(_s)
+    except ValueError:
+        raise StarboardErr(f"{_s} is not a valid number.")
+
+    return count, secs

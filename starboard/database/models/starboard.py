@@ -65,6 +65,9 @@ class Starboard(apgorm.Model):
     link_edits = types.Boolean().field(default=True)
     disable_xp = types.Boolean().field(default=False)
     private = types.Boolean().field(default=False)
+    cooldown_enabled = types.Boolean().field(default=False)
+    cooldown_count = types.SmallInt().field(default=5)
+    cooldown_period = types.Real().field(default=5)
 
     # ForeignKeys & PrimaryKey
     guild_id_fk = apgorm.ForeignKey(guild_id, Guild.id)

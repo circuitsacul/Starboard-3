@@ -268,7 +268,7 @@ websockets = ">=10.1,<11.0"
 
 [[package]]
 name = "hikari-crescent"
-version = "0.1.0b2"
+version = "0.1.0b3"
 description = "🌕 A dead simple command handler for Hikari"
 category = "main"
 optional = false
@@ -592,7 +592,7 @@ multidict = ">=4.0"
 [metadata]
 lock-version = "1.1"
 python-versions = ">=3.9,<3.11"
-content-hash = "fb2589c87a3dedec81da8fc1bbc7313661a6e76511a48be4412c57c59a571719"
+content-hash = "f88fca286491ffadc0e534284071253a39aa6b196d21db5a630ee9c3a5c827b3"
 
 [metadata.files]
 aiohttp = [
@@ -894,8 +894,8 @@ hikari-clusters = [
     {file = "hikari_clusters-0.2.2-py3-none-any.whl", hash = "sha256:3260a3da7c5b481bd339212bd26f73bc4cf56b274da28737011ff59ad2947757"},
 ]
 hikari-crescent = [
-    {file = "hikari-crescent-0.1.0b2.tar.gz", hash = "sha256:f7a883c58555bca0d53defd091176e18fafe848ad729bb0a90e5e5195c0847da"},
-    {file = "hikari_crescent-0.1.0b2-py3-none-any.whl", hash = "sha256:0a8b1bf6607e142b48ec967807b5f3fc048847dc21322f11d0f363b9a81c6dc4"},
+    {file = "hikari-crescent-0.1.0b3.tar.gz", hash = "sha256:2f097df1bec52ef243c26705820eb9646b2033ba586f41a265c62192b41b4854"},
+    {file = "hikari_crescent-0.1.0b3-py3-none-any.whl", hash = "sha256:587db915cfce5b7d71c126cc029e180fef9b9f73cbbaee727e024384bf3b87ca"},
 ]
 hikari-miru = [
     {file = "hikari-miru-1.1.1.tar.gz", hash = "sha256:7d9ff975546e963cb0b3f234d3396990dc20d0569a70f42135c3b8a16880bd20"},
