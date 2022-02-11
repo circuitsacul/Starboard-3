@@ -20,35 +20,38 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-from .database import Database
-from .models.aschannel import AutoStarChannel
-from .models.guild import Guild, goc_guild
-from .models.member import Member, goc_member
-from .models.message import Message, goc_message
-from .models.override import Override
-from .models.posrole import PosRole, PosRoleMember
-from .models.sb_message import SBMessage
-from .models.star import Star
-from .models.starboard import Starboard
-from .models.user import User, goc_user
-from .models.xprole import XPRole
+from __future__ import annotations
 
-__all__ = (
-    "Database",
-    "AutoStarChannel",
-    "Guild",
-    "Member",
-    "Message",
-    "Override",
-    "PosRole",
-    "PosRoleMember",
-    "SBMessage",
-    "Star",
-    "Starboard",
-    "User",
-    "XPRole",
-    "goc_guild",
-    "goc_member",
-    "goc_message",
-    "goc_user",
-)
+import apgorm
+from apgorm import types
+
+from ._converters import DecimalC
+from .guild import Guild
+from .user import User
+
+
+class PosRole(apgorm.Model):
+    id = types.Numeric().field().with_converter(DecimalC)
+    guild_id = types.Numeric().field().with_converter(DecimalC)
+    max_users = types.Numeric().field().with_converter(DecimalC)
+
+    users = apgorm.ManyToMany["User", "PosRoleMember"](
+        "id",
+        "posrole_members.role_id",
+        "posrole_members.user_id",
+        "users.user_id",
+    )
+
+    guild_id_fk = apgorm.ForeignKey(guild_id, Guild.id)
+
+    primary_key = (id,)
+
+
+class PosRoleMember(apgorm.Model):
+    role_id = types.Numeric().field().with_converter(DecimalC)
+    user_id = types.Numeric().field().with_converter(DecimalC)
+
+    role_id_fk = apgorm.ForeignKey(role_id, PosRole.id)
+    user_id_fk = apgorm.ForeignKey(user_id, User.id)
+
+    primary_key = (role_id, user_id)
