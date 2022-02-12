@@ -23,9 +23,12 @@
 from __future__ import annotations
 
 import asyncio
+from typing import Generic, TypeVar
 from time import time
 
 from starboard.config import CONFIG
+
+_K = TypeVar("_K")
 
 
 class SlidingWindow:
@@ -59,17 +62,17 @@ class SlidingWindow:
         return True
 
 
-class Cooldown:
+class Cooldown(Generic[_K]):
     def __init__(self) -> None:
-        self.old: dict[tuple[int, int], SlidingWindow] = {}
-        self.cur: dict[tuple[int, int], SlidingWindow] = {}
+        self.old: dict[_K, SlidingWindow] = {}
+        self.cur: dict[_K, SlidingWindow] = {}
 
-    def __getitem__(self, key: tuple[int, int]) -> SlidingWindow:
+    def __getitem__(self, key: _K) -> SlidingWindow:
         if v := self.old.pop(key, None):
             self.cur[key] = v
         return self.cur[key]
 
-    def __setitem__(self, key: tuple[int, int], value: SlidingWindow) -> None:
+    def __setitem__(self, key: _K, value: SlidingWindow) -> None:
         self.cur[key] = value
 
     async def loop_cycle(self) -> None:
@@ -81,7 +84,7 @@ class Cooldown:
             self.cur = dict()
 
     def get_bucket(
-        self, key: tuple[int, int], cap: int, period: int
+        self, key: _K, cap: int, period: int
     ) -> SlidingWindow:
         try:
             return self[key]
@@ -90,5 +93,5 @@ class Cooldown:
             self.cur[key] = b
             return b
 
-    def trigger(self, key: tuple[int, int], cap: int, period: int) -> bool:
+    def trigger(self, key: _K, cap: int, period: int) -> bool:
         return self.get_bucket(key, cap, period).trigger()

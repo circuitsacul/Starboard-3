@@ -43,12 +43,21 @@ class Database(apgorm.Database):
     def __init__(self):
         super().__init__("starboard/database/migrations")
 
+        self.asc: set[int] = set()
+
     async def connect(self, **connect_kwargs) -> None:
         await super().connect(**connect_kwargs)
         if self.must_create_migrations():
             self.create_migrations()
         if await self.must_apply_migrations():
             await self.apply_migrations()
+
+        print("Loading autostar channels...")
+        self.asc = {
+            asc.id for asc in
+            await aschannel.AutoStarChannel.fetch_query().fetchmany()
+        }
+        print("Autostar channels loaded.")
 
     guilds = guild.Guild
     users = user.User

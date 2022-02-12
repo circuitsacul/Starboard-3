@@ -23,15 +23,26 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Any, Iterable
+from typing import TYPE_CHECKING, Any, Iterable, TypeVar
 
+import crescent
 import hikari
 
 from starboard.core.config import StarboardConfig
 from starboard.core.emojis import stored_to_emoji
+from starboard.undefined import UNDEF
 
 if TYPE_CHECKING:
     from starboard.bot import Bot
+
+
+_T = TypeVar("_T")
+
+
+def optiond(type: type[_T], *args, **kwargs) -> _T | UNDEF:
+    return crescent.option(
+        type, *args, **kwargs, default=UNDEF.UNDEF  # type: ignore
+    )
 
 
 @dataclass

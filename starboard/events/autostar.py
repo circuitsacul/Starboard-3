@@ -22,31 +22,16 @@
 
 from __future__ import annotations
 
+import hikari
 import crescent
-from apgorm.exceptions import InvalidFieldValue
 
-from starboard import exceptions
-
-plugin = crescent.Plugin("error-handler")
+from starboard.core import autostar
 
 
-@plugin.include
-@crescent.catch(
-    exceptions.StarboardNotFound,
-    exceptions.ASCNotFound,
-    exceptions.MessageNotFound,
-    exceptions.OverrideNotFound,
-    exceptions.StarboardErr,
-)
-async def basic_handler(
-    exc: exceptions.StarboardErr, ctx: crescent.Context
-) -> None:
-    await ctx.respond(exc.msg, ephemeral=True)
+plugin = crescent.Plugin("autostar-events")
 
 
 @plugin.include
-@crescent.catch(InvalidFieldValue)
-async def invalid_field_value(
-    exc: InvalidFieldValue, ctx: crescent.Context
-) -> None:
-    await ctx.respond(exc.message, ephemeral=True)
+@crescent.event
+async def on_msg(event: hikari.MessageCreateEvent) -> None:
+    await autostar.handle_message(event)

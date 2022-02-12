@@ -34,7 +34,9 @@ class AutoStarChannel(apgorm.Model):
     guild_id = types.Numeric().field().with_converter(DecimalC)
 
     emojis = (
-        types.Array(types.Text()).field().with_converter(NonNullArray(str))
+        types.Array(types.Text())
+        .field(default_factory=lambda: ["⭐"])
+        .with_converter(NonNullArray(str))
     )
     min_chars = types.SmallInt().field(default=0)
     max_chars = types.SmallInt().nullablefield()

@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import re
-from typing import Any, TypeVar
+from typing import Any
 
 import crescent
 
@@ -9,14 +9,7 @@ from starboard.exceptions import StarboardErr
 from starboard.undefined import UNDEF
 
 from ._converters import any_emoji_str, convert, hex_color, none_or
-
-_T = TypeVar("_T")
-
-
-def optiond(type: type[_T], *args, **kwargs) -> _T | UNDEF:
-    return crescent.option(
-        type, *args, **kwargs, default=UNDEF.UNDEF  # type: ignore
-    )
+from ._utils import optiond
 
 
 class EditStarboardConfig:

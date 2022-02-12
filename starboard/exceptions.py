@@ -35,6 +35,12 @@ class StarboardNotFound(StarboardErr):
         super().__init__(f"<#{channel_id}> is not a starboard.")
 
 
+class ASCNotFound(StarboardErr):
+    def __init__(self, channel_id: int) -> None:
+        self.channel_id = channel_id
+        super().__init__(f"<#{channel_id}> is not an autostar channel.")
+
+
 class OverrideNotFound(StarboardErr):
     def __init__(self, name: str) -> None:
         self.name = name

@@ -42,6 +42,8 @@ class Config:
 
     # functionality
     leaderboard_length: int = 50
+    asc_cooldown_cap: int = 5
+    asc_cooldown_period: int = 10
 
     # bot style
     color: int = int("FFE19C", 16)
