@@ -23,8 +23,8 @@
 from __future__ import annotations
 
 import asyncio
-from typing import Generic, TypeVar
 from time import time
+from typing import Generic, TypeVar
 
 from starboard.config import CONFIG
 
@@ -83,9 +83,7 @@ class Cooldown(Generic[_K]):
             self.old = self.cur
             self.cur = dict()
 
-    def get_bucket(
-        self, key: _K, cap: int, period: int
-    ) -> SlidingWindow:
+    def get_bucket(self, key: _K, cap: int, period: int) -> SlidingWindow:
         try:
             return self[key]
         except KeyError:

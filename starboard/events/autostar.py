@@ -22,11 +22,10 @@
 
 from __future__ import annotations
 
-import hikari
 import crescent
+import hikari
 
 from starboard.core import autostar
-
 
 plugin = crescent.Plugin("autostar-events")
 

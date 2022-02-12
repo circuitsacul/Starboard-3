@@ -29,12 +29,12 @@ import hikari
 from asyncpg import UniqueViolationError
 
 from starboard.database import AutoStarChannel
-from starboard.exceptions import StarboardErr, ASCNotFound
-from starboard.views import Confirm
+from starboard.exceptions import ASCNotFound, StarboardErr
 from starboard.undefined import UNDEF
+from starboard.views import Confirm
 
 from ._checks import has_guild_perms
-from ._utils import pretty_emoji_str, optiond
+from ._utils import optiond, pretty_emoji_str
 
 if TYPE_CHECKING:
     from starboard.bot import Bot
@@ -213,7 +213,6 @@ class EditAutoStar:
         for k, v in params.items():
             if v is UNDEF.UNDEF:
                 continue
-            print(k, v)
             setattr(asc, k, v)
 
         await asc.save()
