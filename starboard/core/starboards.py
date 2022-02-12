@@ -392,7 +392,7 @@ def _get_action(
         add_trib = None
 
     # check if forced
-    if config.id in orig_msg.forced_to:
+    if config.starboard.id in orig_msg.forced_to:
         add_trib = True
 
     # return
