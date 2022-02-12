@@ -35,6 +35,7 @@ from starboard.views import Confirm
 
 from ._checks import has_guild_perms
 from ._utils import optiond, pretty_emoji_str
+from ._converters import any_emoji_list, any_emoji_str
 
 if TYPE_CHECKING:
     from starboard.bot import Bot
@@ -217,3 +218,85 @@ class EditAutoStar:
 
         await asc.save()
         await ctx.respond(f"Updated settings for <#{asc.id}>.")
+
+
+emojis = autostar.sub_group("emojis", "Modify emojis for an autostar channel")
+
+
+@plugin.include
+@emojis.child
+@crescent.command(name="set", description="Set the emojis")
+class SetEmoji:
+    channel = crescent.option(
+        hikari.TextableGuildChannel,
+        "The autostar channel to set the emojis for",
+    )
+    emojis = crescent.option(str, "A list of emojis to use")
+
+    async def callback(self, ctx: crescent.Context) -> None:
+        asc = await AutoStarChannel.exists(id=self.channel.id)
+        if not asc:
+            raise ASCNotFound(self.channel.id)
+
+        emojis = any_emoji_list(self.emojis)
+        asc.emojis = list(emojis)
+        await asc.save()
+        await ctx.respond("Done.")
+
+
+@plugin.include
+@emojis.child
+@crescent.command(name="add", description="Add an emoji")
+class AddEmoji:
+    channel = crescent.option(
+        hikari.TextableGuildChannel,
+        "The autostar channel to add the emoji to",
+    )
+    emoji = crescent.option(str, "The emoji to add")
+
+    async def callback(self, ctx: crescent.Context) -> None:
+        asc = await AutoStarChannel.exists(id=self.channel.id)
+        if not asc:
+            raise ASCNotFound(self.channel.id)
+
+        e = any_emoji_str(self.emoji)
+        emojis = list(asc.emojis)
+        if e in emojis:
+            await ctx.respond(
+                f"{e} is already an emoji for <#{asc.id}>.", ephemeral=True
+            )
+            return
+
+        emojis.append(e)
+        asc.emojis = emojis
+        await asc.save()
+        await ctx.respond("Done.")
+
+
+@plugin.include
+@emojis.child
+@crescent.command(name="remove", description="Remove an emoji")
+class RemoveEmoji:
+    channel = crescent.option(
+        hikari.TextableGuildChannel,
+        "The autostar channel to remove the emoji from",
+    )
+    emoji = crescent.option(str, "The star emoji to remove")
+
+    async def callback(self, ctx: crescent.Context) -> None:
+        asc = await AutoStarChannel.exists(id=self.channel.id)
+        if not asc:
+            raise ASCNotFound(self.channel.id)
+
+        e = any_emoji_str(self.emoji)
+        emojis = list(asc.emojis)
+        if e not in emojis:
+            await ctx.respond(
+                f"{e} is not an emoji on <#{asc.id}>", ephemeral=True
+            )
+            return
+
+        emojis.remove(e)
+        asc.emojis = emojis
+        await asc.save()
+        await ctx.respond("Done.")

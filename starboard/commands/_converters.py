@@ -26,6 +26,7 @@ import re
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any, Callable, TypeVar
 
+import emoji
 import hikari
 
 from starboard.core.messages import get_orig_message
@@ -50,7 +51,22 @@ def any_emoji_str(text: str) -> str:
     except ValueError:
         pass
 
-    return str(hikari.UnicodeEmoji.parse(text))
+    uc = str(hikari.UnicodeEmoji.parse(text))
+    if not emoji.is_emoji(uc):  # type: ignore
+        raise StarboardErr(f"'{uc}' is not a valid emoji.")
+
+    return uc
+
+
+def any_emoji_list(text: str) -> set[str]:
+    ret: set[str] = set()
+    for piece in text.split(" "):
+        try:
+            ret.add(any_emoji_str(piece))
+        except StarboardErr:
+            pass
+
+    return ret
 
 
 def hex_color(text: str) -> int:

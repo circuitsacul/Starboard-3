@@ -33,7 +33,7 @@ from starboard.exceptions import StarboardNotFound
 from starboard.views import Confirm
 
 from ._checks import has_guild_perms
-from ._converters import any_emoji_str
+from ._converters import any_emoji_str, any_emoji_list
 from ._sb_config import EditStarboardConfig
 from ._utils import pretty_emoji_str, pretty_sb_config
 
@@ -209,7 +209,27 @@ class EditStarboard(EditStarboardConfig):
         await ctx.respond(f"Settings for <#{s.id}> updated.")
 
 
-emojis = starboards.sub_group("emojis", "Modify emojis for a starboard.")
+emojis = starboards.sub_group("emojis", "Modify emojis for a starboard")
+
+
+@plugin.include
+@emojis.child
+@crescent.command(name="set", description="Set the star emojis")
+class SetStarEmoji:
+    starboard = crescent.option(
+        hikari.TextableGuildChannel, "The starboard to set the star emojis for"
+    )
+    emojis = crescent.option(str, "A list of emojis to use")
+
+    async def callback(self, ctx: crescent.Context) -> None:
+        s = await Starboard.exists(id=self.starboard.id)
+        if not s:
+            raise StarboardNotFound(self.starboard.id)
+
+        emojis = any_emoji_list(self.emojis)
+        s.star_emojis = list(emojis)
+        await s.save()
+        await ctx.respond("Done.")
 
 
 @plugin.include
