@@ -43,6 +43,15 @@ owner = crescent.Group("owner", "Owner only commands", hooks=[owner_only])
 
 @plugin.include
 @owner.child
+@crescent.command(name="clear-cache", description="Clears the cache entirely")
+async def clear_cache(ctx: crescent.Context) -> None:
+    bot = cast("Bot", ctx.app)
+    bot.cache.clear()
+    await ctx.respond("Cleared the cache.", ephemeral=True)
+
+
+@plugin.include
+@owner.child
 @crescent.command(name="eval", description="Evaluate code")
 class Eval:
     code = crescent.option(str, "Code to evaluate")
