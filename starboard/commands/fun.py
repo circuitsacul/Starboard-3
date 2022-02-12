@@ -146,12 +146,14 @@ class Random:
         "Only show messages with at least this many stars",
         default=None,
         min_value=1,
+        name="min-stars",
     )
     max_stars = crescent.option(
         int,
         "Only show messages with at most this many stars",
         default=None,
         min_value=1,
+        name="max-stars",
     )
 
     async def callback(self, ctx: crescent.Context) -> None:
@@ -177,9 +179,9 @@ class Random:
         q.where(sbq.exists())
 
         if self.min_stars:
-            q.where(SBMessage.last_known_star_count.gt(self.min_stars))
+            q.where(SBMessage.last_known_star_count.gteq(self.min_stars))
         if self.max_stars:
-            q.where(SBMessage.last_known_star_count.lt(self.max_stars))
+            q.where(SBMessage.last_known_star_count.lteq(self.max_stars))
 
         q.order_by(r("random()"))
 
