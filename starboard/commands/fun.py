@@ -161,6 +161,8 @@ class Random:
         s = await Starboard.exists(id=self.starboard.id)
         if not s:
             raise StarboardNotFound(self.starboard.id)
+        if s.private:
+            raise StarboardErr(f"<#{s.id}> is a private starboard.")
 
         q = SBMessage.fetch_query()
         q.where(starboard_id=self.starboard.id)
