@@ -62,7 +62,7 @@ def pretty_sb_config(
         f"[view]({config.webhook_avatar})" if config.webhook_avatar else "none"
     )
     appearance = {
-        "color": config.color,
+        "color": pretty_color(config.color),
         "display-emoji": de,
         "ping-author": config.ping_author,
         "use-server-profile": config.use_server_profile,
@@ -123,3 +123,7 @@ def pretty_emoji_str(*emojis: str | None, bot: Bot) -> str:
         )
         or "none"
     )
+
+
+def pretty_color(color: int) -> str:
+    return hex(color).replace("0x", "#").upper()
