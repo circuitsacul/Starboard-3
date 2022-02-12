@@ -29,7 +29,7 @@ from typing import TYPE_CHECKING, cast
 import crescent
 
 from starboard.constants import MESSAGE_LEN
-from starboard.utils import truncate
+from starboard.utils import trunc_list, truncate
 
 from ._checks import owner_only
 
@@ -127,8 +127,17 @@ class RunSQL:
         try:
             async with bot.database.pool.acquire() as con:
                 async with con.transaction():
-                    ret = await con.fetchmany(self.sql, [])
-                    result = " - " + "\n - ".join([repr(d) for d in ret[0:50]])
+                    ret: list[str] = []
+                    async for r in con.cursor(self.sql, []):
+                        ret.append(f"\n - {repr(r)}")
+
+                        if len(ret) >= 50:
+                            break
+
+                    ret = trunc_list(
+                        ret, MESSAGE_LEN - 8, lambda x: f"\n - And {x} others."
+                    )
+                    result = "```\n" + "".join(ret) + "\n```"
                     if self.rollback:
                         raise Rollback
         except Rollback:

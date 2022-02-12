@@ -136,22 +136,16 @@ async def handle_reaction_remove(
     starboards = await _get_starboards_for_emoji(emoji_str, event.guild_id)
 
     valid_sbids: list[int] = []
-    allow_xp: bool = False
     for s in starboards:
         c = await get_config(s, orig_msg.channel_id)
         if not c.enabled:
             continue
         valid_sbids.append(s.id)
-        if not s.disable_xp:
-            allow_xp = True
 
     if not valid_sbids:
         return
 
     await remove_stars(orig_msg.id, event.user_id, valid_sbids)
-    author = await User.fetch(id=orig_msg.author_id)
-    if allow_xp and not author.is_bot:
-        await add_xp(orig_msg.author_id, orig_msg.guild_id, -1)
 
     await refresh_message(cast("Bot", event.app), orig_msg, valid_sbids)
 
