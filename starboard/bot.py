@@ -59,7 +59,8 @@ class Bot(crescent.Bot):
 
         # locks and cooldowns
         self.refresh_message_lock: set[int] = set()
-        self.star_cooldown = Cooldown()
+        self.star_cooldown: Cooldown[tuple[int, int]] = Cooldown()
+        self.asc_cooldown: Cooldown[int] = Cooldown()
 
         def load_modules(parent: Path):
             for module in parent.glob("*.py"):

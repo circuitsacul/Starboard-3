@@ -109,16 +109,8 @@ class ViewStarboard:
             if not starboard:
                 raise StarboardNotFound(self.starboard.id)
 
-            channel = bot.cache.get_guild_channel(self.starboard.id)
-            if channel is None:
-                name = f"Deleted Channel {self.starboard.id}"
-            else:
-                assert channel.name is not None
-                name = channel.name
-            embed = bot.embed(title=name)
-
             config = pretty_sb_config(StarboardConfig(starboard, None), bot)
-
+            embed = bot.embed(title=self.starboard.name)
             embed.add_field(
                 name="Appearance", value=config.appearance, inline=True
             )
@@ -184,9 +176,14 @@ class DeleteStarboard:
             .execute()
         )
         if len(res) == 0:
-            raise StarboardNotFound(self.starboard.id)
+            await msg.edit(
+                StarboardNotFound(self.starboard.id).msg, components=[]
+            )
+            return
 
-        await msg.edit(f"Deleted <#{self.starboard.id}>.", components=[])
+        await msg.edit(
+            f"Deleted starboard <#{self.starboard.id}>.", components=[]
+        )
 
 
 @plugin.include
