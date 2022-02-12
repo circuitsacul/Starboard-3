@@ -25,10 +25,11 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, cast
 
 import hikari
-from cachetools import TTLCache
+from cachetools import LFUCache
 from hikari.impl.cache import CacheImpl
 
 from starboard.undefined import UNDEF
+from starboard.database import Starboard
 
 if TYPE_CHECKING:
     from starboard.bot import Bot
@@ -38,18 +39,44 @@ class Cache(CacheImpl):
     def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
 
-        self.__messages: TTLCache[int, hikari.Message | None] = TTLCache(
-            5000, 120
-        )
-        self.__members: TTLCache[
+        # discord side
+        self.__messages: LFUCache[int, hikari.Message | None] = LFUCache(1000)
+        self.__members: LFUCache[
             tuple[int, int], hikari.Member | None
-        ] = TTLCache(5000, 120)
-        self.__webhooks: TTLCache[int, hikari.ExecutableWebhook] = TTLCache(
-            5000, 120
+        ] = LFUCache(1000)
+        self.__webhooks: LFUCache[int, hikari.ExecutableWebhook] = LFUCache(
+            1000
         )
+
+        # db side
+        self.__star_emojis: LFUCache[int, set[str]] = LFUCache(1000)
 
         if TYPE_CHECKING:
             self._app = cast(Bot, self._app)
+
+    def clear(self) -> None:
+        self.__messages.clear()
+        self.__members.clear()
+        self.__webhooks.clear()
+        self.__star_emojis.clear()
+        super().clear()
+
+    async def guild_star_emojis(
+        self,
+        guild: hikari.SnowflakeishOr[hikari.PartialGuild],
+    ) -> set[str]:
+        gid = int(guild)
+        ge: set[str]
+        _ge = self.__star_emojis.get(gid, None)
+        if not _ge:
+            sbs = await Starboard.fetch_query().where(guild_id=gid).fetchmany()
+            ge = set()
+            for s in sbs:
+                ge = ge.union(s.star_emojis)
+
+            self.__star_emojis[gid] = ge
+            return ge
+        return _ge
 
     async def gof_webhook(
         self, webhook_id: hikari.SnowflakeishOr[hikari.PartialWebhook]

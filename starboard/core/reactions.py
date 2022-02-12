@@ -45,6 +45,16 @@ async def handle_reaction_add(event: hikari.GuildReactionAddEvent) -> None:
         return
     bot = cast("Bot", event.app)
 
+    emoji_str = _get_emoji_str_from_event(event)
+    if not emoji_str:
+        return
+    if emoji_str not in await bot.cache.guild_star_emojis(event.guild_id):
+        return
+
+    starboards = await _get_starboards_for_emoji(emoji_str, event.guild_id)
+    if len(starboards) == 0:
+        return
+
     orig_msg = await get_orig_message(event.message_id)
     if orig_msg is None:
         _m = await bot.cache.gof_message(event.channel_id, event.message_id)
@@ -63,13 +73,6 @@ async def handle_reaction_add(event: hikari.GuildReactionAddEvent) -> None:
             _m.author.id,
             _m.author.is_bot,
         )
-
-    emoji_str = _get_emoji_str_from_event(event)
-    if not emoji_str:
-        return
-    starboards = await _get_starboards_for_emoji(emoji_str, event.guild_id)
-    if len(starboards) == 0:
-        return
 
     # data for the person who reacted
     await goc_member(event.guild_id, event.member.id, event.member.is_bot)
@@ -124,6 +127,8 @@ async def handle_reaction_add(event: hikari.GuildReactionAddEvent) -> None:
 async def handle_reaction_remove(
     event: hikari.GuildReactionDeleteEvent,
 ) -> None:
+    bot = cast("Bot", event.app)
+
     orig_msg = await get_orig_message(event.message_id)
     if not orig_msg:
         return
@@ -133,6 +138,9 @@ async def handle_reaction_remove(
     emoji_str = _get_emoji_str_from_event(event)
     if not emoji_str:
         return
+    if emoji_str not in await bot.cache.guild_star_emojis(event.guild_id):
+        return
+
     starboards = await _get_starboards_for_emoji(emoji_str, event.guild_id)
 
     valid_sbids: list[int] = []
