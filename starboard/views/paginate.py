@@ -51,6 +51,8 @@ class Paginator(NavigatorView):
                 await button.before_page_change()
 
         payload = self._get_page_payload(self.pages[0])
-        message = await ctx.respond(**payload, ensure_message=True)
+        message = await ctx.respond(
+            **payload, ensure_message=True, ephemeral=True
+        )
 
         self.start(message)
