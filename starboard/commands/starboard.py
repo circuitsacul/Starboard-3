@@ -33,7 +33,7 @@ from starboard.exceptions import StarboardNotFound
 from starboard.views import Confirm
 
 from ._checks import has_guild_perms
-from ._converters import any_emoji_str, any_emoji_list
+from ._converters import any_emoji_list, any_emoji_str
 from ._sb_config import EditStarboardConfig
 from ._utils import pretty_emoji_str, pretty_sb_config
 

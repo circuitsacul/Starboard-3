@@ -28,8 +28,8 @@ import hikari
 from cachetools import LFUCache
 from hikari.impl.cache import CacheImpl
 
-from starboard.undefined import UNDEF
 from starboard.database import Starboard
+from starboard.undefined import UNDEF
 
 if TYPE_CHECKING:
     from starboard.bot import Bot
@@ -62,8 +62,7 @@ class Cache(CacheImpl):
         super().clear()
 
     async def guild_star_emojis(
-        self,
-        guild: hikari.SnowflakeishOr[hikari.PartialGuild],
+        self, guild: hikari.SnowflakeishOr[hikari.PartialGuild]
     ) -> set[str]:
         gid = int(guild)
         ge: set[str]

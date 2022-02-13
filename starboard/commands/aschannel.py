@@ -34,8 +34,8 @@ from starboard.undefined import UNDEF
 from starboard.views import Confirm
 
 from ._checks import has_guild_perms
-from ._utils import optiond, pretty_emoji_str
 from ._converters import any_emoji_list, any_emoji_str
+from ._utils import optiond, pretty_emoji_str
 
 if TYPE_CHECKING:
     from starboard.bot import Bot
@@ -249,8 +249,7 @@ class SetEmoji:
 @crescent.command(name="add", description="Add an emoji")
 class AddEmoji:
     channel = crescent.option(
-        hikari.TextableGuildChannel,
-        "The autostar channel to add the emoji to",
+        hikari.TextableGuildChannel, "The autostar channel to add the emoji to"
     )
     emoji = crescent.option(str, "The emoji to add")
 

@@ -85,7 +85,7 @@ async def leaderboard(ctx: crescent.Context) -> None:
 @crescent.command(name="rank", description="Show a users rank")
 class Rank:
     user = crescent.option(
-        hikari.User, "The user to show the rank for", default=None
+        hikari.User, "The user to show the rank for"
     )
 
     async def callback(self, ctx: crescent.Context) -> None:
