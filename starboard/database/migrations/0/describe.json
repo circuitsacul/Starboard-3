@@ -85,8 +85,8 @@
                     "not_null": false
                 },
                 {
-                    "name": "premium_end",
-                    "type_": "TIMESTAMP",
+                    "name": "_premium_end",
+                    "type_": "TIMESTAMPTZ",
                     "not_null": false
                 },
                 {

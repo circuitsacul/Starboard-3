@@ -27,9 +27,12 @@ import subprocess
 from typing import TYPE_CHECKING, cast
 
 import crescent
+import hikari
 
 from starboard.constants import MESSAGE_LEN
 from starboard.utils import trunc_list, truncate
+from starboard.database import goc_user
+from starboard.exceptions import StarboardErr
 
 from ._checks import owner_only
 
@@ -39,6 +42,35 @@ if TYPE_CHECKING:
 
 plugin = crescent.Plugin("owner")
 owner = crescent.Group("owner", "Owner only commands", hooks=[owner_only])
+
+
+@plugin.include
+@owner.child
+@crescent.command(name="give-credits", description="Gives a user credits")
+class GiveCredits:
+    user = crescent.option(str, "The id of the user")
+    credits = crescent.option(int, "The number of credits to give")
+
+    async def callback(self, ctx: crescent.Context) -> None:
+        try:
+            uid = int(self.user)
+        except ValueError:
+            raise StarboardErr(f"{self.user} is not a valid id.")
+
+        bot = cast("Bot", ctx.app)
+        try:
+            obj = await bot.rest.fetch_user(uid)
+        except hikari.NotFoundError:
+            raise StarboardErr(f"No user with id {uid} was found.")
+
+        u = await goc_user(uid, obj.is_bot)
+        u.credits = u.credits + self.credits
+        await u.save()
+        await ctx.respond(
+            f"Gave {obj} {self.credits} credits. They now have {u.credits} "
+            "credits.",
+            ephemeral=True,
+        )
 
 
 @plugin.include

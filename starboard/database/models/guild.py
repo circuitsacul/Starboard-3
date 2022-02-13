@@ -22,6 +22,9 @@
 
 from __future__ import annotations
 
+import pytz
+from datetime import datetime
+
 import apgorm
 from apgorm import types
 
@@ -41,10 +44,25 @@ class Guild(apgorm.Model):
     log_channel_id = (
         types.Numeric().nullablefield().with_converter(NullDecimalC)
     )
-    premium_end = types.Timestamp().nullablefield()
+    _premium_end = types.TimestampTZ().nullablefield()
 
     stack_posroles = types.Boolean().field(default=False)
     stack_xproles = types.Boolean().field(default=False)
 
     # primary key
     primary_key = (id,)
+
+    async def premium_end(self, allow_update: bool = False) -> datetime | None:
+        if not self._premium_end:
+            return None
+
+        now = datetime.now(pytz.UTC)
+
+        if self._premium_end < now:
+            if allow_update:
+                self._premium_end = None
+                await self.save()
+
+            return None
+
+        return self._premium_end

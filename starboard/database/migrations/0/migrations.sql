@@ -21,7 +21,7 @@ ALTER TABLE aschannels ADD COLUMN require_image BOOLEAN;
 ALTER TABLE aschannels ADD COLUMN delete_invalid BOOLEAN;
 ALTER TABLE guilds ADD COLUMN id NUMERIC;
 ALTER TABLE guilds ADD COLUMN log_channel_id NUMERIC;
-ALTER TABLE guilds ADD COLUMN premium_end TIMESTAMP;
+ALTER TABLE guilds ADD COLUMN _premium_end TIMESTAMPTZ;
 ALTER TABLE guilds ADD COLUMN stack_posroles BOOLEAN;
 ALTER TABLE guilds ADD COLUMN stack_xproles BOOLEAN;
 ALTER TABLE members ADD COLUMN user_id NUMERIC;
