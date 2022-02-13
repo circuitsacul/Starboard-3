@@ -52,7 +52,7 @@ class Paginator(NavigatorView):
 
         payload = self._get_page_payload(self.pages[0])
         message = await ctx.respond(
-            **payload, ensure_message=True, ephemeral=True
+            **payload, ensure_message=True, ephemeral=ephemeral
         )
 
         self.start(message)

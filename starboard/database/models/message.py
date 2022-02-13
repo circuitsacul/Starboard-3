@@ -67,7 +67,7 @@ class Message(apgorm.Model):
         .with_converter(DecimalArrayC)
     )
     trashed = types.Boolean().field(default=False)
-    trash_reason = types.VarChar(512).nullablefield()
+    trash_reason = types.VarChar(32).nullablefield()
     frozen = types.Boolean().field(default=False)
 
     guild_id_fk = apgorm.ForeignKey(guild_id, Guild.id)

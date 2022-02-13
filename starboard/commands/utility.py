@@ -33,7 +33,7 @@ from starboard.core.starboards import refresh_message
 from starboard.core.config import get_config
 from starboard.database import Starboard, goc_message, SBMessage, Message
 from starboard.exceptions import StarboardErr, StarboardNotFound
-from starboard.views import Confirm, Paginator
+from starboard.views import Paginator
 from starboard.utils import jump
 
 from ._checks import has_guild_perms
@@ -117,6 +117,8 @@ async def toggle_freeze(
 @utils.child
 @crescent.command(name="trashcan", description="Lists all trashed messages")
 async def trashcan(ctx: crescent.Context) -> None:
+    bot = cast("Bot", ctx.app)
+
     trashed = (
         await Message.fetch_query()
         .where(guild_id=ctx.guild_id, trashed=True)
@@ -125,7 +127,8 @@ async def trashcan(ctx: crescent.Context) -> None:
     if not trashed:
         raise StarboardErr("There are no trashed messages in this server.")
     lines = [
-        f"[{t.id}]({jump(t.guild_id, t.channel_id, t.id)})" for t in trashed
+        f"[{t.id}]({jump(t.guild_id, t.channel_id, t.id)}): {t.trash_reason}"
+        for t in trashed
     ]
     pages: list[str] = []
     for x, l in enumerate(lines):
@@ -134,8 +137,8 @@ async def trashcan(ctx: crescent.Context) -> None:
 
         pages[-1] += "\n" + l
 
-    pag = Paginator(ctx.user.id, pages)
-    await pag.send(ctx, ephemeral=True)
+    pag = Paginator(ctx.user.id, [bot.embed(description=p) for p in pages])
+    await pag.send(ctx)
 
 
 @plugin.include

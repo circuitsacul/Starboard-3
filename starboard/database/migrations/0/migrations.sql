@@ -35,7 +35,7 @@ ALTER TABLE messages ADD COLUMN author_id NUMERIC;
 ALTER TABLE messages ADD COLUMN is_nsfw BOOLEAN;
 ALTER TABLE messages ADD COLUMN forced_to NUMERIC[];
 ALTER TABLE messages ADD COLUMN trashed BOOLEAN;
-ALTER TABLE messages ADD COLUMN trash_reason VARCHAR(512);
+ALTER TABLE messages ADD COLUMN trash_reason VARCHAR(32);
 ALTER TABLE messages ADD COLUMN frozen BOOLEAN;
 ALTER TABLE overrides ADD COLUMN id SERIAL;
 ALTER TABLE overrides ADD COLUMN guild_id NUMERIC;

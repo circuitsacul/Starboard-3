@@ -191,7 +191,7 @@
                 },
                 {
                     "name": "trash_reason",
-                    "type_": "VARCHAR(512)",
+                    "type_": "VARCHAR(32)",
                     "not_null": false
                 },
                 {
