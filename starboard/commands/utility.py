@@ -440,22 +440,6 @@ class MessageInfo:
 
         msg = await orig_msg_from_link(self.message_link)
 
-        if msg.trashed:
-            view = Confirm(ctx.user.id)
-            m = await ctx.respond(
-                "This message was trashed. Show anyways?",
-                components=view.build(),
-                ensure_message=True,
-            )
-            view.start(m)
-            await view.wait()
-
-            if not view.result:
-                await m.edit("Cancelled.", components=[])
-                return
-        else:
-            m = None
-
         j = jump(ctx.guild_id, msg.channel_id, msg.id)
         embed = bot.embed(
             title="Message Info",
@@ -499,7 +483,4 @@ class MessageInfo:
                 ),
             )
 
-        if m:
-            await m.edit(embed=embed, content=None, components=[])
-        else:
-            await ctx.respond(embed=embed)
+        await ctx.respond(embed=embed, ephemeral=True)
