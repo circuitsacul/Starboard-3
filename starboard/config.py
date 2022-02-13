@@ -49,7 +49,8 @@ class Config:
     max_autostar: int = 10
 
     # override settings restrictions
-    max_ov_channels: int = 100  # TODO
+    max_ov_name: int = 32
+    max_ov_channels: int = 100
     max_ov_per_starboard: int = 10
 
     # non-premium restrictions
