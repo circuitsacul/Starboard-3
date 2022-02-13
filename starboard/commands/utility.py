@@ -30,8 +30,11 @@ from hikari import Permissions
 
 from starboard.core.messages import get_orig_message
 from starboard.core.starboards import refresh_message
-from starboard.database import Starboard, goc_message
+from starboard.core.config import get_config
+from starboard.database import Starboard, goc_message, SBMessage
 from starboard.exceptions import StarboardErr, StarboardNotFound
+from starboard.views import Confirm
+from starboard.utils import jump
 
 from ._checks import has_guild_perms
 from ._converters import msg_ch_id, orig_msg_from_link
@@ -395,3 +398,83 @@ async def refresh_message_cmd(
 
     if msg:
         await refresh_message(bot, msg, force=True)
+
+
+# OTHER
+@plugin.include
+@utils.child
+@crescent.command(name="info", description="Shows message info")
+class MessageInfo:
+    message_link = crescent.option(
+        str, "The message to show info for", name="message-link"
+    )
+
+    async def callback(self, ctx: crescent.Context) -> None:
+        bot = cast("Bot", ctx.app)
+        assert ctx.guild_id
+
+        msg = await orig_msg_from_link(self.message_link)
+
+        if msg.trashed:
+            view = Confirm(ctx.user.id)
+            m = await ctx.respond(
+                "This message was trashed. Show anyways?",
+                components=view.build(),
+                ensure_message=True,
+            )
+            view.start(m)
+            await view.wait()
+
+            if not view.result:
+                await m.edit("Cancelled.", components=[])
+                return
+        else:
+            m = None
+
+        j = jump(ctx.guild_id, msg.channel_id, msg.id)
+        embed = bot.embed(
+            title="Message Info",
+            description=(
+                f"Original: `{msg.id}` | [jump]({j})\n"
+                f"Channel: `{msg.channel_id}` | <#{msg.channel_id}>\n"
+                f"Author: `{msg.author_id}` | <@{msg.author_id}>\n"
+                f"Trashed: {msg.trashed}\n"
+                f"Frozen: {msg.frozen}\n"
+                + (
+                    f"Trash reason: {msg.trash_reason}\n"
+                    if msg.trashed
+                    else ""
+                )
+            ),
+        )
+
+        sbs = (
+            await Starboard.fetch_query()
+            .where(guild_id=ctx.guild_id)
+            .fetchmany()
+        )
+        for sb in sbs:
+            ch = bot.cache.get_guild_channel(sb.id)
+            sbm = await SBMessage.exists(message_id=msg.id, starboard_id=sb.id)
+            config = await get_config(sb, msg.channel_id)
+
+            points = sbm.last_known_star_count if sbm else 0
+
+            embed.add_field(
+                name=cast(str, ch.name if ch else f"Deleted Channel {sb.id}"),
+                value=(
+                    (
+                        f"Message: `{sbm.sb_message_id}` | [jump]("
+                        + jump(ctx.guild_id, sb.id, sbm.sb_message_id)
+                        + ")\n"
+                        if sbm and sbm.sb_message_id
+                        else "Message not on starboard\n"
+                    )
+                    + f"Points: **{points}**/{config.required}\n"
+                ),
+            )
+
+        if m:
+            await m.edit(embed=embed, content=None, components=[])
+        else:
+            await ctx.respond(embed=embed)

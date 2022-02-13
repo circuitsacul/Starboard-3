@@ -25,6 +25,10 @@ from __future__ import annotations
 from typing import Callable
 
 
+def jump(guild: int, channel: int, message: int) -> str:
+    return f"https://discord.com/channels/{guild}/{channel}/{message}"
+
+
 def truncate(text: str, max: int, ddd: str = "...") -> str:
     if len(text) <= max:
         return text
