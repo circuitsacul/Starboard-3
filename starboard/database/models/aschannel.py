@@ -28,7 +28,7 @@ from apgorm import types
 from starboard.config import CONFIG
 
 from ._converters import DecimalC, NonNullArray
-from ._validators import int_range, array_len
+from ._validators import int_range
 from .guild import Guild
 
 
@@ -53,4 +53,3 @@ class AutoStarChannel(apgorm.Model):
     # validators:
     min_chars.add_validator(int_range("min-chars", 0, CONFIG.max_minchars))
     max_chars.add_validator(int_range("max-chars", 0, CONFIG.max_maxchars))
-    emojis.add_validator(array_len("emojis", CONFIG.max_asc_emojis))

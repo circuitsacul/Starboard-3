@@ -28,10 +28,11 @@ import crescent
 import hikari
 from asyncpg import UniqueViolationError
 
-from starboard.database import AutoStarChannel
+from starboard.database import AutoStarChannel, Guild
 from starboard.exceptions import ASCNotFound, StarboardErr
 from starboard.undefined import UNDEF
 from starboard.views import Confirm
+from starboard.config import CONFIG
 
 from ._checks import has_guild_perms
 from ._converters import any_emoji_list, any_emoji_str
@@ -61,8 +62,19 @@ class CreateAutoStar:
 
     async def callback(self, ctx: crescent.Context) -> None:
         bot = cast("Bot", ctx.app)
-
         assert ctx.guild_id
+
+        guild = await Guild.fetch(id=ctx.guild_id)
+        ip = await guild.premium_end() is not None
+        limit = CONFIG.max_autostar if ip else CONFIG.np_max_autostar
+        count = await AutoStarChannel.count(guild_id=ctx.guild_id)
+
+        if count >= limit:
+            raise StarboardErr(
+                f"You can only have up to {limit} autostar channels."
+                + (" Get premium to increase this limit." if not ip else "")
+            )
+
         try:
             await AutoStarChannel(
                 id=self.channel.id, guild_id=ctx.guild_id
@@ -234,11 +246,23 @@ class SetEmoji:
     emojis = crescent.option(str, "A list of emojis to use")
 
     async def callback(self, ctx: crescent.Context) -> None:
+        assert ctx.guild_id
         asc = await AutoStarChannel.exists(id=self.channel.id)
         if not asc:
             raise ASCNotFound(self.channel.id)
 
         emojis = any_emoji_list(self.emojis)
+
+        guild = await Guild.fetch(id=ctx.guild_id)
+        ip = await guild.premium_end() is not None
+        limit = CONFIG.max_asc_emojis if ip else CONFIG.np_max_asc_emojis
+
+        if len(emojis) > limit:
+            raise StarboardErr(
+                f"You can only have up to {limit} emojis per autostar channel."
+                + (" Get premium to increase this limit." if not ip else "")
+            )
+
         asc.emojis = list(emojis)
         await asc.save()
         await ctx.respond("Done.")
@@ -265,6 +289,16 @@ class AddEmoji:
                 f"{e} is already an emoji for <#{asc.id}>.", ephemeral=True
             )
             return
+
+        guild = await Guild.fetch(id=ctx.guild_id)
+        ip = await guild.premium_end() is not None
+        limit = CONFIG.max_asc_emojis if ip else CONFIG.np_max_asc_emojis
+
+        if len(emojis) >= limit:
+            raise StarboardErr(
+                f"You can only have up to {limit} emojis per autostar channel."
+                + (" Get premium to increase this limit." if not ip else "")
+            )
 
         emojis.append(e)
         asc.emojis = emojis
