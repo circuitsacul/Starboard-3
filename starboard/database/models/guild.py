@@ -52,7 +52,7 @@ class Guild(apgorm.Model):
     # primary key
     primary_key = (id,)
 
-    async def premium_end(self, allow_update: bool = False) -> datetime | None:
+    async def premium_end(self, allow_update: bool = True) -> datetime | None:
         if not self._premium_end:
             return None
 

@@ -6,8 +6,9 @@ import asyncpg
 import crescent
 import hikari
 
-from starboard.core.config import StarboardConfig, validate_changes
-from starboard.database import Override, Starboard
+from starboard.core.config import StarboardConfig
+from starboard.database import Override, Starboard, validate_sb_changes
+from starboard.config import CONFIG
 from starboard.exceptions import (
     OverrideNotFound,
     StarboardErr,
@@ -112,6 +113,7 @@ class CreateOverride:
     )
 
     async def callback(self, ctx: crescent.Context) -> None:
+        assert ctx.guild_id
         bot = cast("Bot", ctx.app)
 
         if self.copy_from is not None:
@@ -123,6 +125,16 @@ class CreateOverride:
 
         else:
             ov = None
+
+        count = await Override.count(
+            guild_id=ctx.guild_id,
+            starboard_id=self.starboard.id,
+        )
+        if count >= CONFIG.max_ov_per_starboard:
+            raise StarboardErr(
+                f"You can only have up to {CONFIG.max_ov_per_starboard} "
+                "overrides per starboard."
+            )
 
         o = Override(
             guild_id=ctx.guild_id,
@@ -173,7 +185,7 @@ class EditOverride(EditStarboardConfig):
             raise OverrideNotFound(self.name)
 
         options = self._options()
-        await validate_changes(**options)
+        validate_sb_changes(**options)
 
         opt = ov.overrides
         for k, v in options.items():

@@ -29,7 +29,7 @@ from typing import TYPE_CHECKING, Awaitable, Sequence
 import hikari
 from apgorm import sql
 
-from starboard.database import Message, SBMessage, Star, Starboard
+from starboard.database import Message, SBMessage, Star, Starboard, Guild
 
 from .config import StarboardConfig, get_config
 from .messages import get_sbmsg_content
@@ -171,8 +171,10 @@ async def _refresh_message_for_starboard(
                 bot, config, orig_msg_obj, orig_msg, starcount
             )
             assert embed
+            guild = await Guild.fetch(id=orig_msg.guild_id)
+            ip = (await guild.premium_end()) is not None
             sbmsg_obj = await _send(
-                bot, config, content, [embed, *embeds], orig_msg.author_id
+                bot, config, content, [embed, *embeds], orig_msg.author_id, ip
             )
             if sbmsg_obj:
                 sbmsg.sb_message_id = sbmsg_obj.id
@@ -293,10 +295,11 @@ async def _send(
     content: str,
     embeds: list[hikari.Embed] | None,
     author_id: int,
+    premium: bool,
 ) -> hikari.Message | None:
     webhook = await _webhook(bot, config)
 
-    if webhook and config.use_webhook:
+    if webhook and config.use_webhook and premium:
         try:
             botuser = bot.get_me()
             assert botuser

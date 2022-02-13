@@ -27,9 +27,12 @@ from typing import Any
 
 from apgorm import ForeignKey, Model, Unique, types
 
+from ._validators import array_len
 from ._converters import DecimalArrayC, DecimalC
 from .guild import Guild
 from .starboard import Starboard
+
+from starboard.config import CONFIG
 
 
 class Override(Model):
@@ -53,6 +56,9 @@ class Override(Model):
 
     guild_fk = ForeignKey(guild_id, Guild.id)
     starboard_fk = ForeignKey(starboard_id, Starboard.id)
+
+    # validators
+    channel_ids.add_validator(array_len("channels", CONFIG.max_ov_channels))
 
     @property
     def overrides(self) -> dict[str, Any]:
