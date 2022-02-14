@@ -22,17 +22,20 @@
 
 from __future__ import annotations
 
-import pytz
-from datetime import datetime, timedelta
+from typing import TYPE_CHECKING, cast
 
 import crescent
+from starboard.core.premium import redeem
 
-from starboard.database import Guild, goc_guild, User
+from starboard.database import Guild, goc_guild, User, goc_member, Member
 from starboard.views import Confirm
 from starboard.config import CONFIG
 from starboard.exceptions import StarboardErr
 
 from ._checks import guild_only
+
+if TYPE_CHECKING:
+    from starboard.bot import Bot
 
 
 plugin = crescent.Plugin("premium-commands")
@@ -73,6 +76,7 @@ class Redeem:
 
     async def callback(self, ctx: crescent.Context) -> None:
         assert ctx.guild_id is not None
+        bot = cast("Bot", ctx.app)
 
         if self.months < 1:
             raise StarboardErr("You must redeem at least one month.")
@@ -93,31 +97,17 @@ class Redeem:
             await m.edit("Cancelled.", components=[])
             return
 
+        g = await goc_guild(ctx.guild_id)
         u = await User.exists(id=ctx.user.id)
-        if not u or u.credits < cost:
+        if not u:
             await m.edit("You don't have enough credits.", components=[])
             return
 
-        u.credits = u.credits - cost
-        await u.save()
-        if u.credits < 0:  # they tried running the command twice to trick us
-            u.credits = u.credits + cost  # revert the change
-            await u.save()
-            await m.edit("Nice try.", components=[])
+        success = await redeem(bot, u.id, g.id, self.months)
+        if not success:
+            await m.edit("You don't have enough credits.", components=[])
             return
 
-        g = await goc_guild(ctx.guild_id)
-
-        delta = timedelta(days=CONFIG.days_per_month * self.months)
-        from_now = datetime.now(pytz.UTC) + delta
-        if g.premium_end:
-            from_curr = g.premium_end + delta
-            new = max(from_curr, from_now)
-        else:
-            new = from_now
-
-        g.premium_end = new
-        await g.save()
         await m.edit("Done.", components=[])
 
 
@@ -131,3 +121,88 @@ async def credits(ctx: crescent.Context) -> None:
     u = await User.exists(id=ctx.user.id)
     credits = u.credits if u else 0
     await ctx.respond(f"You have {credits} credits.", ephemeral=True)
+
+
+ar = prem.sub_group("autoredeem", "Manage autoredeem")
+
+
+@plugin.include
+@ar.child
+@crescent.hook(guild_only)
+@crescent.command(name="enable", description="Enables autoredeem for a server")
+async def enable_autoredeem(ctx: crescent.Context) -> None:
+    assert ctx.guild_id
+    m = await goc_member(ctx.guild_id, ctx.user.id, ctx.user.is_bot)
+    if m.autoredeem_enabled:
+        raise StarboardErr("Autoredeem is already enabled in this server.")
+    m.autoredeem_enabled = True
+    await m.save()
+    await ctx.respond("Enabled autoredeem for this server.", ephemeral=True)
+
+
+@plugin.include
+@ar.child
+@crescent.hook(guild_only)
+@crescent.command(
+    name="disable", description="Disables autoredeem for a server"
+)
+async def disable_autoredeem(ctx: crescent.Context) -> None:
+    assert ctx.guild_id
+    m = await Member.exists(user_id=ctx.user.id, guild_id=ctx.guild_id)
+    if not m or not m.autoredeem_enabled:
+        raise StarboardErr("Autoredeem is not enabled in this server.")
+
+    m.autoredeem_enabled = False
+    await m.save()
+    await ctx.respond("Disabled autoredeem for this server.", ephemeral=True)
+
+
+@plugin.include
+@ar.child
+@crescent.command(name="view", description="View autoreeem info")
+async def view_autoredeem(ctx: crescent.Context) -> None:
+    count = await Member.count(
+        user_id=ctx.user.id, guild_id=ctx.guild_id, autoredeem_enabled=True
+    )
+    if ctx.guild_id is not None:
+        m = await Member.exists(user_id=ctx.user.id, guild_id=ctx.guild_id)
+        this = m.autoredeem_enabled if m else False
+    else:
+        this = None
+
+    if this is None:
+        await ctx.respond(
+            f"Autoredeem is enabled in {count} servers.", ephemeral=True
+        )
+    else:
+        await ctx.respond(
+            f"Autoredeem is {'' if this else 'not '}enabled for this server. "
+            f"It is enabled in {count} servers total.",
+            ephemeral=True,
+        )
+
+
+@plugin.include
+@ar.child
+@crescent.command(
+    name="clear", description="Disables autoredeem in all servers"
+)
+async def clear_autoredeem(ctx: crescent.Context) -> None:
+    conf = Confirm(ctx.user.id)
+    m = await ctx.respond(
+        "Are you sure? This will disable autoredeem for any servers you've "
+        "enabled it in.",
+        components=conf.build(),
+        ensure_message=True,
+    )
+    conf.start(m)
+    await conf.wait()
+
+    if not conf.result:
+        await m.edit("Cancelled.", components=[])
+        return
+
+    await Member.update_query().where(
+        user_id=ctx.user.id, autoredeem_enabled=True
+    ).set(autoredeem_enabled=False).execute()
+    await m.edit("Done.", components=[])

@@ -35,7 +35,7 @@ async def check_expired_premium() -> None:
         await asyncio.sleep(60)
 
 
-async def _check_expired_premium() -> None:
+async def _check_expired_premium() -> None:  # TODO: deal with autoredeem
     now = datetime.now(pytz.UTC)
     q = Guild.update_query()
     q.where(Guild.premium_end.is_null.not_)
