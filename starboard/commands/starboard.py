@@ -134,6 +134,7 @@ class CreateStarboard:
     )
 
     async def callback(self, ctx: crescent.Context) -> None:
+        bot = cast("Bot", ctx.app)
         assert ctx.guild_id
         exists = await Starboard.exists(id=self.channel.id)
         if exists:
@@ -158,6 +159,7 @@ class CreateStarboard:
             )
 
         await Starboard(id=self.channel.id, guild_id=ctx.guild_id).create()
+        bot.cache.invalidate_star_emojis(ctx.guild_id)
 
         await ctx.respond(f"Created starboard <#{self.channel.id}>.")
 
@@ -171,6 +173,8 @@ class DeleteStarboard:
     )
 
     async def callback(self, ctx: crescent.Context) -> None:
+        bot = cast("Bot", ctx.app)
+        assert ctx.guild_id
         confirm = Confirm(ctx.user.id)
         msg = await ctx.respond(
             "Are you sure? All data will be lost **permanently**.",
@@ -189,6 +193,7 @@ class DeleteStarboard:
             .where(id=self.starboard.id)
             .execute()
         )
+        bot.cache.invalidate_star_emojis(ctx.guild_id)
         if len(res) == 0:
             await msg.edit(
                 StarboardNotFound(self.starboard.id).msg, components=[]
@@ -236,6 +241,7 @@ class SetStarEmoji:
     emojis = crescent.option(str, "A list of emojis to use")
 
     async def callback(self, ctx: crescent.Context) -> None:
+        bot = cast("Bot", ctx.app)
         assert ctx.guild_id
         s = await Starboard.exists(id=self.starboard.id)
         if not s:
@@ -253,6 +259,7 @@ class SetStarEmoji:
             )
         s.star_emojis = list(emojis)
         await s.save()
+        bot.cache.invalidate_star_emojis(ctx.guild_id)
         await ctx.respond("Done.")
 
 
@@ -266,6 +273,8 @@ class AddStarEmoji:
     emoji = crescent.option(str, "The star emoji to add")
 
     async def callback(self, ctx: crescent.Context) -> None:
+        assert ctx.guild_id
+        bot = cast("Bot", ctx.app)
         s = await Starboard.exists(id=self.starboard.id)
         if not s:
             raise StarboardNotFound(self.starboard.id)
@@ -291,6 +300,7 @@ class AddStarEmoji:
         emojis.append(e)
         s.star_emojis = emojis
         await s.save()
+        bot.cache.invalidate_star_emojis(ctx.guild_id)
         await ctx.respond("Done.")
 
 
@@ -305,6 +315,9 @@ class RemoveStarEmoji:
     emoji = crescent.option(str, "The star emoji to remove")
 
     async def callback(self, ctx: crescent.Context) -> None:
+        bot = cast("Bot", ctx.app)
+        assert ctx.guild_id
+
         s = await Starboard.exists(id=self.starboard.id)
         if not s:
             raise StarboardNotFound(self.starboard.id)
@@ -320,4 +333,5 @@ class RemoveStarEmoji:
         emojis.remove(e)
         s.star_emojis = emojis
         await s.save()
+        bot.cache.invalidate_star_emojis(ctx.guild_id)
         await ctx.respond("Done.")

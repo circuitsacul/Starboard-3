@@ -129,16 +129,16 @@ async def handle_reaction_remove(
 ) -> None:
     bot = cast("Bot", event.app)
 
-    orig_msg = await get_orig_message(event.message_id)
-    if not orig_msg:
-        return
-    if orig_msg.frozen:
-        return
-
     emoji_str = _get_emoji_str_from_event(event)
     if not emoji_str:
         return
     if emoji_str not in await bot.cache.guild_star_emojis(event.guild_id):
+        return
+
+    orig_msg = await get_orig_message(event.message_id)
+    if not orig_msg:
+        return
+    if orig_msg.frozen:
         return
 
     starboards = await _get_starboards_for_emoji(emoji_str, event.guild_id)

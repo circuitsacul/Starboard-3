@@ -61,13 +61,20 @@ class Cache(CacheImpl):
         self.__star_emojis.clear()
         super().clear()
 
+    def invalidate_star_emojis(
+        self, guild: hikari.SnowflakeishOr[hikari.PartialGuild]
+    ) -> None:
+        print("invalid")
+        self.__star_emojis.pop(int(guild), None)
+
     async def guild_star_emojis(
         self, guild: hikari.SnowflakeishOr[hikari.PartialGuild]
     ) -> set[str]:
         gid = int(guild)
         ge: set[str]
         _ge = self.__star_emojis.get(gid, None)
-        if not _ge:
+        if _ge is None:
+            print("fetching")
             sbs = await Starboard.fetch_query().where(guild_id=gid).fetchmany()
             ge = set()
             for s in sbs:
@@ -75,6 +82,7 @@ class Cache(CacheImpl):
 
             self.__star_emojis[gid] = ge
             return ge
+        print("getting")
         return _ge
 
     async def gof_webhook(
