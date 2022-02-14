@@ -49,7 +49,7 @@ async def guild_premium(ctx: crescent.Context) -> None:
     assert ctx.guild_id is not None
     g = await Guild.exists(id=ctx.guild_id)
 
-    prem_end = await g.premium_end() if g else None
+    prem_end = g.premium_end if g else None
 
     if prem_end is None:
         await ctx.respond("This server does not have premium.")
@@ -109,13 +109,14 @@ class Redeem:
         g = await goc_guild(ctx.guild_id)
 
         delta = timedelta(days=CONFIG.days_per_month * self.months)
-        prem_end = await g.premium_end()
-        if prem_end:
-            new = prem_end + delta
+        from_now = datetime.now(pytz.UTC) + delta
+        if g.premium_end:
+            from_curr = g.premium_end + delta
+            new = max(from_curr, from_now)
         else:
-            new = datetime.now(pytz.UTC) + delta
+            new = from_now
 
-        g._premium_end = new
+        g.premium_end = new
         await g.save()
         await m.edit("Done.", components=[])
 

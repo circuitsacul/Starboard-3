@@ -143,7 +143,7 @@ class CreateStarboard:
             return
 
         guild = await goc_guild(ctx.guild_id)
-        ip = await guild.premium_end() is not None
+        ip = guild.premium_end is not None
 
         limit = (CONFIG.max_starboards if ip else CONFIG.np_max_starboards)
         count = await Starboard.count(guild_id=ctx.guild_id)
@@ -242,7 +242,7 @@ class SetStarEmoji:
             raise StarboardNotFound(self.starboard.id)
 
         guild = await Guild.fetch(id=ctx.guild_id)
-        ip = await guild.premium_end() is not None
+        ip = guild.premium_end is not None
         limit = CONFIG.max_star_emojis if ip else CONFIG.np_max_star_emojis
 
         emojis = any_emoji_list(self.emojis)
@@ -279,7 +279,7 @@ class AddStarEmoji:
             return
 
         guild = await Guild.fetch(id=ctx.guild_id)
-        ip = await guild.premium_end() is not None
+        ip = guild.premium_end is not None
         limit = CONFIG.max_star_emojis if ip else CONFIG.np_max_star_emojis
 
         if len(emojis) >= limit:

@@ -65,7 +65,7 @@ class CreateAutoStar:
         assert ctx.guild_id
 
         guild = await Guild.fetch(id=ctx.guild_id)
-        ip = await guild.premium_end() is not None
+        ip = guild.premium_end is not None
         limit = CONFIG.max_autostar if ip else CONFIG.np_max_autostar
         count = await AutoStarChannel.count(guild_id=ctx.guild_id)
 
@@ -254,7 +254,7 @@ class SetEmoji:
         emojis = any_emoji_list(self.emojis)
 
         guild = await Guild.fetch(id=ctx.guild_id)
-        ip = await guild.premium_end() is not None
+        ip = guild.premium_end is not None
         limit = CONFIG.max_asc_emojis if ip else CONFIG.np_max_asc_emojis
 
         if len(emojis) > limit:
@@ -291,7 +291,7 @@ class AddEmoji:
             return
 
         guild = await Guild.fetch(id=ctx.guild_id)
-        ip = await guild.premium_end() is not None
+        ip = guild.premium_end is not None
         limit = CONFIG.max_asc_emojis if ip else CONFIG.np_max_asc_emojis
 
         if len(emojis) >= limit:

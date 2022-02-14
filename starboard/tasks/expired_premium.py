@@ -22,29 +22,23 @@
 
 from __future__ import annotations
 
-import apgorm
-from apgorm import types
+import asyncio
+import pytz
+from datetime import datetime
 
-from ._converters import DecimalC, NullDecimalC
-
-
-async def goc_guild(guild_id: int) -> Guild:
-    if (g := await Guild.exists(id=guild_id)) is not None:
-        return g
-    return await Guild(id=guild_id).create()
+from starboard.database import Guild
 
 
-class Guild(apgorm.Model):
-    id = types.Numeric().field().with_converter(DecimalC)
+async def check_expired_premium() -> None:
+    while True:
+        await _check_expired_premium()
+        await asyncio.sleep(60)
 
-    # config options
-    log_channel_id = (
-        types.Numeric().nullablefield().with_converter(NullDecimalC)
-    )
-    premium_end = types.TimestampTZ().nullablefield()
 
-    stack_posroles = types.Boolean().field(default=False)
-    stack_xproles = types.Boolean().field(default=False)
-
-    # primary key
-    primary_key = (id,)
+async def _check_expired_premium() -> None:
+    now = datetime.now(pytz.UTC)
+    q = Guild.update_query()
+    q.where(Guild.premium_end.is_null.not_)
+    q.where(Guild.premium_end.lt(now))
+    q.set(premium_end=None)
+    await q.execute()

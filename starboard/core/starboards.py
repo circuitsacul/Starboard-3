@@ -172,7 +172,7 @@ async def _refresh_message_for_starboard(
             )
             assert embed
             guild = await Guild.fetch(id=orig_msg.guild_id)
-            ip = (await guild.premium_end()) is not None
+            ip = guild.premium_end is not None
             sbmsg_obj = await _send(
                 bot, config, content, [embed, *embeds], orig_msg.author_id, ip
             )

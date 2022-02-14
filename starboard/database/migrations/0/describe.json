@@ -85,7 +85,7 @@
                     "not_null": false
                 },
                 {
-                    "name": "_premium_end",
+                    "name": "premium_end",
                     "type_": "TIMESTAMPTZ",
                     "not_null": false
                 },
@@ -233,7 +233,7 @@
                 },
                 {
                     "name": "name",
-                    "type_": "VARCHAR(32)",
+                    "type_": "TEXT",
                     "not_null": true
                 },
                 {

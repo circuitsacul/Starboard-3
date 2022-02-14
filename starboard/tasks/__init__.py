@@ -19,32 +19,3 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
-
-from __future__ import annotations
-
-import apgorm
-from apgorm import types
-
-from ._converters import DecimalC, NullDecimalC
-
-
-async def goc_guild(guild_id: int) -> Guild:
-    if (g := await Guild.exists(id=guild_id)) is not None:
-        return g
-    return await Guild(id=guild_id).create()
-
-
-class Guild(apgorm.Model):
-    id = types.Numeric().field().with_converter(DecimalC)
-
-    # config options
-    log_channel_id = (
-        types.Numeric().nullablefield().with_converter(NullDecimalC)
-    )
-    premium_end = types.TimestampTZ().nullablefield()
-
-    stack_posroles = types.Boolean().field(default=False)
-    stack_xproles = types.Boolean().field(default=False)
-
-    # primary key
-    primary_key = (id,)
