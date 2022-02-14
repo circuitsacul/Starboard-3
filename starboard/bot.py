@@ -104,6 +104,7 @@ class Bot(crescent.Bot):
         self.expire_prem = asyncio.create_task(
             expired_premium.check_expired_premium(self)
         )
+        self.rotate_dict = asyncio.create_task(self.star_cooldown.loop_cycle())
 
         await super().start(**kwargs)
 
