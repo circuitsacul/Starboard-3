@@ -39,7 +39,7 @@ from hikari_clusters import Brain, Cluster, ClusterLauncher, Server
 
 from .cache import Cache
 from .config import CONFIG, Config
-from .core.cooldown import Cooldown
+from .cooldown import Cooldown
 from .database import Database
 from .tasks import expired_premium
 
