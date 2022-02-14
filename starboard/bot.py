@@ -102,7 +102,7 @@ class Bot(crescent.Bot):
         )
 
         self.expire_prem = asyncio.create_task(
-            expired_premium.check_expired_premium()
+            expired_premium.check_expired_premium(self)
         )
 
         await super().start(**kwargs)

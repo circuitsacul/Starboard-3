@@ -22,15 +22,38 @@
 
 from __future__ import annotations
 
+import traceback
 import pytz
 from typing import TYPE_CHECKING
 from datetime import timedelta, datetime
 
-from starboard.database import User, Guild
+from starboard.database import User, Guild, Member
 from starboard.config import CONFIG
 
 if TYPE_CHECKING:
     from starboard.bot import Bot
+
+
+async def try_autoredeem(bot: Bot, guild: Guild) -> int | None:
+    q = Member.fetch_query()
+    q.where(guild_id=guild.id, autoredeem_enabled=True)
+    ar = await q.fetchmany()
+
+    for a in ar:
+        try:
+            worked = await redeem(bot, a.user_id, guild.id, 1)
+        except Exception:
+            traceback.print_exc()
+            continue
+
+        if worked:
+            return a.user_id
+
+        # if we reach this point, the user didn't have enough credits.
+        # we disable autoredeem to prevent load on the bot later on.
+        a.autoredeem_enabled = False
+        await a.save()
+    return None
 
 
 async def redeem(bot: Bot, user_id: int, guild_id: int, months: int) -> bool:
