@@ -27,7 +27,10 @@ from typing import Any
 
 from apgorm import ForeignKey, Model, Unique, types
 
+from starboard.config import CONFIG
+
 from ._converters import DecimalArrayC, DecimalC
+from ._validators import array_len, str_len
 from .guild import Guild
 from .starboard import Starboard
 
@@ -35,7 +38,7 @@ from .starboard import Starboard
 class Override(Model):
     id = types.Serial().field()
     guild_id = types.Numeric().field().with_converter(DecimalC)
-    name = types.VarChar(32).field()
+    name = types.Text().field()
 
     starboard_id = types.Numeric().field().with_converter(DecimalC)
 
@@ -53,6 +56,10 @@ class Override(Model):
 
     guild_fk = ForeignKey(guild_id, Guild.id)
     starboard_fk = ForeignKey(starboard_id, Starboard.id)
+
+    # validators
+    channel_ids.add_validator(array_len("channels", CONFIG.max_ov_channels))
+    name.add_validator(str_len("name", CONFIG.max_ov_name))
 
     @property
     def overrides(self) -> dict[str, Any]:

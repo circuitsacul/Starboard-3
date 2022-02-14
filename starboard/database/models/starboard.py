@@ -22,13 +22,65 @@
 
 from __future__ import annotations
 
+from typing import Any, Callable
+
 import apgorm
 from apgorm import types
 
 from starboard.config import CONFIG
 
 from ._converters import DecimalC, NonNullArray, NullDecimalC
+from ._validators import int_range, str_len, valid_emoji
 from .guild import Guild
+
+
+def _validate(
+    key: str, changes: dict[str, Any], func: Callable[[Any], bool]
+) -> None:
+    if key in changes:
+        assert func(changes[key])
+
+
+def validate_sb_changes(**changes: Any) -> None:
+    _validate(
+        "webhook_name", changes, str_len("webhook-name", CONFIG.max_whn_len)
+    )
+    _validate(
+        "webhook_avatar",
+        changes,
+        str_len("webhook-avatar", CONFIG.max_wha_len),
+    )
+    _validate(
+        "required",
+        changes,
+        int_range("required", CONFIG.min_required, CONFIG.max_required),
+    )
+    _validate(
+        "required_remove",
+        changes,
+        int_range(
+            "required-remove",
+            CONFIG.min_required_remove,
+            CONFIG.max_required_remove,
+        ),
+    )
+    _validate(
+        "cooldown_period",
+        changes,
+        int_range(
+            "the cooldown period (seconds)", None, CONFIG.max_cooldown_period
+        ),
+    )
+    _validate(
+        "cooldown_count",
+        changes,
+        int_range(
+            "the capacity of the cooldown (count)",
+            None,
+            CONFIG.max_cooldown_cap,
+        ),
+    )
+    _validate("display_emoji", changes, valid_emoji)
 
 
 class Starboard(apgorm.Model):

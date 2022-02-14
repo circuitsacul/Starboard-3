@@ -30,7 +30,7 @@ from typing import List, Optional, cast
 
 @dataclass
 class Config:
-    # settings restrictions
+    # starboard settings restrictions
     max_whn_len: int = 32
     max_wha_len: int = 512
     min_required: int = 1
@@ -39,11 +39,33 @@ class Config:
     max_required_remove: int = 500
     max_cooldown_period: int = 60
     max_cooldown_cap: int = 60
+    max_star_emojis: int = 5
+    max_starboards: int = 10
+
+    # autostar settings restrictions
+    max_maxchars: int = 4000
+    max_minchars: int = 4000
+    max_asc_emojis: int = 5
+    max_autostar: int = 10
+
+    # override settings restrictions
+    max_ov_name: int = 32
+    max_ov_channels: int = 100
+    max_ov_per_starboard: int = 10
+
+    # non-premium restrictions
+    np_max_starboards: int = 3
+    np_max_autostar: int = 1
+    np_max_asc_emojis: int = 3
+    np_max_star_emojis: int = 3
+    np_allow_webhook: bool = False
 
     # functionality
     leaderboard_length: int = 50
     asc_cooldown_cap: int = 5
     asc_cooldown_period: int = 10
+    credits_per_month: int = 3
+    days_per_month: int = 32  # just be safe
 
     # bot style
     color: int = int("FFE19C", 16)

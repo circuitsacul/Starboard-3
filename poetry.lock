@@ -512,6 +512,14 @@ pytest = ">=4.6"
 testing = ["fields", "hunter", "process-tests", "six", "pytest-xdist", "virtualenv"]
 
 [[package]]
+name = "pytz"
+version = "2021.3"
+description = "World timezone definitions, modern and historical"
+category = "main"
+optional = false
+python-versions = "*"
+
+[[package]]
 name = "six"
 version = "1.16.0"
 description = "Python 2 and 3 compatibility utilities"
@@ -539,6 +547,14 @@ python-versions = "*"
 name = "types-emoji"
 version = "1.2.7"
 description = "Typing stubs for emoji"
+category = "main"
+optional = false
+python-versions = "*"
+
+[[package]]
+name = "types-pytz"
+version = "2021.3.5"
+description = "Typing stubs for pytz"
 category = "main"
 optional = false
 python-versions = "*"
@@ -592,7 +608,7 @@ multidict = ">=4.0"
 [metadata]
 lock-version = "1.1"
 python-versions = ">=3.9,<3.11"
-content-hash = "40e89d8c35341311e7ab3f42b569410f043c7e52a577b612ec21d732ad0b390a"
+content-hash = "b24da8943ff5cf8286e7656511d3a1ba49ddf148930c0650d24618daa3827398"
 
 [metadata.files]
 aiohttp = [
@@ -1085,6 +1101,10 @@ pytest-cov = [
     {file = "pytest-cov-3.0.0.tar.gz", hash = "sha256:e7f0f5b1617d2210a2cabc266dfe2f4c75a8d32fb89eafb7ad9d06f6d076d470"},
     {file = "pytest_cov-3.0.0-py3-none-any.whl", hash = "sha256:578d5d15ac4a25e5f961c938b85a05b09fdaae9deef3bb6de9a6e766622ca7a6"},
 ]
+pytz = [
+    {file = "pytz-2021.3-py2.py3-none-any.whl", hash = "sha256:3672058bc3453457b622aab7a1c3bfd5ab0bdae451512f6cf25f64ed37f5b87c"},
+    {file = "pytz-2021.3.tar.gz", hash = "sha256:acad2d8b20a1af07d4e4c9d2e9285c5ed9104354062f275f3fcd88dcef4f1326"},
+]
 six = [
     {file = "six-1.16.0-py2.py3-none-any.whl", hash = "sha256:8abb2f1d86890a2dfb989f9a77cfcfd3e47c2a354b01111771326f8aa26e0254"},
     {file = "six-1.16.0.tar.gz", hash = "sha256:1e61c37477a1626458e36f7b1d82aa5c9b094fa4802892072e49de9c60c4c926"},
@@ -1100,6 +1120,10 @@ types-cachetools = [
 types-emoji = [
     {file = "types-emoji-1.2.7.tar.gz", hash = "sha256:3be036d560ff90351944bb08f8e70447c7e831660fe51c4599974a326585aacb"},
     {file = "types_emoji-1.2.7-py3-none-any.whl", hash = "sha256:003f6140fffe8ab8a606bf030416f8a48785039882c97e3d1c5d9a1baf7c7673"},
+]
+types-pytz = [
+    {file = "types-pytz-2021.3.5.tar.gz", hash = "sha256:fef8de238ee95135952229a2a23bfb87bd63d5a6c8598106a46cfcf48f069ea8"},
+    {file = "types_pytz-2021.3.5-py3-none-any.whl", hash = "sha256:8831f689379ac9e2a62668157381379ed74b3702980e08e71f8673c179c4e3c7"},
 ]
 typing-extensions = [
     {file = "typing_extensions-4.1.0-py3-none-any.whl", hash = "sha256:c13180fbaa7cd97065a4915ceba012bdb31dc34743e63ddee16360161d358414"},

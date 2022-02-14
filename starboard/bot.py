@@ -22,6 +22,7 @@
 
 from __future__ import annotations
 
+import asyncio
 import traceback
 from contextlib import redirect_stdout
 from datetime import datetime
@@ -40,6 +41,7 @@ from .cache import Cache
 from .config import CONFIG, Config
 from .core.cooldown import Cooldown
 from .database import Database
+from .tasks import expired_premium
 
 
 class Bot(crescent.Bot):
@@ -91,12 +93,18 @@ class Bot(crescent.Bot):
         return self._aiohttp_session
 
     async def start(self, **kwargs) -> None:
+        # tasks
         await self.database.connect(
             host=CONFIG.db_host,
             database=CONFIG.db_name,
             user=CONFIG.db_user,
             password=CONFIG.db_password,
         )
+
+        self.expire_prem = asyncio.create_task(
+            expired_premium.check_expired_premium(self)
+        )
+
         await super().start(**kwargs)
 
     async def close(self) -> None:

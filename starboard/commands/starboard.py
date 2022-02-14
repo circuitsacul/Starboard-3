@@ -27,9 +27,10 @@ from typing import TYPE_CHECKING, cast
 import crescent
 import hikari
 
-from starboard.core.config import StarboardConfig, validate_changes
-from starboard.database import Starboard, goc_guild
-from starboard.exceptions import StarboardNotFound
+from starboard.config import CONFIG
+from starboard.core.config import StarboardConfig
+from starboard.database import Guild, Starboard, goc_guild, validate_sb_changes
+from starboard.exceptions import StarboardErr, StarboardNotFound
 from starboard.views import Confirm
 
 from ._checks import has_guild_perms
@@ -133,6 +134,7 @@ class CreateStarboard:
     )
 
     async def callback(self, ctx: crescent.Context) -> None:
+        assert ctx.guild_id
         exists = await Starboard.exists(id=self.channel.id)
         if exists:
             await ctx.respond(
@@ -140,8 +142,20 @@ class CreateStarboard:
             )
             return
 
-        assert ctx.guild_id
-        await goc_guild(ctx.guild_id)
+        guild = await goc_guild(ctx.guild_id)
+        ip = guild.premium_end is not None
+
+        limit = CONFIG.max_starboards if ip else CONFIG.np_max_starboards
+        count = await Starboard.count(guild_id=ctx.guild_id)
+        if count >= limit:
+            raise StarboardErr(
+                f"You can only have up to {limit} starboards."
+                + (
+                    " You can increase this limit with premium."
+                    if not ip
+                    else ""
+                )
+            )
 
         await Starboard(id=self.channel.id, guild_id=ctx.guild_id).create()
 
@@ -196,7 +210,7 @@ class EditStarboard(EditStarboardConfig):
 
     async def callback(self, ctx: crescent.Context) -> None:
         params = self._options()
-        await validate_changes(**params)
+        validate_sb_changes(**params)
 
         s = await Starboard.exists(id=self.starboard.id)
         if not s:
@@ -222,11 +236,21 @@ class SetStarEmoji:
     emojis = crescent.option(str, "A list of emojis to use")
 
     async def callback(self, ctx: crescent.Context) -> None:
+        assert ctx.guild_id
         s = await Starboard.exists(id=self.starboard.id)
         if not s:
             raise StarboardNotFound(self.starboard.id)
 
+        guild = await Guild.fetch(id=ctx.guild_id)
+        ip = guild.premium_end is not None
+        limit = CONFIG.max_star_emojis if ip else CONFIG.np_max_star_emojis
+
         emojis = any_emoji_list(self.emojis)
+        if len(emojis) > limit:
+            raise StarboardErr(
+                f"You an only have up to {limit} emojis per starboard."
+                + (" Get premium to increase this." if not ip else "")
+            )
         s.star_emojis = list(emojis)
         await s.save()
         await ctx.respond("Done.")
@@ -253,6 +277,16 @@ class AddStarEmoji:
                 f"{e} is already a star emoji for <#{s.id}>.", ephemeral=True
             )
             return
+
+        guild = await Guild.fetch(id=ctx.guild_id)
+        ip = guild.premium_end is not None
+        limit = CONFIG.max_star_emojis if ip else CONFIG.np_max_star_emojis
+
+        if len(emojis) >= limit:
+            raise StarboardErr(
+                f"You an only have up to {limit} emojis per starboard."
+                + (" Get premium to increase this." if not ip else "")
+            )
 
         emojis.append(e)
         s.star_emojis = emojis
