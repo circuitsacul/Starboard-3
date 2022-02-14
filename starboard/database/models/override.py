@@ -27,12 +27,12 @@ from typing import Any
 
 from apgorm import ForeignKey, Model, Unique, types
 
-from ._validators import array_len, str_len
+from starboard.config import CONFIG
+
 from ._converters import DecimalArrayC, DecimalC
+from ._validators import array_len, str_len
 from .guild import Guild
 from .starboard import Starboard
-
-from starboard.config import CONFIG
 
 
 class Override(Model):

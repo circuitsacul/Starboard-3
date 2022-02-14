@@ -29,7 +29,7 @@ from typing import TYPE_CHECKING, Awaitable, Sequence
 import hikari
 from apgorm import sql
 
-from starboard.database import Message, SBMessage, Star, Starboard, Guild
+from starboard.database import Guild, Message, SBMessage, Star, Starboard
 
 from .config import StarboardConfig, get_config
 from .messages import get_sbmsg_content

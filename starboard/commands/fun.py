@@ -84,9 +84,7 @@ async def leaderboard(ctx: crescent.Context) -> None:
 @crescent.hook(guild_only)
 @crescent.command(name="rank", description="Show a users rank")
 class Rank:
-    user = crescent.option(
-        hikari.User, "The user to show the rank for"
-    )
+    user = crescent.option(hikari.User, "The user to show the rank for")
 
     async def callback(self, ctx: crescent.Context) -> None:
         assert ctx.guild_id

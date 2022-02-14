@@ -22,9 +22,9 @@
 
 from __future__ import annotations
 
-import emoji
 from typing import Any, Callable, Optional, Sequence
 
+import emoji
 from apgorm.exceptions import InvalidFieldValue
 
 

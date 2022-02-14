@@ -25,12 +25,12 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, cast
 
 import crescent
-from starboard.core.premium import redeem
 
-from starboard.database import Guild, goc_guild, User, goc_member, Member
-from starboard.views import Confirm
 from starboard.config import CONFIG
+from starboard.core.premium import redeem
+from starboard.database import Guild, Member, User, goc_guild, goc_member
 from starboard.exceptions import StarboardErr
+from starboard.views import Confirm
 
 from ._checks import guild_only
 

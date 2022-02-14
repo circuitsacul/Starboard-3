@@ -23,12 +23,13 @@
 from __future__ import annotations
 
 import asyncio
-import pytz
 from datetime import datetime
 from typing import TYPE_CHECKING
 
-from starboard.database import Guild
+import pytz
+
 from starboard.core.premium import try_autoredeem
+from starboard.database import Guild
 
 if TYPE_CHECKING:
     from starboard.bot import Bot

@@ -28,11 +28,11 @@ import crescent
 import hikari
 from asyncpg import UniqueViolationError
 
+from starboard.config import CONFIG
 from starboard.database import AutoStarChannel, Guild
 from starboard.exceptions import ASCNotFound, StarboardErr
 from starboard.undefined import UNDEF
 from starboard.views import Confirm
-from starboard.config import CONFIG
 
 from ._checks import has_guild_perms
 from ._converters import any_emoji_list, any_emoji_str

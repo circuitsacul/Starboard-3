@@ -30,9 +30,9 @@ import crescent
 import hikari
 
 from starboard.constants import MESSAGE_LEN
-from starboard.utils import trunc_list, truncate
 from starboard.database import goc_user
 from starboard.exceptions import StarboardErr
+from starboard.utils import trunc_list, truncate
 
 from ._checks import owner_only
 

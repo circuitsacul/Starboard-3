@@ -27,11 +27,11 @@ from typing import TYPE_CHECKING, cast
 import crescent
 import hikari
 
+from starboard.config import CONFIG
 from starboard.core.config import StarboardConfig
-from starboard.database import Starboard, goc_guild, validate_sb_changes, Guild
+from starboard.database import Guild, Starboard, goc_guild, validate_sb_changes
 from starboard.exceptions import StarboardErr, StarboardNotFound
 from starboard.views import Confirm
-from starboard.config import CONFIG
 
 from ._checks import has_guild_perms
 from ._converters import any_emoji_list, any_emoji_str
@@ -145,7 +145,7 @@ class CreateStarboard:
         guild = await goc_guild(ctx.guild_id)
         ip = guild.premium_end is not None
 
-        limit = (CONFIG.max_starboards if ip else CONFIG.np_max_starboards)
+        limit = CONFIG.max_starboards if ip else CONFIG.np_max_starboards
         count = await Starboard.count(guild_id=ctx.guild_id)
         if count >= limit:
             raise StarboardErr(

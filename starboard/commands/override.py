@@ -6,9 +6,9 @@ import asyncpg
 import crescent
 import hikari
 
+from starboard.config import CONFIG
 from starboard.core.config import StarboardConfig
 from starboard.database import Override, Starboard, validate_sb_changes
-from starboard.config import CONFIG
 from starboard.exceptions import (
     OverrideNotFound,
     StarboardErr,
@@ -127,8 +127,7 @@ class CreateOverride:
             ov = None
 
         count = await Override.count(
-            guild_id=ctx.guild_id,
-            starboard_id=self.starboard.id,
+            guild_id=ctx.guild_id, starboard_id=self.starboard.id
         )
         if count >= CONFIG.max_ov_per_starboard:
             raise StarboardErr(
