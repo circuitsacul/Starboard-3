@@ -37,9 +37,10 @@ async def goc_user(user_id: int, is_bot: bool) -> User:
 
 
 class PatreonStatus(IntEnum):
-    NO = 0
-    PATRON = 1
+    NONE = 0
+    ACTIVE = 1
     DECLINED = 2
+    FORMER = 3
 
 
 class User(apgorm.Model):
@@ -48,8 +49,9 @@ class User(apgorm.Model):
     is_bot = types.Boolean().field()
     votes = types.Int().field(default=0)
     credits = types.Int().field(default=0)
-    total_donated = types.Money().field(default="$0")
-    last_patreon_total = types.Money().field(default="$0")
+    credits_recv = types.Int().field(default=0)
+
+    last_patreon_total_cents = types.BigInt().field(default=0)
     patreon_status = (
         types.SmallInt()
         .field(default=0)

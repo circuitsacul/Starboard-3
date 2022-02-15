@@ -41,7 +41,7 @@ from .cache import Cache
 from .config import CONFIG, Config
 from .cooldown import Cooldown
 from .database import Database
-from .tasks import expired_premium
+from .tasks import expired_premium, patreon
 
 
 class Bot(crescent.Bot):
@@ -53,6 +53,7 @@ class Bot(crescent.Bot):
         )
 
         self._aiohttp_session: aiohttp.ClientSession | None = None
+        self._tasks: list[asyncio.Task] = []
         self.database = Database()
         self._cache = Cache(self, self._cache._settings)
         self._event_manager._cache = self._cache
@@ -100,16 +101,26 @@ class Bot(crescent.Bot):
             user=CONFIG.db_user,
             password=CONFIG.db_password,
         )
-
-        self.expire_prem = asyncio.create_task(
-            expired_premium.check_expired_premium(self)
+        if self.cluster.cluster_id == 0:
+            self._tasks.append(
+                asyncio.create_task(
+                    expired_premium.check_expired_premium(self)
+                )
+            )
+            self._tasks.append(
+                asyncio.create_task(patreon.loop_update_patrons())
+            )
+        self._tasks.append(
+            asyncio.create_task(self.star_cooldown.loop_cycle())
         )
-        self.rotate_dict = asyncio.create_task(self.star_cooldown.loop_cycle())
 
         await super().start(**kwargs)
 
     async def close(self) -> None:
         await super().close()
+        for t in self._tasks:
+            t.cancel()
+        await asyncio.gather(*self._tasks, return_exceptions=True)
         await self.database.cleanup()
         self.cluster.logger.info("Cleaned up!")
 

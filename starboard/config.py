@@ -93,6 +93,7 @@ class Config:
     # apis
     tenor_token: Optional[str] = None
     giphy_token: Optional[str] = None
+    patreon_token: Optional[str] = None
 
     def save(self):
         pth = Path("config.json")

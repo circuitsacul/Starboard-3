@@ -605,13 +605,13 @@
                     "not_null": true
                 },
                 {
-                    "name": "total_donated",
-                    "type_": "MONEY",
+                    "name": "credits_recv",
+                    "type_": "INTEGER",
                     "not_null": true
                 },
                 {
-                    "name": "last_patreon_total",
-                    "type_": "MONEY",
+                    "name": "last_patreon_total_cents",
+                    "type_": "BIGINT",
                     "not_null": true
                 },
                 {
