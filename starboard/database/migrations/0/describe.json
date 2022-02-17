@@ -44,7 +44,7 @@
                 {
                     "name": "max_chars",
                     "type_": "SMALLINT",
-                    "not_null": false
+                    "not_null": true
                 },
                 {
                     "name": "require_image",

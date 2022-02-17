@@ -42,7 +42,7 @@ class AutoStarChannel(apgorm.Model):
         .with_converter(NonNullArray(str))
     )
     min_chars = types.SmallInt().field(default=0)
-    max_chars = types.SmallInt().nullablefield()
+    max_chars = types.SmallInt().field(default=0)
     require_image = types.Boolean().field(default=False)
     delete_invalid = types.Boolean().field(default=False)
 
