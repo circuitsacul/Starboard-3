@@ -34,7 +34,7 @@ from starboard.exceptions import StarboardErr, StarboardNotFound
 from starboard.views import Confirm
 
 from ._checks import has_guild_perms
-from ._converters import any_emoji_list, any_emoji_str
+from ._converters import any_emoji_list, any_emoji_str, disid
 from ._sb_config import EditStarboardConfig
 from ._utils import pretty_emoji_str, pretty_sb_config
 
@@ -169,10 +169,21 @@ class CreateStarboard:
 @crescent.command(name="delete", description="Remove a starboard")
 class DeleteStarboard:
     starboard = crescent.option(
-        hikari.TextableGuildChannel, "Starboard to delete."
+        hikari.TextableGuildChannel, "Starboard to delete.", default=None
+    )
+    starboard_id = crescent.option(
+        str, "Starboard to delete, by ID", default=None
     )
 
     async def callback(self, ctx: crescent.Context) -> None:
+        chid = (
+            self.starboard.id if self.starboard else disid(self.starboard_id)
+        )
+        if not chid:
+            raise StarboardErr(
+                "Please specify either a channel or channel ID."
+            )
+
         bot = cast("Bot", ctx.app)
         assert ctx.guild_id
         confirm = Confirm(ctx.user.id)
@@ -190,19 +201,15 @@ class DeleteStarboard:
 
         res = (
             await Starboard.delete_query()
-            .where(id=self.starboard.id)
+            .where(id=chid, guild_id=ctx.guild_id)
             .execute()
         )
         bot.cache.invalidate_star_emojis(ctx.guild_id)
         if len(res) == 0:
-            await msg.edit(
-                StarboardNotFound(self.starboard.id).msg, components=[]
-            )
+            await msg.edit(StarboardNotFound(chid).msg, components=[])
             return
 
-        await msg.edit(
-            f"Deleted starboard <#{self.starboard.id}>.", components=[]
-        )
+        await msg.edit(f"Deleted starboard <#{chid}>.", components=[])
 
 
 @plugin.include

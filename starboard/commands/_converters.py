@@ -76,6 +76,13 @@ def hex_color(text: str) -> int:
         raise StarboardErr(f"'{text}' is not a valid hex color.")
 
 
+def disid(text: Any) -> int:
+    try:
+        return int(text)
+    except (ValueError, TypeError):
+        raise StarboardErr(f"'{str(text)}' is not a valid ID.")
+
+
 def none_or(
     func: Callable[[str], _T], nonefirst: bool = True
 ) -> Callable[[str], _T | None]:

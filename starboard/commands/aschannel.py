@@ -29,13 +29,13 @@ import hikari
 from asyncpg import UniqueViolationError
 
 from starboard.config import CONFIG
-from starboard.database import AutoStarChannel, Guild
+from starboard.database import AutoStarChannel, Guild, goc_guild
 from starboard.exceptions import ASCNotFound, StarboardErr
 from starboard.undefined import UNDEF
 from starboard.views import Confirm
 
 from ._checks import has_guild_perms
-from ._converters import any_emoji_list, any_emoji_str
+from ._converters import any_emoji_list, any_emoji_str, disid
 from ._utils import optiond, pretty_emoji_str
 
 if TYPE_CHECKING:
@@ -64,7 +64,7 @@ class CreateAutoStar:
         bot = cast("Bot", ctx.app)
         assert ctx.guild_id
 
-        guild = await Guild.fetch(id=ctx.guild_id)
+        guild = await goc_guild(ctx.guild_id)
         ip = guild.premium_end is not None
         limit = CONFIG.max_autostar if ip else CONFIG.np_max_autostar
         count = await AutoStarChannel.count(guild_id=ctx.guild_id)
@@ -94,11 +94,22 @@ class CreateAutoStar:
 @crescent.command(name="delete", description="Delete an autostar channel")
 class DeleteAutoStar:
     channel = crescent.option(
-        hikari.TextableGuildChannel, "The autostar channel to delete"
+        hikari.TextableGuildChannel,
+        "The autostar channel to delete",
+        default=None,
+    )
+    channel_id = crescent.option(
+        str, "The autostar channel to delete, by ID", default=None
     )
 
     async def callback(self, ctx: crescent.Context) -> None:
         bot = cast("Bot", ctx.app)
+
+        chid = self.channel.id if self.channel else disid(self.channel_id)
+        if not chid:
+            raise StarboardErr(
+                "Please specify either a channel or channel id."
+            )
 
         confirm = Confirm(ctx.user.id)
         msg = await ctx.respond(
@@ -115,18 +126,16 @@ class DeleteAutoStar:
 
         res = (
             await AutoStarChannel.delete_query()
-            .where(id=self.channel.id)
+            .where(id=chid, guild_id=ctx.guild_id)
             .execute()
         )
         if not res:
-            await msg.edit(ASCNotFound(self.channel.id).msg, components=[])
+            await msg.edit(ASCNotFound(chid).msg, components=[])
             return
 
-        bot.database.asc.discard(self.channel.id)
+        bot.database.asc.discard(chid)
 
-        await msg.edit(
-            f"Deleted autostar channel <#{self.channel.id}>", components=[]
-        )
+        await msg.edit(f"Deleted autostar channel <#{chid}>", components=[])
 
 
 @plugin.include
