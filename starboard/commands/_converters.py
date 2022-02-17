@@ -164,10 +164,10 @@ def validate_channels(channels: list[int], bot: Bot) -> _ValidChannels:
     return _ValidChannels(v, iv)
 
 
-CH_MENTION = re.compile(r"<#(?P<id>[0-9]+)+>")
+NUM = re.compile(r"(?P<id>[0-9]+)")
 
 
 def channel_list(text: str, bot: Bot) -> _ValidChannels:
     return validate_channels(
-        list(int(c["id"]) for c in CH_MENTION.finditer(text)), bot
+        list(int(c["id"]) for c in NUM.finditer(text)), bot
     )

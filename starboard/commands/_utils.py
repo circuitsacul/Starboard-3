@@ -127,3 +127,15 @@ def pretty_emoji_str(*emojis: str | None, bot: Bot) -> str:
 
 def pretty_color(color: int) -> str:
     return hex(color).replace("0x", "#").upper()
+
+
+def pretty_channel_str(bot: Bot, channels: Iterable[int]) -> str:
+    mentions: list[str] = []
+    for id in channels:
+        obj = bot.cache.get_guild_channel(id)
+        if obj:
+            mentions.append(obj.mention)
+        else:
+            mentions.append(f"Deleted Channel {id}")
+
+    return ", ".join(mentions) or "none"

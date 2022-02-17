@@ -18,7 +18,7 @@ from starboard.exceptions import (
 from ._checks import has_guild_perms
 from ._converters import channel_list
 from ._sb_config import EditStarboardConfig
-from ._utils import pretty_sb_config
+from ._utils import pretty_sb_config, pretty_channel_str
 
 if TYPE_CHECKING:
     from starboard.bot import Bot
@@ -50,7 +50,7 @@ class ViewSettingOverrides:
             config = StarboardConfig(sb, [ov])
             options = pretty_sb_config(config, bot, ov.overrides.keys())
 
-            cs = ", ".join(f"<#{c}>" for c in ov.channel_ids)
+            cs = pretty_channel_str(bot, ov.channel_ids)
             embed = bot.embed(
                 title=f"Override {self.name}",
                 description=(
@@ -291,10 +291,11 @@ class RemoveOverrideChannels:
         if not ov:
             raise OverrideNotFound(self.name)
 
+        chlist = channel_list(self.channels, bot)
         ov.channel_ids = list(
-            set(ov.channel_ids).difference(
-                channel_list(self.channels, bot).valid
-            )
+            set(ov.channel_ids)
+            .difference(chlist.valid)
+            .difference(chlist.invalid)
         )
         await ov.save()
         await ctx.respond(f"Updated the channels for override '{self.name}'.")
