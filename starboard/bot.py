@@ -72,7 +72,7 @@ class Bot(crescent.Bot):
                 name = "{}.{}".format(
                     str(parent).replace("/", "."), module.name[:-3]
                 )
-                self.load_module(name)
+                self.plugins.load(name)
 
         load_modules(Path("starboard/commands"))
         load_modules(Path("starboard/events"))

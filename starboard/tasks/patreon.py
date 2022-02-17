@@ -23,18 +23,16 @@
 from __future__ import annotations
 
 import asyncio
-from math import floor
-from typing import TYPE_CHECKING
-
-from dataclasses import dataclass
 import traceback
-from typing import Any
+from dataclasses import dataclass
+from math import floor
+from typing import TYPE_CHECKING, Any
 
 import aiohttp
 
-from starboard.database import PatreonStatus, goc_user, User
-from starboard.core.notifications import notify
 from starboard.config import CONFIG
+from starboard.core.notifications import notify
+from starboard.database import PatreonStatus, User, goc_user
 
 if TYPE_CHECKING:
     from starboard.bot import Bot
