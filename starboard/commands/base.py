@@ -37,6 +37,18 @@ plugin = crescent.Plugin("base-commands")
 
 
 @plugin.include
+@crescent.command(name="ping", description="Pong!")
+async def ping_command(ctx: crescent.Context) -> None:
+    bot = cast("Bot", ctx.app)
+    guild = bot.cache.get_guild(ctx.guild_id) if ctx.guild_id else None
+    shard = guild.shard_id if guild else 0
+    await ctx.respond(
+        f"Pong! Cluster {bot.cluster.cluster_id}, shard {shard}, "
+        f"{round(bot.heartbeat_latency*1000)} ms latency."
+    )
+
+
+@plugin.include
 @crescent.command(name="help", description="Get help with starboard")
 async def help_command(ctx: crescent.Context) -> None:
     bot = cast("Bot", ctx.app)
