@@ -25,7 +25,6 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, cast
 
 from hikari import ButtonStyle, ForbiddenError, NotFoundError, User
-from hikari.impl import ActionRowBuilder
 
 from starboard.config import CONFIG
 
@@ -34,7 +33,7 @@ if TYPE_CHECKING:
 
 
 async def notify(user: User, text: str) -> None:
-    row = ActionRowBuilder()
+    row = user.app.rest.build_action_row()
     button = row.add_button(ButtonStyle.SECONDARY, "none.dismiss")
     button.set_label("Dismiss")
     button.add_to_container()
