@@ -47,6 +47,7 @@ class Cache(CacheImpl):
         self.__webhooks: LFUCache[int, hikari.ExecutableWebhook] = LFUCache(
             1000
         )
+        self.__users: LFUCache[int, hikari.User | None] = LFUCache(1000)
 
         # db side
         self.__star_emojis: LFUCache[int, set[str]] = LFUCache(1000)
@@ -85,17 +86,38 @@ class Cache(CacheImpl):
     async def gof_webhook(
         self, webhook_id: hikari.SnowflakeishOr[hikari.PartialWebhook]
     ) -> hikari.ExecutableWebhook | None:
-        if (c := self.__webhooks.get(int(webhook_id), None)) is not None:
+        id = int(webhook_id)
+        if (c := self.__webhooks.get(id, None)) is not None:
             return c
 
         try:
-            obj = await self._app.rest.fetch_webhook(webhook_id)
+            obj = await self._app.rest.fetch_webhook(id)
         except hikari.NotFoundError:
             return None
 
         assert isinstance(obj, hikari.ExecutableWebhook)
 
-        self.__webhooks[int(webhook_id)] = obj
+        self.__webhooks[id] = obj
+        return obj
+
+    async def gof_user(
+        self, user: hikari.SnowflakeishOr[hikari.PartialUser]
+    ) -> hikari.User | None:
+        uid = int(user)
+
+        if (ic := self.get_user(uid)) is not None:
+            return ic
+
+        c = self.__users.get(uid, UNDEF.UNDEF)
+        if c is not UNDEF.UNDEF:
+            return c
+
+        try:
+            obj = await self._app.rest.fetch_user(uid)
+        except hikari.NotFoundError:
+            obj = None
+
+        self.__users[uid] = obj
         return obj
 
     async def gof_member(
@@ -103,19 +125,20 @@ class Cache(CacheImpl):
         guild: hikari.SnowflakeishOr[hikari.PartialGuild],
         user: hikari.SnowflakeishOr[hikari.PartialUser],
     ) -> hikari.Member | None:
-        if (ic := self.get_member(guild, user)) is not None:
+        key = (int(guild), int(user))
+        if (ic := self.get_member(*key)) is not None:
             return ic
 
-        c = self.__members.get((int(guild), int(user)), UNDEF.UNDEF)
+        c = self.__members.get(key, UNDEF.UNDEF)
         if c is not UNDEF.UNDEF:
             return c
 
         try:
-            obj = await self._app.rest.fetch_member(guild, user)
+            obj = await self._app.rest.fetch_member(*key)
         except hikari.NotFoundError:
             obj = None
 
-        self.__members[(int(guild), int(user))] = obj
+        self.__members[key] = obj
         return obj
 
     async def gof_message(
@@ -123,19 +146,20 @@ class Cache(CacheImpl):
         channel: hikari.SnowflakeishOr[hikari.TextableChannel],
         message: hikari.SnowflakeishOr[hikari.PartialMessage],
     ) -> hikari.Message | None:
-        if (ic := self.get_message(message)) is not None:
+        id = int(message)
+        if (ic := self.get_message(id)) is not None:
             return ic
 
-        c = self.__messages.get(int(message), UNDEF.UNDEF)
+        c = self.__messages.get(id, UNDEF.UNDEF)
         if c is not UNDEF.UNDEF:
             return c
 
         try:
-            obj = await self._app.rest.fetch_message(channel, message)
+            obj = await self._app.rest.fetch_message(channel, id)
         except hikari.NotFoundError:
             obj = None
 
-        self.__messages[int(message)] = obj
+        self.__messages[id] = obj
         return obj
 
     async def gof_guild_channel_wnsfw(
@@ -158,8 +182,7 @@ class Cache(CacheImpl):
         self, message: hikari.SnowflakeishOr[hikari.PartialMessage], /
     ) -> hikari.Message | None:
         id = int(message)
-        if id in self.__messages:
-            self.__messages[id] = None
+        self.__messages.pop(id, None)
         return super().delete_message(id)
 
     def delete_member(
@@ -169,6 +192,5 @@ class Cache(CacheImpl):
         /,
     ) -> hikari.Member | None:
         key = (int(guild), int(user))
-        if key in self.__members:
-            self.__members[key] = None
+        self.__members.pop(key, None)
         return super().delete_member(*key)

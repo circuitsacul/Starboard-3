@@ -22,34 +22,27 @@
 
 from __future__ import annotations
 
-import hikari
-import miru
+from hikari import (
+    InteractionCreateEvent,
+    ComponentInteraction,
+)
+import crescent
 
 
-class Confirm(miru.View):
-    def __init__(self, user_id: int) -> None:
-        super().__init__(timeout=30)
+plugin = crescent.Plugin("dismiss-event")
 
-        self.user_id = user_id
-        self.result: bool | None = None
 
-    async def view_check(self, ctx: miru.Context) -> bool:
-        return ctx.user.id == self.user_id
+@plugin.include
+@crescent.event
+async def on_interaction(event: InteractionCreateEvent) -> None:
+    intr = event.interaction
+    if not isinstance(intr, ComponentInteraction):
+        return
 
-    @miru.button(
-        label="Confirm",
-        style=hikari.ButtonStyle.SUCCESS,
-        custom_id="confirm.confirm",
-    )
-    async def confirm(self, btn: miru.Button, ctx: miru.Context) -> None:
-        self.result = True
-        self.stop()
+    if intr.custom_id != "none.dismiss":
+        return
 
-    @miru.button(
-        label="Cancel",
-        style=hikari.ButtonStyle.DANGER,
-        custom_id="confirm.cancel",
-    )
-    async def cancel(self, btn: miru.Button, ctx: miru.Context) -> None:
-        self.result = False
-        self.stop()
+    if intr.guild_id is not None:
+        return
+
+    await intr.message.delete()

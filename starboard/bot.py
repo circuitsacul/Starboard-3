@@ -108,7 +108,7 @@ class Bot(crescent.Bot):
                 )
             )
             self._tasks.append(
-                asyncio.create_task(patreon.loop_update_patrons())
+                asyncio.create_task(patreon.loop_update_patrons(self))
             )
         self._tasks.append(
             asyncio.create_task(self.star_cooldown.loop_cycle())

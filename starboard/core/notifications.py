@@ -22,34 +22,35 @@
 
 from __future__ import annotations
 
-import hikari
-import miru
+from typing import TYPE_CHECKING, cast
+
+from hikari import ButtonStyle, ForbiddenError, NotFoundError, User
+from hikari.impl import ActionRowBuilder
+
+from starboard.config import CONFIG
+
+if TYPE_CHECKING:
+    from starboard.bot import Bot
 
 
-class Confirm(miru.View):
-    def __init__(self, user_id: int) -> None:
-        super().__init__(timeout=30)
+async def notify(user: User, text: str) -> None:
+    row = ActionRowBuilder()
+    button = row.add_button(ButtonStyle.SECONDARY, "none.dismiss")
+    button.set_label("Dismiss")
+    button.add_to_container()
 
-        self.user_id = user_id
-        self.result: bool | None = None
+    if CONFIG.development and CONFIG.dev_notify is not None:
+        dest = await cast("Bot", user.app).cache.gof_user(CONFIG.dev_notify)
+        if not dest:
+            print(
+                f"Couldn't find user {CONFIG.dev_notify}, skipping "
+                "notification."
+            )
+            return
+        await dest.send(f"Notifying <@{user.id}> | `{user.id}`", component=row)
+        user = dest
 
-    async def view_check(self, ctx: miru.Context) -> bool:
-        return ctx.user.id == self.user_id
-
-    @miru.button(
-        label="Confirm",
-        style=hikari.ButtonStyle.SUCCESS,
-        custom_id="confirm.confirm",
-    )
-    async def confirm(self, btn: miru.Button, ctx: miru.Context) -> None:
-        self.result = True
-        self.stop()
-
-    @miru.button(
-        label="Cancel",
-        style=hikari.ButtonStyle.DANGER,
-        custom_id="confirm.cancel",
-    )
-    async def cancel(self, btn: miru.Button, ctx: miru.Context) -> None:
-        self.result = False
-        self.stop()
+    try:
+        await user.send(text, component=row)
+    except (ForbiddenError, NotFoundError):
+        pass

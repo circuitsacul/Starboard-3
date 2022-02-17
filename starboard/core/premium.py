@@ -26,6 +26,7 @@ import traceback
 from datetime import datetime, timedelta
 from typing import TYPE_CHECKING
 
+import hikari
 import pytz
 
 from starboard.config import CONFIG
@@ -35,12 +36,18 @@ if TYPE_CHECKING:
     from starboard.bot import Bot
 
 
-async def try_autoredeem(bot: Bot, guild: Guild) -> int | None:
+async def try_autoredeem(bot: Bot, guild: Guild) -> hikari.Member | None:
     q = Member.fetch_query()
     q.where(guild_id=guild.id, autoredeem_enabled=True)
     ar = await q.fetchmany()
 
     for a in ar:
+        member = await bot.cache.gof_member(guild.id, a.user_id)
+        if member is None:
+            a.autoredeem_enabled = False
+            await a.save()
+            continue
+
         try:
             worked = await redeem(bot, a.user_id, guild.id, 1)
         except Exception:
@@ -48,12 +55,13 @@ async def try_autoredeem(bot: Bot, guild: Guild) -> int | None:
             continue
 
         if worked:
-            return a.user_id
+            return member
 
         # if we reach this point, the user didn't have enough credits.
         # we disable autoredeem to prevent load on the bot later on.
         a.autoredeem_enabled = False
         await a.save()
+
     return None
 
 

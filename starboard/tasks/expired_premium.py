@@ -29,6 +29,7 @@ from typing import TYPE_CHECKING
 import pytz
 
 from starboard.core.premium import try_autoredeem
+from starboard.core.notifications import notify
 from starboard.database import Guild
 
 if TYPE_CHECKING:
@@ -38,7 +39,7 @@ if TYPE_CHECKING:
 async def check_expired_premium(bot: Bot) -> None:
     while True:
         await _check_expired_premium(bot)
-        await asyncio.sleep(60)
+        await asyncio.sleep(60 * 60)
 
 
 async def _check_expired_premium(bot) -> None:
@@ -56,8 +57,12 @@ async def _check_expired_premium(bot) -> None:
 
 
 async def _check_for_server(bot: Bot, g: Guild, now: datetime) -> None:
-    uid = await try_autoredeem(bot, g)
-    if not uid:
+    guild = bot.cache.get_guild(g.id)
+    if not guild:
+        return
+
+    member = await try_autoredeem(bot, g)
+    if not member:
         # NOTE: we do this to prevent the possibility that someone
         # redeemed premium between the original query (that fetched
         # expired guilds) and this query. We don't want any added
@@ -65,5 +70,12 @@ async def _check_for_server(bot: Bot, g: Guild, now: datetime) -> None:
         await Guild.update_query().where(
             Guild.premium_end.lt(now), id=g.id
         ).set(premium_end=None).execute()
+        return
 
-    # TODO: notify users
+    await notify(
+        member.user,
+        f"You have autoredeem enabled in {guild.name}, so 3 credits were "
+        "taken from your account to redeem premium. You can disable "
+        "autoredeem by running `/premium autoredeem disable` in that server, "
+        "or `/premium autoredeem clear` to disable in all servers.",
+    )

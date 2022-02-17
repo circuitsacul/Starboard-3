@@ -30,6 +30,10 @@ from typing import List, Optional, cast
 
 @dataclass
 class Config:
+    # development
+    development: bool = False
+    dev_notify: Optional[int] = None
+
     # starboard settings restrictions
     max_whn_len: int = 32
     max_wha_len: int = 512

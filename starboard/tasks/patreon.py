@@ -24,6 +24,7 @@ from __future__ import annotations
 
 import asyncio
 from math import floor
+from typing import TYPE_CHECKING
 
 from dataclasses import dataclass
 import traceback
@@ -32,7 +33,11 @@ from typing import Any
 import aiohttp
 
 from starboard.database import PatreonStatus, goc_user, User
+from starboard.core.notifications import notify
 from starboard.config import CONFIG
+
+if TYPE_CHECKING:
+    from starboard.bot import Bot
 
 
 SES: aiohttp.ClientSession | None = None
@@ -45,11 +50,11 @@ class Patron:
     status: PatreonStatus
 
 
-async def loop_update_patrons() -> None:
+async def loop_update_patrons(bot: Bot) -> None:
     try:
         while True:
             try:
-                await _update_patrons()
+                await _update_patrons(bot)
             except Exception:
                 traceback.print_exc()
 
@@ -60,7 +65,7 @@ async def loop_update_patrons() -> None:
             await SES.close()
 
 
-async def _update_patrons() -> None:
+async def _update_patrons(bot: Bot) -> None:
     all_patrons = await _get_all_patrons()
     for p in all_patrons:
         if p.discord_id is None:
@@ -70,12 +75,49 @@ async def _update_patrons() -> None:
         if user.patreon_status is not p.status:
             user.patreon_status = p.status
             await user.save()
-            # TODO: notifications
+            await _notify_for_status(user, bot)
 
         if user.last_patreon_total_cents != p.total_cents:
             user.last_patreon_total_cents = p.total_cents
             user.credits = _credits(user)
             await user.save()
+
+
+async def _notify_for_status(user: User, bot: Bot) -> None:
+    assert user.patreon_status is not PatreonStatus.NONE
+
+    if user.patreon_status is PatreonStatus.FORMER:
+        msg = (
+            "Hey! It looks like you've removed your pledge on Patreon. We're "
+            "sorry to see you go, but we're grateful for all the support "
+            "you've given. All the credits you currently have will remain on "
+            "your account, and any servers you've enabled premium on will "
+            "continue to have premium until the expire.\n\nNote: If you "
+            "believe you didn't receive any credits you payed for, you can "
+            "get a link to the support server by running `/help` and we'll "
+            "sort things out."
+        )
+    elif user.patreon_status is PatreonStatus.ACTIVE:
+        msg = (
+            "Thanks for becoming a patron! We appreciate your support. If you "
+            "ever have any questions you can get an invite to the support "
+            "server by running `/help`.\n\nEssentially, each U.S. dollar we "
+            "received is 1 credit you receive. Once you receive "
+            f"{CONFIG.credits_per_month} credits, you can redeem 1 month of "
+            "premium on any server of your choice."
+        )
+    elif user.patreon_status is PatreonStatus.DECLINED:
+        msg = (
+            "Hey! Just wanted to let you know that it looks like Patreon "
+            "declined your pledge. This probably means you entered payment "
+            "info incorrectly. You won't receive more credits until Patreon "
+            "accepts the pledge. If you have any questions, you can get a "
+            "link to the support server by running `/help`."
+        )
+
+    obj = await bot.cache.gof_user(user.id)
+    if obj is not None:
+        await notify(obj, msg)
 
 
 def _credits(user: User) -> int:
