@@ -80,11 +80,6 @@
                     "not_null": true
                 },
                 {
-                    "name": "log_channel_id",
-                    "type_": "NUMERIC",
-                    "not_null": false
-                },
-                {
                     "name": "premium_end",
                     "type_": "TIMESTAMPTZ",
                     "not_null": false

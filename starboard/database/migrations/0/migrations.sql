@@ -20,7 +20,6 @@ ALTER TABLE aschannels ADD COLUMN max_chars SMALLINT;
 ALTER TABLE aschannels ADD COLUMN require_image BOOLEAN;
 ALTER TABLE aschannels ADD COLUMN delete_invalid BOOLEAN;
 ALTER TABLE guilds ADD COLUMN id NUMERIC;
-ALTER TABLE guilds ADD COLUMN log_channel_id NUMERIC;
 ALTER TABLE guilds ADD COLUMN premium_end TIMESTAMPTZ;
 ALTER TABLE guilds ADD COLUMN stack_posroles BOOLEAN;
 ALTER TABLE guilds ADD COLUMN stack_xproles BOOLEAN;

@@ -25,7 +25,7 @@ from __future__ import annotations
 import apgorm
 from apgorm import types
 
-from ._converters import DecimalC, NullDecimalC
+from ._converters import DecimalC
 
 
 async def goc_guild(guild_id: int) -> Guild:
@@ -38,9 +38,6 @@ class Guild(apgorm.Model):
     id = types.Numeric().field().with_converter(DecimalC)
 
     # config options
-    log_channel_id = (
-        types.Numeric().nullablefield().with_converter(NullDecimalC)
-    )
     premium_end = types.TimestampTZ().nullablefield()
 
     stack_posroles = types.Boolean().field(default=False)
