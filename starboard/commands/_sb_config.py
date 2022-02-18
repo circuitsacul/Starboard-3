@@ -87,11 +87,6 @@ class EditStarboardConfig:
     disable_xp = optiond(
         bool, "Whether to disable XP for a starboard", name="disable-xp"
     )
-    private = optiond(
-        bool,
-        "Whether to prevent `random` and `moststarred` from using this "
-        "starboard",
-    )
     extra_embeds = optiond(
         bool,
         "Whether to add extra embeds below the main message content",

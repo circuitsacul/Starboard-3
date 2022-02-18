@@ -22,7 +22,7 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, cast
+from typing import TYPE_CHECKING, Any, cast
 
 import crescent
 import hikari
@@ -36,7 +36,7 @@ from starboard.views import Confirm
 from ._checks import has_guild_perms
 from ._converters import any_emoji_list, any_emoji_str, disid
 from ._sb_config import EditStarboardConfig
-from ._utils import pretty_emoji_str, pretty_sb_config
+from ._utils import pretty_emoji_str, pretty_sb_config, optiond
 
 if TYPE_CHECKING:
     from starboard.bot import Bot
@@ -219,6 +219,19 @@ class EditStarboard(EditStarboardConfig):
     starboard = crescent.option(
         hikari.TextableGuildChannel, "The starboard to edit"
     )
+
+    # this option cannot be implemented for overrides, so we put it on the
+    # starboard edit command instead of the superclass
+    private = optiond(
+        bool,
+        "Whether to prevent `random` and `moststarred` from using this "
+        "starboard",
+    )
+
+    def _options(self) -> dict[str, Any]:
+        d = super()._options()
+        d["private"] = self.private
+        return d
 
     async def callback(self, ctx: crescent.Context) -> None:
         params = self._options()
