@@ -48,10 +48,17 @@ class Bot(crescent.Bot):
     cluster: Cluster
 
     def __init__(self) -> None:
+        intents = (
+            hikari.Intents.GUILD_MESSAGE_REACTIONS
+            | hikari.Intents.GUILD_MESSAGES
+            | hikari.Intents.GUILD_MEMBERS
+            | hikari.Intents.GUILDS
+        )
         super().__init__(
             token=CONFIG.discord_token,
             tracked_guilds=[CONFIG.dev_guild] if CONFIG.dev_guild else None,
             default_guild=CONFIG.dev_guild if CONFIG.development else None,
+            intents=intents,
         )
 
         self._aiohttp_session: aiohttp.ClientSession | None = None
