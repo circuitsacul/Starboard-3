@@ -32,6 +32,7 @@ from starboard.core.config import StarboardConfig
 from starboard.database import Guild, Starboard, goc_guild, validate_sb_changes
 from starboard.exceptions import StarboardErr, StarboardNotFound
 from starboard.views import Confirm
+from starboard.undefined import UNDEF
 
 from ._checks import has_guild_perms
 from ._converters import any_emoji_list, any_emoji_str, disid
@@ -230,7 +231,8 @@ class EditStarboard(EditStarboardConfig):
 
     def _options(self) -> dict[str, Any]:
         d = super()._options()
-        d["private"] = self.private
+        if self.private is not UNDEF.UNDEF:
+            d["private"] = self.private
         return d
 
     async def callback(self, ctx: crescent.Context) -> None:
