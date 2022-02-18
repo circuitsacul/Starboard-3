@@ -33,6 +33,7 @@ from starboard.constants import MESSAGE_LEN
 from starboard.database import goc_user
 from starboard.exceptions import StarboardErr
 from starboard.utils import trunc_list, truncate
+from starboard.config import CONFIG
 
 from ._checks import owner_only
 
@@ -46,7 +47,11 @@ owner = crescent.Group("owner", "Owner only commands", hooks=[owner_only])
 
 @plugin.include
 @owner.child
-@crescent.command(name="give-credits", description="Gives a user credits")
+@crescent.command(
+    name="give-credits",
+    description="Gives a user credits",
+    guild=CONFIG.dev_guild,
+)
 class GiveCredits:
     user = crescent.option(str, "The id of the user")
     credits = crescent.option(int, "The number of credits to give")
@@ -75,7 +80,11 @@ class GiveCredits:
 
 @plugin.include
 @owner.child
-@crescent.command(name="clear-cache", description="Clears the cache entirely")
+@crescent.command(
+    name="clear-cache",
+    description="Clears the cache entirely",
+    guild=CONFIG.dev_guild,
+)
 async def clear_cache(ctx: crescent.Context) -> None:
     bot = cast("Bot", ctx.app)
     bot.cache.clear()
@@ -84,7 +93,9 @@ async def clear_cache(ctx: crescent.Context) -> None:
 
 @plugin.include
 @owner.child
-@crescent.command(name="eval", description="Evaluate code")
+@crescent.command(
+    name="eval", description="Evaluate code", guild=CONFIG.dev_guild
+)
 class Eval:
     code = crescent.option(str, "Code to evaluate")
 
@@ -104,7 +115,9 @@ class Eval:
 
 @plugin.include
 @owner.child
-@crescent.command(name="shell", description="Run a shell command")
+@crescent.command(
+    name="shell", description="Run a shell command", guild=CONFIG.dev_guild
+)
 class ShellCommand:
     command = crescent.option(str, "The command to run")
 
@@ -124,7 +137,11 @@ class ShellCommand:
 
 @plugin.include
 @owner.child
-@crescent.command(name="reconnect", description="Reconnect all clusters")
+@crescent.command(
+    name="reconnect",
+    description="Reconnect all clusters",
+    guild=CONFIG.dev_guild,
+)
 async def reconnect_clusters(ctx: crescent.Context) -> None:
     bot = cast("Bot", ctx.app)
     await ctx.respond("Reconnecting all clusters...", ephemeral=True)
@@ -136,7 +153,9 @@ async def reconnect_clusters(ctx: crescent.Context) -> None:
 
 @plugin.include
 @owner.child
-@crescent.command(name="restart", description="Restart the bot")
+@crescent.command(
+    name="restart", description="Restart the bot", guild=CONFIG.dev_guild
+)
 async def restart_bot(ctx: crescent.Context) -> None:
     bot = cast("Bot", ctx.app)
     if not bot.cluster.ipc.brain_uid:
@@ -155,7 +174,9 @@ class Rollback(Exception):
 
 @plugin.include
 @owner.child
-@crescent.command(name="sql", description="Execute raw SQL")
+@crescent.command(
+    name="sql", description="Execute raw SQL", guild=CONFIG.dev_guild
+)
 class RunSQL:
     sql = crescent.option(str, "The SQL to run")
     rollback = crescent.option(

@@ -49,7 +49,9 @@ class Bot(crescent.Bot):
 
     def __init__(self) -> None:
         super().__init__(
-            token=CONFIG.discord_token, default_guild=CONFIG.testing_guild
+            token=CONFIG.discord_token,
+            tracked_guilds=[CONFIG.dev_guild] if CONFIG.dev_guild else None,
+            default_guild=CONFIG.dev_guild if CONFIG.development else None,
         )
 
         self._aiohttp_session: aiohttp.ClientSession | None = None
