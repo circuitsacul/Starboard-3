@@ -66,6 +66,7 @@ class Config:
     np_allow_webhook: bool = False
 
     # functionality
+    max_xp: int = 999_999_999
     leaderboard_length: int = 50
     asc_cooldown_cap: int = 5
     asc_cooldown_period: int = 10
