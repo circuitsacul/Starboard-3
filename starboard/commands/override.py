@@ -18,7 +18,7 @@ from starboard.exceptions import (
 from ._checks import has_guild_perms
 from ._converters import channel_list
 from ._sb_config import EditStarboardConfig
-from ._utils import pretty_sb_config, pretty_channel_str
+from ._utils import pretty_channel_str, pretty_sb_config
 
 if TYPE_CHECKING:
     from starboard.bot import Bot

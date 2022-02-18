@@ -67,6 +67,8 @@ async def handle_message(event: hikari.MessageCreateEvent) -> None:
     elif asc.require_image and not has_image(event.message):
         await asyncio.sleep(0.5)
         m = await bot.cache.gof_message(event.channel_id, event.message_id)
+        if m is None:
+            return
         if not has_image(m):
             valid = False
 

@@ -23,30 +23,30 @@
 from __future__ import annotations
 
 from typing import TYPE_CHECKING, cast
-import apgorm
 
+import apgorm
 import crescent
 import hikari
 from hikari import Permissions
 
+from starboard.config import CONFIG
 from starboard.core.config import get_config
 from starboard.core.messages import get_orig_message
 from starboard.core.starboards import refresh_message
 from starboard.database import (
-    Message,
     Member,
+    Message,
     SBMessage,
     Starboard,
-    goc_message,
     goc_member,
+    goc_message,
 )
 from starboard.exceptions import StarboardErr, StarboardNotFound
 from starboard.utils import jump
 from starboard.views import Paginator
-from starboard.config import CONFIG
 
 from ._checks import has_guild_perms
-from ._converters import msg_ch_id, orig_msg_from_link, disid
+from ._converters import disid, msg_ch_id, orig_msg_from_link
 
 if TYPE_CHECKING:
     from starboard.bot import Bot
@@ -137,9 +137,7 @@ class ResetXP:
         before = member.xp
         member.xp = 0
         await member.save()
-        await ctx.respond(
-            f"Reset <@{uid}> XP (was {before}).", ephemeral=True
-        )
+        await ctx.respond(f"Reset <@{uid}> XP (was {before}).", ephemeral=True)
 
 
 # FREEZING

@@ -32,8 +32,8 @@ from apgorm import sql
 from starboard.database import Guild, Message, SBMessage, Star, Starboard
 
 from .config import StarboardConfig, get_config
-from .messages import get_sbmsg_content
 from .has_image import has_image
+from .messages import get_sbmsg_content
 
 if TYPE_CHECKING:
     from starboard.bot import Bot

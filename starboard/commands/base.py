@@ -24,8 +24,8 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, cast
 
-import hikari
 import crescent
+import hikari
 
 from starboard.config import CONFIG
 
@@ -77,11 +77,11 @@ async def help_command(ctx: crescent.Context) -> None:
         description=(
             "Starboard is a Discord bot that lets you create starboard for "
             "your server. A starboard is similar to channel pins, except that "
-            "people can \"vote\" to pin messages. A typical setup would be to "
+            'people can "vote" to pin messages. A typical setup would be to '
             "create a starboard named #starboard such that when a message "
             "receives 3 :star: reactions, the message will be reposted to "
             "that channel."
-        )
+        ),
     )
     emb.add_field(
         name="Useful Commands",
@@ -89,7 +89,7 @@ async def help_command(ctx: crescent.Context) -> None:
             "`/starboards view`: View all your starboards\n"
             "`/starboards create`: Create a starboard\n"
             "`/starboards edit`: Change the settings for a starboard\n"
-        )
+        ),
     )
     emb.add_field(
         name="Features",
@@ -100,7 +100,7 @@ async def help_command(ctx: crescent.Context) -> None:
             " - Award roles\n"
             " - Channel-specific settings for each starboard\n"
             " - Advanced role permission system"
-        )
+        ),
     )
     emb.add_field(
         name="Privacy Policy",
@@ -111,7 +111,7 @@ async def help_command(ctx: crescent.Context) -> None:
             "bot-specific information (how much XP a user has, how many stars "
             "a message has, etc.). Starboard does not store usernames, guild "
             "names, or message content."
-        )
+        ),
     )
 
     await ctx.respond(

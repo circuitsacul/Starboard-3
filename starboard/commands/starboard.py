@@ -31,13 +31,13 @@ from starboard.config import CONFIG
 from starboard.core.config import StarboardConfig
 from starboard.database import Guild, Starboard, goc_guild, validate_sb_changes
 from starboard.exceptions import StarboardErr, StarboardNotFound
-from starboard.views import Confirm
 from starboard.undefined import UNDEF
+from starboard.views import Confirm
 
 from ._checks import has_guild_perms
 from ._converters import any_emoji_list, any_emoji_str, disid
 from ._sb_config import EditStarboardConfig
-from ._utils import pretty_emoji_str, pretty_sb_config, optiond
+from ._utils import optiond, pretty_emoji_str, pretty_sb_config
 
 if TYPE_CHECKING:
     from starboard.bot import Bot

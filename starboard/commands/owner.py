@@ -29,11 +29,11 @@ from typing import TYPE_CHECKING, cast
 import crescent
 import hikari
 
+from starboard.config import CONFIG
 from starboard.constants import MESSAGE_LEN
 from starboard.database import goc_user
 from starboard.exceptions import StarboardErr
 from starboard.utils import trunc_list, truncate
-from starboard.config import CONFIG
 
 from ._checks import owner_only
 
