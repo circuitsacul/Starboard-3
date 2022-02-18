@@ -65,7 +65,10 @@ async def handle_message(event: hikari.MessageCreateEvent) -> None:
     elif asc.max_chars and ln > asc.max_chars:
         valid = False
     elif asc.require_image and not has_image(event.message):
-        valid = False
+        await asyncio.sleep(0.5)
+        m = await bot.cache.gof_message(event.channel_id, event.message_id)
+        if not has_image(m):
+            valid = False
 
     if not valid:
         if asc.delete_invalid:
