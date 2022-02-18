@@ -33,6 +33,7 @@ from starboard.database import Guild, Message, SBMessage, Star, Starboard
 
 from .config import StarboardConfig, get_config
 from .messages import get_sbmsg_content
+from .has_image import has_image
 
 if TYPE_CHECKING:
     from starboard.bot import Bot
@@ -142,7 +143,9 @@ async def _refresh_message_for_starboard(
     )
 
     starcount = await _get_star_count(orig_msg.id, config.starboard.id)
-    action = _get_action(orig_msg, config, starcount, orig_msg_obj is None)
+    action = _get_action(
+        orig_msg, orig_msg_obj, config, starcount, orig_msg_obj is None
+    )
 
     sbmsg = await SBMessage.exists(
         message_id=orig_msg.id, starboard_id=config.starboard.id
@@ -376,7 +379,11 @@ class _Actions:
 
 
 def _get_action(
-    orig_msg: Message, config: StarboardConfig, points: int, deleted: bool
+    orig_msg: Message,
+    orig_msg_obj: hikari.Message | None,
+    config: StarboardConfig,
+    points: int,
+    deleted: bool,
 ) -> _Actions:
     add_trib: bool | None = None
 
@@ -388,6 +395,10 @@ def _get_action(
 
     # check deletion
     if deleted and config.link_deletes:
+        add_trib = False
+
+    # check image
+    if orig_msg_obj and config.require_image and not has_image(orig_msg_obj):
         add_trib = False
 
     # check if frozen

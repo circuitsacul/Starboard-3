@@ -22,6 +22,7 @@
 
 from __future__ import annotations
 
+import asyncio
 from typing import TYPE_CHECKING, cast
 
 import hikari
@@ -30,6 +31,7 @@ from starboard.config import CONFIG
 from starboard.database import AutoStarChannel
 
 from .emojis import stored_to_emoji
+from .has_image import has_image
 
 if TYPE_CHECKING:
     from starboard.bot import Bot
@@ -62,7 +64,7 @@ async def handle_message(event: hikari.MessageCreateEvent) -> None:
         valid = False
     elif asc.max_chars and ln > asc.max_chars:
         valid = False
-    elif asc.require_image and False:  # TODO
+    elif asc.require_image and not has_image(event.message):
         valid = False
 
     if not valid:
