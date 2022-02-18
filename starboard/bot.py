@@ -98,6 +98,7 @@ class Bot(crescent.Bot):
     async def start(self, **kwargs) -> None:
         # tasks
         await self.database.connect(
+            migrate=self.cluster.cluster_id == 0,
             host=CONFIG.db_host,
             database=CONFIG.db_name,
             user=CONFIG.db_user,

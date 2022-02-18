@@ -40,5 +40,12 @@ if type_ == "brain":
     bot.get_brain(CONFIG).run()
 elif type_ == "server":
     bot.get_server(CONFIG).run()
+elif type_ == "migrations":
+    try:
+        empty = sys.argv[2] == "--empty"
+    except IndexError:
+        empty = False
+    b = bot.Bot()
+    b.database.create_migrations(empty)
 else:
     _show_usage()

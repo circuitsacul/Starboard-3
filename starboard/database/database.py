@@ -45,11 +45,14 @@ class Database(apgorm.Database):
 
         self.asc: set[int] = set()
 
-    async def connect(self, **connect_kwargs) -> None:
+    async def connect(
+        self, *, migrate: bool = False, **connect_kwargs
+    ) -> None:
         await super().connect(**connect_kwargs)
         if self.must_create_migrations():
-            self.create_migrations()
-        if await self.must_apply_migrations():
+            raise Exception("There are unapplied migrations.")
+        if migrate and await self.must_apply_migrations():
+            print("Applying migrations...")
             await self.apply_migrations()
 
         print("Loading autostar channels...")
