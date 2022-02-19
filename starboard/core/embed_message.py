@@ -71,6 +71,7 @@ async def embed_message(
     point_count: int,
     frozen: bool,
     forced: bool,
+    gifs: bool,
 ) -> tuple[str, hikari.Embed, list[hikari.Embed]]:
     channel = await bot.cache.gof_guild_channel_wnsfw(message.channel_id)
     assert channel is not None
@@ -95,7 +96,7 @@ async def embed_message(
         name=ZWS, value=f"[Go to Message]({message.make_link(guild_id)})"
     )
 
-    image_urls = await _extract_images(bot, message)
+    image_urls = await _extract_images(bot, message, gifs)
     if image_urls and len(image_urls):
         embed.set_image(image_urls[0])
 
@@ -217,7 +218,9 @@ def _extract_file_str(message: hikari.Message) -> str | None:
     return "".join(files) or None
 
 
-async def _extract_images(bot: Bot, message: hikari.Message) -> list[str]:
+async def _extract_images(
+    bot: Bot, message: hikari.Message, gifs: bool
+) -> list[str]:
     urls = [
         a.url
         for a in message.attachments
@@ -226,7 +229,7 @@ async def _extract_images(bot: Bot, message: hikari.Message) -> list[str]:
     ]
 
     for embed in message.embeds:
-        gif_url = await _get_gifv(bot, embed)
+        gif_url = await _get_gifv(bot, embed) if gifs else None
         if gif_url is not None:
             urls.append(gif_url)
         elif not _is_rich(embed):

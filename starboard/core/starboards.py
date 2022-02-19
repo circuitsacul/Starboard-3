@@ -119,17 +119,23 @@ async def _refresh_message(
         )
     configs = [await get_config(s, orig_message.channel_id) for s in _s]
 
+    guild = await Guild.fetch(id=orig_message.guild_id)
+    ip = guild.premium_end is not None
     tasks: list[asyncio.Task] = []
     for c in configs:
         t = asyncio.create_task(
-            _refresh_message_for_starboard(bot, orig_message, c, force)
+            _refresh_message_for_starboard(bot, orig_message, c, force, ip)
         )
         tasks.append(t)
     await asyncio.gather(*tasks)
 
 
 async def _refresh_message_for_starboard(
-    bot: Bot, orig_msg: Message, config: StarboardConfig, force: bool
+    bot: Bot,
+    orig_msg: Message,
+    config: StarboardConfig,
+    force: bool,
+    premium: bool,
 ) -> None:
     if orig_msg.is_nsfw:
         sbchannel = await bot.cache.gof_guild_channel_wnsfw(
@@ -171,13 +177,16 @@ async def _refresh_message_for_starboard(
     if action.add and sbmsg_obj is None:
         if orig_msg_obj:
             content, embed, embeds = await get_sbmsg_content(
-                bot, config, orig_msg_obj, orig_msg, starcount
+                bot, config, orig_msg_obj, orig_msg, starcount, premium
             )
             assert embed
-            guild = await Guild.fetch(id=orig_msg.guild_id)
-            ip = guild.premium_end is not None
             sbmsg_obj = await _send(
-                bot, config, content, [embed, *embeds], orig_msg.author_id, ip
+                bot,
+                config,
+                content,
+                [embed, *embeds],
+                orig_msg.author_id,
+                premium,
             )
             if sbmsg_obj:
                 sbmsg.sb_message_id = sbmsg_obj.id
@@ -212,7 +221,7 @@ async def _refresh_message_for_starboard(
 
         if orig_msg_obj:
             content, embed, embeds = await get_sbmsg_content(
-                bot, config, orig_msg_obj, orig_msg, starcount
+                bot, config, orig_msg_obj, orig_msg, starcount, premium
             )
             assert embed
             if config.link_edits:
@@ -230,7 +239,7 @@ async def _refresh_message_for_starboard(
                 )
         else:
             content, _, _ = await get_sbmsg_content(
-                bot, config, None, orig_msg, starcount
+                bot, config, None, orig_msg, starcount, premium
             )
             await _edit(
                 bot, config, sbmsg_obj, content, None, orig_msg.author_id

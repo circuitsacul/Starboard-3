@@ -52,6 +52,7 @@ async def get_sbmsg_content(
     dis_orig_msg: hikari.Message | None,
     sql_orig_msg: Message,
     starcount: int,
+    premium: bool,
 ) -> tuple[str, hikari.Embed | None, list[hikari.Embed]]:
     def _display_emoji() -> hikari.UnicodeEmoji | hikari.CustomEmoji | None:
         return (
@@ -75,6 +76,7 @@ async def get_sbmsg_content(
             starcount,
             frozen,
             forced,
+            premium,
         )
         if config.extra_embeds:
             return c, e, es

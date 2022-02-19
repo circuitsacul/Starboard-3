@@ -23,6 +23,7 @@
 from __future__ import annotations
 
 import re
+from cachetools import LFUCache
 from typing import TYPE_CHECKING, Optional, Tuple, cast
 
 from starboard.config import CONFIG
@@ -39,6 +40,7 @@ TENOR_PATTERN = re.compile(
 GIPHY_PATTERN = re.compile(
     r"^http[s]?:\/\/giphy.com\/gifs\/[a-zA-Z-]+-(?P<id>[\w]+)$"
 )
+CACHE: LFUCache[str, str | None] = LFUCache(5_000)
 
 
 def _get_gif_id(url: str) -> Optional[Tuple[str, str]]:
@@ -64,23 +66,35 @@ async def _get_tenor(bot: Bot, gifid: str) -> Optional[str]:
     if not CONFIG.tenor_token:
         return None
 
+    if gifid in CACHE:
+        return CACHE[gifid]
+
     try:
         data = await _get(bot, TENOR_BASE.format(gifid, CONFIG.tenor_token))
-        return cast(str, data["results"][0]["media"][0]["gif"]["url"])
+        res = cast(str, data["results"][0]["media"][0]["gif"]["url"])
     except Exception:
-        return None
+        res = None
+
+    CACHE[gifid] = res
+    return res
 
 
 async def _get_giphy(bot: Bot, gifid: str) -> Optional[str]:
     if not CONFIG.giphy_token:
         return None
 
+    if gifid in CACHE:
+        return CACHE[gifid]
+
     try:
         params = {"api_key": CONFIG.giphy_token}
         data = await _get(bot, GIPHY_BASE.format(gifid), params=params)
-        return cast(str, data["data"]["images"]["fixed_height"]["url"])
+        res = cast(str, data["data"]["images"]["fixed_height"]["url"])
     except Exception:
-        return None
+        res = None
+
+    CACHE[gifid] = res
+    return res
 
 
 async def get_gif_url(bot: Bot, url: str) -> Optional[str]:
