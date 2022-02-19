@@ -123,6 +123,7 @@ class Bot(crescent.Bot):
         self._tasks.append(
             asyncio.create_task(self.star_cooldown.loop_cycle())
         )
+        self._tasks.append(asyncio.create_task(self.asc_cooldown.loop_cycle()))
 
         await super().start(**kwargs)
 
