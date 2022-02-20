@@ -72,9 +72,12 @@ class Config:
     asc_cooldown_period: int = 10
     credits_per_month: int = 3
     days_per_month: int = 32  # just be safe
+
+    # links
     docs_link: Optional[str] = None
     support_invite: Optional[str] = None
     bot_invite: Optional[str] = None
+    source_link: Optional[str] = None
 
     # bot style
     color: int = int("FFE19C", 16)

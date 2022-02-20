@@ -53,10 +53,10 @@ async def ping_command(ctx: crescent.Context) -> None:
 async def help_command(ctx: crescent.Context) -> None:
     bot = cast("Bot", ctx.app)
     act = bot.rest.build_action_row()
-    if CONFIG.docs_link:
+    if CONFIG.bot_invite:
         (
-            act.add_button(hikari.ButtonStyle.LINK, CONFIG.docs_link)
-            .set_label("Read the Docs")
+            act.add_button(hikari.ButtonStyle.LINK, CONFIG.bot_invite)
+            .set_label("Invite Starboard")
             .add_to_container()
         )
     if CONFIG.support_invite:
@@ -65,10 +65,16 @@ async def help_command(ctx: crescent.Context) -> None:
             .set_label("Get Support")
             .add_to_container()
         )
-    if CONFIG.bot_invite:
+    if CONFIG.docs_link:
         (
-            act.add_button(hikari.ButtonStyle.LINK, CONFIG.bot_invite)
-            .set_label("Invite Starboard")
+            act.add_button(hikari.ButtonStyle.LINK, CONFIG.docs_link)
+            .set_label("Documentation")
+            .add_to_container()
+        )
+    if CONFIG.source_link:
+        (
+            act.add_button(hikari.ButtonStyle.LINK, CONFIG.source_link)
+            .set_label("Source Code")
             .add_to_container()
         )
 
