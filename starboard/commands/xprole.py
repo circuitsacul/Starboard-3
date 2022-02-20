@@ -28,7 +28,7 @@ import crescent
 import hikari
 
 from starboard.config import CONFIG
-from starboard.database import XPRole, PosRole, goc_guild
+from starboard.database import PosRole, XPRole, goc_guild
 from starboard.exceptions import StarboardErr
 
 from ._checks import has_guild_perms

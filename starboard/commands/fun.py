@@ -32,7 +32,7 @@ from starboard.core.config import get_config
 from starboard.core.embed_message import embed_message
 from starboard.core.emojis import stored_to_emoji
 from starboard.core.leaderboard import get_leaderboard
-from starboard.database import Member, Message, SBMessage, Starboard, Guild
+from starboard.database import Guild, Member, Message, SBMessage, Starboard
 from starboard.exceptions import StarboardErr, StarboardNotFound
 from starboard.views import Paginator
 

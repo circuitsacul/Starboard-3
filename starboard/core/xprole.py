@@ -24,9 +24,9 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from starboard.cooldown import Cooldown
 from starboard.config import CONFIG
-from starboard.database import XPRole, Member
+from starboard.cooldown import Cooldown
+from starboard.database import Member, XPRole
 
 if TYPE_CHECKING:
     from starboard.bot import Bot
