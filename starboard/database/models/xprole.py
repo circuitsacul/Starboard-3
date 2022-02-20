@@ -25,7 +25,10 @@ from __future__ import annotations
 import apgorm
 from apgorm import types
 
+from starboard.config import CONFIG
+
 from ._converters import DecimalC
+from ._validators import int_range
 from .guild import Guild
 
 
@@ -37,3 +40,7 @@ class XPRole(apgorm.Model):
     guild_id_fk = apgorm.ForeignKey(guild_id, Guild.id)
 
     primary_key = (id,)
+
+    required.add_validator(
+        int_range("required-xp", CONFIG.min_xpr_xp, CONFIG.max_xpr_xp)
+    )

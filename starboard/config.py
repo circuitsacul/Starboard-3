@@ -58,6 +58,11 @@ class Config:
     max_ov_channels: int = 100
     max_ov_per_starboard: int = 10
 
+    # xprole restrictions
+    max_xp_roles: int = 100
+    max_xpr_xp: int = 5_000
+    min_xpr_xp: int = 5
+
     # non-premium restrictions
     np_max_starboards: int = 3
     np_max_autostar: int = 1
