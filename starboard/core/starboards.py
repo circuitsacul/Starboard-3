@@ -34,6 +34,7 @@ from starboard.database import Guild, Message, SBMessage, Star, Starboard
 from .config import StarboardConfig, get_config
 from .has_image import has_image
 from .messages import get_sbmsg_content
+from .xprole import refresh_xpr
 
 if TYPE_CHECKING:
     from starboard.bot import Bot
@@ -128,6 +129,9 @@ async def _refresh_message(
         )
         tasks.append(t)
     await asyncio.gather(*tasks)
+
+    if ip:
+        await refresh_xpr(bot, orig_message.guild_id, orig_message.author_id)
 
 
 async def _refresh_message_for_starboard(

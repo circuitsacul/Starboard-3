@@ -23,8 +23,9 @@
 from __future__ import annotations
 
 import re
-from cachetools import LFUCache
 from typing import TYPE_CHECKING, Optional, Tuple, cast
+
+from cachetools import LFUCache
 
 from starboard.config import CONFIG
 

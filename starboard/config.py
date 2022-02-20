@@ -58,6 +58,11 @@ class Config:
     max_ov_channels: int = 100
     max_ov_per_starboard: int = 10
 
+    # xprole restrictions
+    max_xp_roles: int = 10
+    max_xpr_xp: int = 5_000
+    min_xpr_xp: int = 5
+
     # non-premium restrictions
     np_max_starboards: int = 3
     np_max_autostar: int = 1
@@ -70,6 +75,8 @@ class Config:
     leaderboard_length: int = 50
     asc_cooldown_cap: int = 5
     asc_cooldown_period: int = 10
+    xpr_cooldown_cap: int = 10
+    xpr_cooldown_period: int = 60
     credits_per_month: int = 3
     days_per_month: int = 32  # just be safe
 

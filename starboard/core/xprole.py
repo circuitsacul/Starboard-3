@@ -22,25 +22,45 @@
 
 from __future__ import annotations
 
-import apgorm
-from apgorm import types
+from typing import TYPE_CHECKING
 
 from starboard.config import CONFIG
+from starboard.cooldown import Cooldown
+from starboard.database import Member, XPRole
 
-from ._converters import DecimalC
-from ._validators import int_range
-from .guild import Guild
+if TYPE_CHECKING:
+    from starboard.bot import Bot
 
 
-class XPRole(apgorm.Model):
-    id = types.Numeric().field().with_converter(DecimalC)
-    guild_id = types.Numeric().field().with_converter(DecimalC)
-    required = types.SmallInt().field()
+COOLDOWN: Cooldown[int] = Cooldown()
 
-    guild_id_fk = apgorm.ForeignKey(guild_id, Guild.id)
 
-    primary_key = (id,)
+async def refresh_xpr(bot: Bot, guild_id: int, user_id: int) -> None:
+    if not COOLDOWN.trigger(
+        user_id, CONFIG.xpr_cooldown_cap, CONFIG.xpr_cooldown_period
+    ):
+        return
 
-    required.add_validator(
-        int_range("required-xp", CONFIG.min_xpr_xp, CONFIG.max_xpr_xp)
-    )
+    obj = await bot.cache.gof_member(guild_id, user_id)
+    if not obj:
+        return
+    member = await Member.fetch(user_id=user_id, guild_id=guild_id)
+
+    xpr = await XPRole.fetch_query().where(guild_id=guild_id).fetchmany()
+    if not xpr:
+        return
+
+    remove = {
+        r.id for r in xpr if member.xp < r.required and r.id in obj.role_ids
+    }
+    add = {
+        r.id
+        for r in xpr
+        if member.xp >= r.required and r.id not in obj.role_ids
+    }
+
+    for r in remove:
+        await obj.remove_role(r, reason="XPRoles")
+
+    for r in add:
+        await obj.add_role(r, reason="XPRoles")

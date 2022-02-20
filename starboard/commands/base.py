@@ -103,7 +103,6 @@ async def help_command(ctx: crescent.Context) -> None:
             "Starboard's key (free) features are:\n"
             " - Multiple starboards per server\n"
             " - Autostar channels\n"
-            " - Award roles\n"
             " - Channel-specific settings for each starboard\n"
             " - Advanced role permission system"
             + (
