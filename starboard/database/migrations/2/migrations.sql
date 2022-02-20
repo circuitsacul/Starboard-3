@@ -1,0 +1,1 @@
+ALTER TABLE posroles ADD CONSTRAINT maxm_gid_unique UNIQUE ( guild_id , max_members );

@@ -50,7 +50,7 @@ class Database(apgorm.Database):
     ) -> None:
         await super().connect(**connect_kwargs)
         if self.must_create_migrations():
-            raise Exception("There are unapplied migrations.")
+            raise Exception("There are uncreated migrations.")
         if migrate and await self.must_apply_migrations():
             print("Applying migrations...")
             await self.apply_migrations()

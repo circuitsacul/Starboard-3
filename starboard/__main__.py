@@ -27,7 +27,7 @@ from .config import CONFIG
 
 
 def _show_usage():
-    print("Usage: python -m starboard <server|brain>")
+    print("Usage: python -m starboard <server|brain|migrations>")
     exit(1)
 
 
