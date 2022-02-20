@@ -78,6 +78,7 @@ class Config:
     support_invite: Optional[str] = None
     bot_invite: Optional[str] = None
     source_link: Optional[str] = None
+    patreon_link: Optional[str] = None
 
     # bot style
     color: int = int("FFE19C", 16)

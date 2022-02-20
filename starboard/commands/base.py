@@ -106,6 +106,12 @@ async def help_command(ctx: crescent.Context) -> None:
             " - Award roles\n"
             " - Channel-specific settings for each starboard\n"
             " - Advanced role permission system"
+            + (
+                "\n\nTo see premium features, visit my "
+                f"**[Patreon]({CONFIG.patreon_link})**."
+                if CONFIG.patreon_link
+                else ""
+            )
         ),
     )
     emb.add_field(
