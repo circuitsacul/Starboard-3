@@ -173,5 +173,5 @@ async def view_xproles(ctx: crescent.Context) -> None:
     embed = bot.embed(
         title="XPRoles",
         description="\n".join(f"<@&{r.id}>: **{r.required}** XP" for r in xpr),
-    )
+    ).set_footer("Note: XPRoles are a premium-only feature.")
     await ctx.respond(embed=embed)

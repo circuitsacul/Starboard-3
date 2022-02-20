@@ -75,6 +75,8 @@ class Config:
     leaderboard_length: int = 50
     asc_cooldown_cap: int = 5
     asc_cooldown_period: int = 10
+    xpr_cooldown_cap: int = 10
+    xpr_cooldown_period: int = 60
     credits_per_month: int = 3
     days_per_month: int = 32  # just be safe
 
