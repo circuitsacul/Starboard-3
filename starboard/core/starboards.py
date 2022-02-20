@@ -131,7 +131,9 @@ async def _refresh_message(
     await asyncio.gather(*tasks)
 
     if ip:
-        await refresh_xpr(bot, orig_message.guild_id, orig_message.author_id)
+        asyncio.create_task(
+            refresh_xpr(bot, orig_message.guild_id, orig_message.author_id)
+        )
 
 
 async def _refresh_message_for_starboard(
