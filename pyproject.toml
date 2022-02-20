@@ -10,7 +10,7 @@ authors = ["Circuit"]
 license = "MIT"
 
 [tool.poetry.dependencies]
-python = ">=3.9,<3.11"
+python = ">=3.8,<3.11"
 aiohttp = "^3.8.1"
 cachetools = "^5.0.0"
 types-cachetools = "^4.2.9"
