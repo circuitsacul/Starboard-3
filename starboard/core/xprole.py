@@ -25,18 +25,14 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from starboard.config import CONFIG
-from starboard.cooldown import Cooldown
 from starboard.database import Member, XPRole
 
 if TYPE_CHECKING:
     from starboard.bot import Bot
 
 
-COOLDOWN: Cooldown[int] = Cooldown()
-
-
 async def refresh_xpr(bot: Bot, guild_id: int, user_id: int) -> bool:
-    if not COOLDOWN.trigger(
+    if not bot.xpr_cooldown.trigger(
         user_id, CONFIG.xpr_cooldown_cap, CONFIG.xpr_cooldown_period
     ):
         return False

@@ -41,6 +41,9 @@ if TYPE_CHECKING:
     from starboard.bot import Bot
 
 
+LOCK: set[int] = set()
+
+
 async def refresh_message(
     bot: Bot,
     orig_message: Message,
@@ -48,14 +51,14 @@ async def refresh_message(
     force: bool = False,
     _nest: int = 0,
 ) -> None:
-    if orig_message.id in bot.refresh_message_lock:
+    if orig_message.id in LOCK:
         if _nest >= 4:
             return
         await asyncio.sleep(5)
         return await refresh_message(
             bot, orig_message, sbids, force, _nest + 1
         )
-    bot.refresh_message_lock.add(orig_message.id)
+    LOCK.add(orig_message.id)
     try:
         await orig_message.refetch()
         if orig_message.trashed:
@@ -63,7 +66,7 @@ async def refresh_message(
         else:
             await _refresh_message(bot, orig_message, sbids, force)
     finally:
-        bot.refresh_message_lock.remove(orig_message.id)
+        LOCK.remove(orig_message.id)
 
 
 async def _handle_trashed_message(bot: Bot, orig_message: Message) -> None:

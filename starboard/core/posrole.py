@@ -28,7 +28,6 @@ import hikari
 from apgorm import sql
 
 from starboard.config import CONFIG
-from starboard.cooldown import Cooldown
 from starboard.database import PosRole, PosRoleMember
 
 from .leaderboard import get_leaderboard
@@ -38,14 +37,13 @@ if TYPE_CHECKING:
 
 
 LOCK: set[int] = set()
-COOLDOWN: Cooldown[int] = Cooldown()
 
 
 async def update_posroles(bot: Bot, guild_id: int) -> bool:
     if guild_id in LOCK:
         False
 
-    if not COOLDOWN.trigger(
+    if not bot.pr_cooldown.trigger(
         guild_id, CONFIG.pr_cooldown_cap, CONFIG.pr_cooldown_period
     ):
         return False

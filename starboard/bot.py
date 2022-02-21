@@ -70,9 +70,10 @@ class Bot(crescent.Bot):
         miru.load(self)
 
         # locks and cooldowns
-        self.refresh_message_lock: set[int] = set()
         self.star_cooldown: Cooldown[tuple[int, int]] = Cooldown()
         self.asc_cooldown: Cooldown[int] = Cooldown()
+        self.xpr_cooldown: Cooldown[int] = Cooldown()
+        self.pr_cooldown: Cooldown[int] = Cooldown()
 
         def load_modules(parent: Path):
             for module in parent.glob("*.py"):
@@ -124,6 +125,8 @@ class Bot(crescent.Bot):
             asyncio.create_task(self.star_cooldown.loop_cycle())
         )
         self._tasks.append(asyncio.create_task(self.asc_cooldown.loop_cycle()))
+        self._tasks.append(asyncio.create_task(self.xpr_cooldown.loop_cycle()))
+        self._tasks.append(asyncio.create_task(self.pr_cooldown.loop_cycle()))
 
         await super().start(**kwargs)
 
