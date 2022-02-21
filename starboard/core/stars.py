@@ -56,7 +56,7 @@ async def is_star_valid_for(
 
     # check cooldown
     if config.cooldown_enabled and not bot.star_cooldown.trigger(
-        (star_adder.id, star_adder.guild_id),
+        (star_adder.id, config.starboard.id),
         config.cooldown_count,
         config.cooldown_period,
     ):
