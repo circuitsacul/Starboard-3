@@ -30,7 +30,7 @@ import hikari
 import pytz
 
 from starboard.config import CONFIG
-from starboard.database import Guild, Member, User, PatreonStatus
+from starboard.database import Guild, Member, PatreonStatus, User
 
 if TYPE_CHECKING:
     from starboard.bot import Bot

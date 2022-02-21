@@ -31,24 +31,28 @@ from starboard.config import CONFIG
 from starboard.exceptions import StarboardErr
 
 
-async def owner_only(ctx: crescent.Context) -> None:
+async def owner_only(ctx: crescent.Context) -> crescent.HookResult | None:
     if ctx.user.id not in CONFIG.owners:
-        raise StarboardErr("Only owners can use this command.")
+        msg = StarboardErr("Only owners can use this command.")
+        await ctx.respond(msg.msg, ephemeral=True)
+        return crescent.HookResult(True)
 
     return None
 
 
-async def guild_only(ctx: crescent.Context) -> None:
+async def guild_only(ctx: crescent.Context) -> crescent.HookResult | None:
     if not ctx.guild_id:
-        raise StarboardErr("This command can only be used inside servers.")
+        msg = StarboardErr("This command can only be used inside servers.")
+        await ctx.respond(msg.msg, ephemeral=True)
+        return crescent.HookResult(True)
 
     return None
 
 
 def has_guild_perms(
     perms: hikari.Permissions,
-) -> Callable[[crescent.Context], Awaitable[None]]:
-    async def check(ctx: crescent.Context) -> None:
+) -> Callable[[crescent.Context], Awaitable[crescent.HookResult | None]]:
+    async def check(ctx: crescent.Context) -> crescent.HookResult | None:
         await guild_only(ctx)
         assert ctx.guild_id is not None
         assert ctx.member is not None
@@ -58,9 +62,11 @@ def has_guild_perms(
         assert guild is not None
 
         if perms not in member.permissions:
-            raise StarboardErr(
+            msg = StarboardErr(
                 "You don't have permission to use this command."
             )
+            await ctx.respond(msg.msg, ephemeral=True)
+            return crescent.HookResult(True)
 
         return None
 
