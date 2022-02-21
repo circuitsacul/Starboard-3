@@ -38,7 +38,7 @@ async def notify(user: User, text: str) -> None:
     button.set_label("Dismiss")
     button.add_to_container()
 
-    if CONFIG.development and CONFIG.dev_notify is not None:
+    if CONFIG.dev_notify is not None:
         dest = await cast("Bot", user.app).cache.gof_user(CONFIG.dev_notify)
         if not dest:
             print(
@@ -48,6 +48,9 @@ async def notify(user: User, text: str) -> None:
             return
         await dest.send(f"Notifying <@{user.id}> | `{user.id}`", component=row)
         user = dest
+    elif CONFIG.development:
+        print("Skipping notification (development mode)")
+        return
 
     try:
         await user.send(text, component=row)
