@@ -82,6 +82,8 @@ class Config:
     asc_cooldown_period: int = 10
     xpr_cooldown_cap: int = 10
     xpr_cooldown_period: int = 60
+    pr_cooldown_cap: int = 1
+    pr_cooldown_period: int = 60*5
     credits_per_month: int = 3
     days_per_month: int = 32  # just be safe
 

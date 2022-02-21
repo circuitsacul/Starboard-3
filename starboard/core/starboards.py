@@ -35,6 +35,7 @@ from .config import StarboardConfig, get_config
 from .has_image import has_image
 from .messages import get_sbmsg_content
 from .xprole import refresh_xpr
+from .posrole import update_posroles
 
 if TYPE_CHECKING:
     from starboard.bot import Bot
@@ -134,6 +135,7 @@ async def _refresh_message(
         asyncio.create_task(
             refresh_xpr(bot, orig_message.guild_id, orig_message.author_id)
         )
+        asyncio.create_task(update_posroles(bot, orig_message.guild_id))
 
 
 async def _refresh_message_for_starboard(

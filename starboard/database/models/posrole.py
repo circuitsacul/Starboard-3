@@ -38,13 +38,6 @@ class PosRole(apgorm.Model):
     guild_id = types.Numeric().field().with_converter(DecimalC)
     max_members = types.Int().field()
 
-    users = apgorm.ManyToMany["User", "PosRoleMember"](
-        "id",
-        "posrole_members.role_id",
-        "posrole_members.user_id",
-        "users.id",
-    )
-
     guild_id_fk = apgorm.ForeignKey(guild_id, Guild.id)
 
     primary_key = (id,)

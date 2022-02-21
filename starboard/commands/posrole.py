@@ -23,14 +23,16 @@
 from __future__ import annotations
 
 from typing import TYPE_CHECKING, cast
+from apgorm import sql
 
 import crescent
 import hikari
 from asyncpg import UniqueViolationError
 
-from starboard.database import PosRole, XPRole, goc_guild
+from starboard.database import PosRole, XPRole, goc_guild, PosRoleMember
 from starboard.config import CONFIG
 from starboard.exceptions import StarboardErr
+from starboard.core.posrole import update_posroles
 
 from ._checks import has_guild_perms
 
@@ -44,6 +46,70 @@ posrole = crescent.Group(
     "Manage PosRoles",
     [has_guild_perms(hikari.Permissions.MANAGE_ROLES)],
 )
+
+
+@plugin.include
+@posrole.child
+@crescent.command(
+    name="refresh", description="Refreshes PosRoles for the server"
+)
+async def refresh_posroles(ctx: crescent.Context) -> None:
+    assert ctx.guild_id
+    await ctx.defer(True)
+    ret = await update_posroles(cast("Bot", ctx.app), ctx.guild_id)
+    if ret:
+        msg = "Updated PosRoles."
+    else:
+        msg = (
+            "This server cannot refresh PosRoles right now. Please try again "
+            "later."
+        )
+
+    await ctx.respond(msg, ephemeral=True)
+
+
+@plugin.include
+@crescent.hook(has_guild_perms(hikari.Permissions.MANAGE_ROLES))
+@crescent.user_command(name="Refetch Roles")
+async def refretch_roles(ctx: crescent.Context, user: hikari.User) -> None:
+    bot = cast("Bot", ctx.app)
+    assert ctx.guild_id
+
+    member = await bot.cache.gof_member(ctx.guild_id, user.id)
+    if not member:
+        raise StarboardErr("I couldn't find that member.")
+
+    prids = {
+        p.id
+        for p in await PosRole.fetch_query()
+        .where(guild_id=ctx.guild_id)
+        .fetchmany()
+    }
+    if not prids:
+        raise StarboardErr("This server has no PosRoles.")
+
+    prmrs = {
+        prm.role_id
+        for prm in await PosRoleMember.fetch_query()
+        .where(user_id=user.id, role_id=sql(prids).any)
+        .fetchmany()
+    }
+
+    current_proles = set(member.role_ids).intersection(prids)
+
+    for rid in current_proles.difference(prmrs):
+        # roles to add
+        await PosRoleMember(role_id=rid, user_id=member.id).create()
+
+    # roles to remove
+    await PosRoleMember.delete_query().where(
+        user_id=member.id, role_id=sql(prmrs.difference(current_proles)).any
+    ).execute()
+
+    await ctx.respond(
+        "Refetched roles. Use `/posroles refresh` to apply updates.",
+        ephemeral=True,
+    )
 
 
 @plugin.include
