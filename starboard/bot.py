@@ -128,7 +128,9 @@ class Bot(crescent.Bot):
         self._tasks.append(asyncio.create_task(self.xpr_cooldown.loop_cycle()))
         self._tasks.append(asyncio.create_task(self.pr_cooldown.loop_cycle()))
 
-        await super().start(**kwargs)
+        await super().start(
+            **kwargs, activity=hikari.Activity(name="Mention me for help")
+        )
 
     async def close(self) -> None:
         await super().close()
