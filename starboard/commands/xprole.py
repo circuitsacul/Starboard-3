@@ -52,7 +52,7 @@ xprole = crescent.Group(
 async def refresh_xproles(ctx: crescent.Context, user: hikari.User) -> None:
     bot = cast("Bot", ctx.app)
     assert ctx.guild_id
-    await ctx.defer()
+    await ctx.defer(True)
     ret = await refresh_xpr(bot, ctx.guild_id, user.id)
     if ret:
         await ctx.respond("Refreshed roles.", ephemeral=True)

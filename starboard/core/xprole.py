@@ -25,7 +25,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from starboard.config import CONFIG
-from starboard.database import Member, XPRole
+from starboard.database import XPRole, goc_member
 
 if TYPE_CHECKING:
     from starboard.bot import Bot
@@ -40,7 +40,7 @@ async def refresh_xpr(bot: Bot, guild_id: int, user_id: int) -> bool:
     obj = await bot.cache.gof_member(guild_id, user_id)
     if not obj:
         return True
-    member = await Member.fetch(user_id=user_id, guild_id=guild_id)
+    member = await goc_member(guild_id, user_id, obj.is_bot)
 
     xpr = await XPRole.fetch_query().where(guild_id=guild_id).fetchmany()
     if not xpr:
