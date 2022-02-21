@@ -32,6 +32,7 @@ import aiohttp
 
 from starboard.config import CONFIG
 from starboard.core.notifications import notify
+from starboard.core.premium import update_supporter_roles
 from starboard.database import PatreonStatus, User, goc_user
 
 if TYPE_CHECKING:
@@ -49,6 +50,14 @@ class Patron:
 
 
 async def loop_update_patrons(bot: Bot) -> None:
+    if CONFIG.main_guild:
+        shard = (CONFIG.main_guild >> 22) % bot.cluster.shard_count
+        if shard not in bot.cluster.shard_ids:
+            return
+    else:
+        if bot.cluster.cluster_id != 0:
+            return
+
     try:
         while True:
             try:
@@ -57,7 +66,7 @@ async def loop_update_patrons(bot: Bot) -> None:
                 traceback.print_exc()
 
             await asyncio.sleep(60 * 5)
-    except asyncio.CancelledError:
+    finally:
         global SES
         if SES is not None and not SES.closed:
             await SES.close()
@@ -79,6 +88,8 @@ async def _update_patrons(bot: Bot) -> None:
             user.last_patreon_total_cents = p.total_cents
             user.credits = _credits(user)
             await user.save()
+
+        asyncio.create_task(update_supporter_roles(bot, user))
 
 
 async def _notify_for_status(user: User, bot: Bot) -> None:

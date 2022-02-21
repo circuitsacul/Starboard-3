@@ -118,9 +118,9 @@ class Bot(crescent.Bot):
                     expired_premium.check_expired_premium(self)
                 )
             )
-            self._tasks.append(
-                asyncio.create_task(patreon.loop_update_patrons(self))
-            )
+        self._tasks.append(
+            asyncio.create_task(patreon.loop_update_patrons(self))
+        )
         self._tasks.append(
             asyncio.create_task(self.star_cooldown.loop_cycle())
         )

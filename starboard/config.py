@@ -30,10 +30,12 @@ from typing import List, Optional, cast
 
 @dataclass
 class Config:
-    # development
+    # misc
     development: bool = False
     dev_notify: Optional[int] = None
     main_guild: Optional[int] = None
+    patron_role: Optional[int] = None
+    donor_role: Optional[int] = None
 
     # starboard settings restrictions
     max_whn_len: int = 32

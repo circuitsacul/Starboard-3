@@ -30,10 +30,48 @@ import hikari
 import pytz
 
 from starboard.config import CONFIG
-from starboard.database import Guild, Member, User
+from starboard.database import Guild, Member, User, PatreonStatus
 
 if TYPE_CHECKING:
     from starboard.bot import Bot
+
+
+async def _add_role(member: hikari.Member, role_id: int | None) -> None:
+    if role_id in member.role_ids or role_id is None:
+        return
+    try:
+        await member.add_role(role_id)
+    except (hikari.ForbiddenError, hikari.NotFoundError):
+        pass
+
+
+async def _rm_role(member: hikari.Member, role_id: int | None) -> None:
+    if role_id not in member.role_ids or role_id is None:
+        return
+    try:
+        await member.remove_role(role_id)
+    except (hikari.ForbiddenError, hikari.NotFoundError):
+        pass
+
+
+async def update_supporter_roles(bot: Bot, user: User) -> None:
+    if not CONFIG.main_guild:
+        return
+    member = await bot.cache.gof_member(CONFIG.main_guild, user.id)
+    if not member:
+        return
+    if (
+        user.patreon_status is PatreonStatus.ACTIVE
+        or user.patreon_status is PatreonStatus.DECLINED
+    ):
+        await _add_role(member, CONFIG.patron_role)
+        await _add_role(member, CONFIG.donor_role)
+    elif user.patreon_status is PatreonStatus.FORMER:
+        await _add_role(member, CONFIG.donor_role)
+        await _rm_role(member, CONFIG.patron_role)
+    else:
+        await _rm_role(member, CONFIG.patron_role)
+        await _rm_role(member, CONFIG.donor_role)
 
 
 async def try_autoredeem(bot: Bot, guild: Guild) -> hikari.Member | None:
