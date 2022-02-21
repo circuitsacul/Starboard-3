@@ -49,6 +49,7 @@ def has_guild_perms(
     perms: hikari.Permissions,
 ) -> Callable[[crescent.Context], Awaitable[None]]:
     async def check(ctx: crescent.Context) -> None:
+        await guild_only(ctx)
         assert ctx.guild_id is not None
         assert ctx.member is not None
         assert isinstance(member := ctx.member, hikari.InteractionMember)
