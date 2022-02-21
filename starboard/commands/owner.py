@@ -50,7 +50,7 @@ owner = crescent.Group("owner", "Owner only commands", hooks=[owner_only])
 @crescent.command(
     name="give-credits",
     description="Gives a user credits",
-    guild=CONFIG.dev_guild,
+    guild=CONFIG.main_guild,
 )
 class GiveCredits:
     user = crescent.option(str, "The id of the user")
@@ -83,7 +83,7 @@ class GiveCredits:
 @crescent.command(
     name="clear-cache",
     description="Clears the cache entirely",
-    guild=CONFIG.dev_guild,
+    guild=CONFIG.main_guild,
 )
 async def clear_cache(ctx: crescent.Context) -> None:
     bot = cast("Bot", ctx.app)
@@ -94,7 +94,7 @@ async def clear_cache(ctx: crescent.Context) -> None:
 @plugin.include
 @owner.child
 @crescent.command(
-    name="eval", description="Evaluate code", guild=CONFIG.dev_guild
+    name="eval", description="Evaluate code", guild=CONFIG.main_guild
 )
 class Eval:
     code = crescent.option(str, "Code to evaluate")
@@ -116,7 +116,7 @@ class Eval:
 @plugin.include
 @owner.child
 @crescent.command(
-    name="shell", description="Run a shell command", guild=CONFIG.dev_guild
+    name="shell", description="Run a shell command", guild=CONFIG.main_guild
 )
 class ShellCommand:
     command = crescent.option(str, "The command to run")
@@ -140,7 +140,7 @@ class ShellCommand:
 @crescent.command(
     name="reconnect",
     description="Reconnect all clusters",
-    guild=CONFIG.dev_guild,
+    guild=CONFIG.main_guild,
 )
 async def reconnect_clusters(ctx: crescent.Context) -> None:
     bot = cast("Bot", ctx.app)
@@ -154,7 +154,7 @@ async def reconnect_clusters(ctx: crescent.Context) -> None:
 @plugin.include
 @owner.child
 @crescent.command(
-    name="restart", description="Restart the bot", guild=CONFIG.dev_guild
+    name="restart", description="Restart the bot", guild=CONFIG.main_guild
 )
 async def restart_bot(ctx: crescent.Context) -> None:
     bot = cast("Bot", ctx.app)
@@ -175,7 +175,7 @@ class Rollback(Exception):
 @plugin.include
 @owner.child
 @crescent.command(
-    name="sql", description="Execute raw SQL", guild=CONFIG.dev_guild
+    name="sql", description="Execute raw SQL", guild=CONFIG.main_guild
 )
 class RunSQL:
     sql = crescent.option(str, "The SQL to run")

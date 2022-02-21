@@ -56,8 +56,8 @@ class Bot(crescent.Bot):
         )
         super().__init__(
             token=CONFIG.discord_token,
-            tracked_guilds=[CONFIG.dev_guild] if CONFIG.dev_guild else None,
-            default_guild=CONFIG.dev_guild if CONFIG.development else None,
+            tracked_guilds=[CONFIG.main_guild] if CONFIG.main_guild else None,
+            default_guild=CONFIG.main_guild if CONFIG.development else None,
             intents=intents,
         )
 

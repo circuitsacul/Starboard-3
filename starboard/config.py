@@ -33,7 +33,7 @@ class Config:
     # development
     development: bool = False
     dev_notify: Optional[int] = None
-    dev_guild: Optional[int] = None
+    main_guild: Optional[int] = None
 
     # starboard settings restrictions
     max_whn_len: int = 32
