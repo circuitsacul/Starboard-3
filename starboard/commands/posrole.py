@@ -23,16 +23,16 @@
 from __future__ import annotations
 
 from typing import TYPE_CHECKING, cast
-from apgorm import sql
 
 import crescent
 import hikari
+from apgorm import sql
 from asyncpg import UniqueViolationError
 
-from starboard.database import PosRole, XPRole, goc_guild, PosRoleMember
 from starboard.config import CONFIG
-from starboard.exceptions import StarboardErr
 from starboard.core.posrole import update_posroles
+from starboard.database import PosRole, PosRoleMember, XPRole, goc_guild
+from starboard.exceptions import StarboardErr
 
 from ._checks import has_guild_perms
 

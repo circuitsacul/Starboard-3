@@ -34,8 +34,8 @@ from starboard.database import Guild, Message, SBMessage, Star, Starboard
 from .config import StarboardConfig, get_config
 from .has_image import has_image
 from .messages import get_sbmsg_content
-from .xprole import refresh_xpr
 from .posrole import update_posroles
+from .xprole import refresh_xpr
 
 if TYPE_CHECKING:
     from starboard.bot import Bot

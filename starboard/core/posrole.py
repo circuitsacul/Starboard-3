@@ -27,9 +27,9 @@ from typing import TYPE_CHECKING
 import hikari
 from apgorm import sql
 
-from starboard.database import PosRole, PosRoleMember
-from starboard.cooldown import Cooldown
 from starboard.config import CONFIG
+from starboard.cooldown import Cooldown
+from starboard.database import PosRole, PosRoleMember
 
 from .leaderboard import get_leaderboard
 
