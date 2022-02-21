@@ -38,12 +38,14 @@ async def add_xp(user_id: int, guild_id: int, count: int) -> None:
     await q.execute()
 
 
-async def get_leaderboard(guild_id: int) -> dict[int, MemberStats]:
+async def get_leaderboard(
+    guild_id: int, limit: int = CONFIG.leaderboard_length
+) -> dict[int, MemberStats]:
     q = Member.fetch_query()
     q.where(guild_id=guild_id)
     q.where(Member.xp.gt(0))
     q.order_by(Member.xp, reverse=True)
-    ret = await q.fetchmany(limit=CONFIG.leaderboard_length)
+    ret = await q.fetchmany(limit=limit)
 
     return {m.user_id: MemberStats(m.xp, x + 1) for x, m in enumerate(ret)}
 

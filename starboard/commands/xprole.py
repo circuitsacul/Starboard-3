@@ -121,7 +121,7 @@ class AddXPRole:
 @plugin.include
 @xprole.child
 @crescent.command(
-    name="set-xp", description="Sets the required XP for an XPRole"
+    name="required-xp", description="Set the required XP for an XPRole"
 )
 class SetXPRoleXP:
     xprole = crescent.option(hikari.Role, "The XPRole to set XP for")
@@ -161,7 +161,7 @@ class DeleteXPRole:
 
 @plugin.include
 @xprole.child
-@crescent.command(name="view", description="Views your XPRoles")
+@crescent.command(name="view", description="View the XPRoles for this server")
 async def view_xproles(ctx: crescent.Context) -> None:
     assert ctx.guild_id
     bot = cast("Bot", ctx.app)

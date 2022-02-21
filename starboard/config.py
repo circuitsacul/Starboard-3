@@ -63,6 +63,11 @@ class Config:
     max_xpr_xp: int = 5_000
     min_xpr_xp: int = 5
 
+    # posrole restrictions
+    max_posroles: int = 10
+    max_pr_members: int = 1_000
+    min_pr_members: int = 1
+
     # non-premium restrictions
     np_max_starboards: int = 3
     np_max_autostar: int = 1
@@ -77,6 +82,8 @@ class Config:
     asc_cooldown_period: int = 10
     xpr_cooldown_cap: int = 10
     xpr_cooldown_period: int = 60
+    pr_cooldown_cap: int = 1
+    pr_cooldown_period: int = 60 * 5
     credits_per_month: int = 3
     days_per_month: int = 32  # just be safe
 

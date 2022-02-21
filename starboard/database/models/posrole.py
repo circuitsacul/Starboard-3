@@ -23,9 +23,12 @@
 from __future__ import annotations
 
 import apgorm
-from apgorm import types
+from apgorm import Unique, types
+
+from starboard.config import CONFIG
 
 from ._converters import DecimalC
+from ._validators import int_range
 from .guild import Guild
 from .user import User
 
@@ -33,18 +36,16 @@ from .user import User
 class PosRole(apgorm.Model):
     id = types.Numeric().field().with_converter(DecimalC)
     guild_id = types.Numeric().field().with_converter(DecimalC)
-    max_users = types.Numeric().field().with_converter(DecimalC)
-
-    users = apgorm.ManyToMany["User", "PosRoleMember"](
-        "id",
-        "posrole_members.role_id",
-        "posrole_members.user_id",
-        "users.user_id",
-    )
+    max_members = types.Int().field()
 
     guild_id_fk = apgorm.ForeignKey(guild_id, Guild.id)
 
     primary_key = (id,)
+
+    maxm_gid_unique = Unique(guild_id, max_members)
+    max_members.add_validator(
+        int_range("max-members", CONFIG.min_pr_members, CONFIG.max_pr_members)
+    )
 
 
 class PosRoleMember(apgorm.Model):
