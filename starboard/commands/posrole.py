@@ -70,7 +70,7 @@ async def refresh_posroles(ctx: crescent.Context) -> None:
 
 @plugin.include
 @crescent.hook(has_guild_perms(hikari.Permissions.MANAGE_ROLES))
-@crescent.user_command(name="Refetch Roles")
+@crescent.user_command(name="Refetch PosRoles")
 async def refretch_roles(ctx: crescent.Context, user: hikari.User) -> None:
     bot = cast("Bot", ctx.app)
     assert ctx.guild_id
@@ -110,30 +110,6 @@ async def refretch_roles(ctx: crescent.Context, user: hikari.User) -> None:
         "Refetched roles. Use `/posroles refresh` to apply updates.",
         ephemeral=True,
     )
-
-
-@plugin.include
-@posrole.child
-@crescent.command(name="stack", description="Manage PosRole stacking")
-class StackPosRoles:
-    stack = crescent.option(bool, "Whether to stack PosRoles", default=None)
-
-    async def callback(self, ctx: crescent.Context) -> None:
-        assert ctx.guild_id
-        guild = await goc_guild(ctx.guild_id)
-
-        if self.stack is not None:
-            guild.stack_posroles = self.stack
-            await guild.save()
-            if self.stack:
-                msg = "Enabled PosRole stacking."
-            else:
-                msg = "Disabled PosRole stacking."
-            await ctx.respond(msg)
-        else:
-            await ctx.respond(
-                f"PosRole stacking is currently set to {guild.stack_posroles}."
-            )
 
 
 @plugin.include

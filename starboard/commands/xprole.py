@@ -28,6 +28,7 @@ import crescent
 import hikari
 
 from starboard.config import CONFIG
+from starboard.core.xprole import refresh_xpr
 from starboard.database import PosRole, XPRole, goc_guild
 from starboard.exceptions import StarboardErr
 
@@ -46,27 +47,20 @@ xprole = crescent.Group(
 
 
 @plugin.include
-@xprole.child
-@crescent.command(name="stack", description="Manage XPRole stacking")
-class StackXPRoles:
-    stack = crescent.option(bool, "Whether to stack XPRoles", default=None)
-
-    async def callback(self, ctx: crescent.Context) -> None:
-        assert ctx.guild_id
-        guild = await goc_guild(ctx.guild_id)
-
-        if self.stack is not None:
-            guild.stack_xproles = self.stack
-            await guild.save()
-            if self.stack:
-                msg = "Enabled XPRole stacking."
-            else:
-                msg = "Disabled XPRole stacking."
-            await ctx.respond(msg)
-        else:
-            await ctx.respond(
-                f"XPRole stacking is currently set to {guild.stack_xproles}."
-            )
+@crescent.hook(has_guild_perms(hikari.Permissions.MANAGE_ROLES))
+@crescent.user_command(name="Refresh XProles")
+async def refresh_xproles(ctx: crescent.Context, user: hikari.User) -> None:
+    bot = cast("Bot", ctx.app)
+    assert ctx.guild_id
+    await ctx.defer()
+    ret = await refresh_xpr(bot, ctx.guild_id, user.id)
+    if ret:
+        await ctx.respond("Refreshed roles.", ephemeral=True)
+    else:
+        await ctx.respond(
+            "You're using this command too much, please try again later.",
+            ephemeral=True,
+        )
 
 
 @plugin.include

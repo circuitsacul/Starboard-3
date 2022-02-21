@@ -35,32 +35,32 @@ if TYPE_CHECKING:
 COOLDOWN: Cooldown[int] = Cooldown()
 
 
-async def refresh_xpr(bot: Bot, guild_id: int, user_id: int) -> None:
+async def refresh_xpr(bot: Bot, guild_id: int, user_id: int) -> bool:
     if not COOLDOWN.trigger(
         user_id, CONFIG.xpr_cooldown_cap, CONFIG.xpr_cooldown_period
     ):
-        return
+        return False
 
     obj = await bot.cache.gof_member(guild_id, user_id)
     if not obj:
-        return
+        return True
     member = await Member.fetch(user_id=user_id, guild_id=guild_id)
 
     xpr = await XPRole.fetch_query().where(guild_id=guild_id).fetchmany()
     if not xpr:
-        return
+        return True
 
-    remove = {
-        r.id for r in xpr if member.xp < r.required and r.id in obj.role_ids
-    }
-    add = {
-        r.id
-        for r in xpr
-        if member.xp >= r.required and r.id not in obj.role_ids
-    }
+    add = [
+        r for r in xpr if member.xp >= r.required and r.id not in obj.role_ids
+    ]
+    remove = [
+        r for r in xpr if member.xp < r.required and r.id in obj.role_ids
+    ]
 
     for r in remove:
-        await obj.remove_role(r, reason="XPRoles")
+        await obj.remove_role(r.id, reason="XPRoles")
 
     for r in add:
-        await obj.add_role(r, reason="XPRoles")
+        await obj.add_role(r.id, reason="XPRoles")
+
+    return True

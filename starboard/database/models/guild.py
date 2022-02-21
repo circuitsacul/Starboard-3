@@ -40,8 +40,5 @@ class Guild(apgorm.Model):
     # config options
     premium_end = types.TimestampTZ().nullablefield()
 
-    stack_posroles = types.Boolean().field(default=False)
-    stack_xproles = types.Boolean().field(default=False)
-
     # primary key
     primary_key = (id,)
