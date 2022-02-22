@@ -283,7 +283,7 @@ class SetOverrideChannels:
 )
 class RemoveOverrideChannels:
     name = crescent.option(str, "The name of the override")
-    channels = crescent.option(str, "The channels to use for the override")
+    channels = crescent.option(str, "The channels to remove from the override")
 
     async def callback(self, ctx: crescent.Context) -> None:
         bot = cast("Bot", ctx.app)
