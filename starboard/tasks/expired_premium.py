@@ -24,6 +24,7 @@ from __future__ import annotations
 
 import asyncio
 from datetime import datetime
+import traceback
 from typing import TYPE_CHECKING
 
 import pytz
@@ -37,8 +38,15 @@ if TYPE_CHECKING:
 
 
 async def check_expired_premium(bot: Bot) -> None:
+    if bot.cluster.cluster_id != 0:
+        return
+
     while True:
-        await _check_expired_premium(bot)
+        try:
+            await _check_expired_premium(bot)
+        except Exception:
+            traceback.print_exc()
+
         await asyncio.sleep(60 * 60)
 
 

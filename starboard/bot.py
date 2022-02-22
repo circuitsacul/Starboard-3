@@ -41,7 +41,7 @@ from .cache import Cache
 from .config import CONFIG, Config
 from .cooldown import Cooldown
 from .database import Database
-from .tasks import expired_premium, patreon
+from .tasks import expired_premium, patreon, sweep_cache
 
 
 class Bot(crescent.Bot):
@@ -104,7 +104,6 @@ class Bot(crescent.Bot):
         return self._aiohttp_session
 
     async def start(self, **kwargs) -> None:
-        # tasks
         await self.database.connect(
             migrate=self.cluster.cluster_id == 0,
             host=CONFIG.db_host,
@@ -112,15 +111,19 @@ class Bot(crescent.Bot):
             user=CONFIG.db_user,
             password=CONFIG.db_password,
         )
-        if self.cluster.cluster_id == 0:
-            self._tasks.append(
-                asyncio.create_task(
-                    expired_premium.check_expired_premium(self)
-                )
-            )
+
+        # tasks
+        self._tasks.append(
+            asyncio.create_task(expired_premium.check_expired_premium(self))
+        )
         self._tasks.append(
             asyncio.create_task(patreon.loop_update_patrons(self))
         )
+        self._tasks.append(
+            asyncio.create_task(sweep_cache.loop_sweep_cache(self))
+        )
+
+        # cache cycles
         self._tasks.append(
             asyncio.create_task(self.star_cooldown.loop_cycle())
         )
