@@ -24,10 +24,9 @@ from __future__ import annotations
 
 from typing import Sequence
 
-import crescent
 import hikari
 import miru
-from miru.ext.nav import NavButton, NavigatorView  # type: ignore
+from miru.ext.nav import NavigatorView  # type: ignore
 
 
 class Paginator(NavigatorView):
@@ -39,20 +38,3 @@ class Paginator(NavigatorView):
 
     async def view_check(self, ctx: miru.Context) -> bool:
         return ctx.user.id == self.user_id
-
-    async def send(
-        self, ctx: crescent.Context, ephemeral: bool = False
-    ) -> None:
-        self.current_page = 0
-        self._ephemeral = ephemeral
-
-        for button in self.children:
-            if isinstance(button, NavButton):
-                await button.before_page_change()
-
-        payload = self._get_page_payload(self.pages[0])
-        message = await ctx.respond(
-            **payload, ensure_message=True, ephemeral=ephemeral
-        )
-
-        self.start(message)

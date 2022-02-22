@@ -226,7 +226,7 @@ async def trashcan(ctx: crescent.Context) -> None:
         pages[-1] += "\n" + l
 
     pag = Paginator(ctx.user.id, [bot.embed(description=p) for p in pages])
-    await pag.send(ctx)
+    await pag.send(ctx.interaction, ephemeral=True)
 
 
 @plugin.include

@@ -77,7 +77,7 @@ async def leaderboard(ctx: crescent.Context) -> None:
 
     ctx.respond
     nav = Paginator(ctx.user.id, embeds)
-    await nav.send(ctx)
+    await nav.send(ctx.interaction)
 
 
 @plugin.include
