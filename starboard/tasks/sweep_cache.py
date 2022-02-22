@@ -33,7 +33,7 @@ if TYPE_CHECKING:
 async def loop_sweep_cache(bot: Bot) -> None:
     while True:
         try:
-            bot.cache.clear()
+            bot.cache.sweep()
         except Exception:
             traceback.print_exc()
 

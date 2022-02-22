@@ -55,11 +55,16 @@ class Cache(CacheImpl):
         if TYPE_CHECKING:
             self._app = cast(Bot, self._app)
 
-    def clear(self) -> None:
+    def sweep(self) -> None:
         self.__messages.clear()
         self.__members.clear()
         self.__webhooks.clear()
         self.__star_emojis.clear()
+        self.clear_members()
+        self.clear_messages()
+
+    def clear(self) -> None:
+        self.sweep()
         super().clear()
 
     def invalidate_star_emojis(
