@@ -89,18 +89,19 @@ class Redeem:
             f"this server {self.months} months of premium.",
             components=conf.build(),
             ensure_message=True,
+            ephemeral=True,
         )
         conf.start(m)
         await conf.wait()
 
         if not conf.result:
-            await m.edit("Cancelled.", components=[])
+            await ctx.edit("Cancelled.", components=[])
             return
 
         g = await goc_guild(ctx.guild_id)
         u = await User.exists(id=ctx.user.id)
         if not u:
-            await m.edit("You don't have enough credits.", components=[])
+            await ctx.edit("You don't have enough credits.", components=[])
             return
 
         success = await redeem(bot, u.id, g.id, self.months)
@@ -108,7 +109,7 @@ class Redeem:
             await m.edit("You don't have enough credits.", components=[])
             return
 
-        await m.edit("Done.", components=[])
+        await ctx.edit("Done.", components=[])
 
 
 @plugin.include

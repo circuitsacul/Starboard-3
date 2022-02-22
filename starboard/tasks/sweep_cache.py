@@ -37,4 +37,4 @@ async def loop_sweep_cache(bot: Bot) -> None:
         except Exception:
             traceback.print_exc()
 
-        await asyncio.sleep(60*60)
+        await asyncio.sleep(60 * 60)
