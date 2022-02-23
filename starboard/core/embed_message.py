@@ -212,7 +212,12 @@ def _extract_extra_embeds(message: hikari.Message) -> list[hikari.Embed]:
 
 
 def _extract_file_str(message: hikari.Message) -> str | None:
-    files = [f"[{a.filename}]({a.url})\n" for a in message.attachments]
+    files: list[str] = []
+    for a in message.attachments:
+        if a.filename.startswith("SPOILER_"):
+            files.append(f"||[{a.filename}]({a.url})||\n")
+        else:
+            files.append(f"[{a.filename}]({a.url})\n")
     files = trunc_list(files, EMBED_FIELD_LEN)
 
     return "".join(files) or None
@@ -226,6 +231,7 @@ async def _extract_images(
         for a in message.attachments
         if a.media_type is not None
         and a.media_type.lower().startswith("image")
+        and not a.filename.startswith("SPOILER")
     ]
 
     for embed in message.embeds:
