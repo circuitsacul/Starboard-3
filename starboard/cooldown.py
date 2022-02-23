@@ -26,40 +26,62 @@ import asyncio
 from time import time
 from typing import Generic, TypeVar
 
-from starboard.config import CONFIG
-
 _K = TypeVar("_K")
 
 
 class SlidingWindow:
-    __slots__ = ("capacity", "period", "cur_time", "pre_count", "cur_count")
+    # NOTE: This sliding window implementation was copied from the Cooldown
+    # class in discord.py.
 
-    def __init__(self, capacity: int, period: int):
-        self.capacity = capacity
-        self.period = period
+    __slots__ = ("rate", "per", "_window", "_tokens", "_last")
 
-        self.cur_time = time()
-        self.pre_count = capacity
-        self.cur_count = 0
+    def __init__(self, rate: float, per: float) -> None:
+        self.rate: int = int(rate)
+        self.per: float = float(per)
+        self._window: float = 0.0
+        self._tokens: int = self.rate
+        self._last: float = 0.0
 
-    def trigger(self) -> bool:
-        now = time()
-        if (now - self.cur_time) > self.period:
-            self.cur_time = now
-            self.pre_count = self.cur_count
-            self.cur_count = 0
+    def get_tokens(self, current: float | None = None) -> int:
+        if not current:
+            current = time()
 
-        ec = (
-            self.pre_count
-            * (self.period - (now - self.cur_time))
-            / self.period
-        ) + self.cur_count
+        tokens = self._tokens
 
-        if ec > self.capacity:
-            return False
+        if current > self._window + self.per:
+            tokens = self.rate
+        return tokens
 
-        self.cur_count += 1
-        return True
+    def get_retry_after(self, current: float | None = None) -> float:
+        current = current or time()
+        tokens = self.get_tokens(current)
+
+        if tokens == 0:
+            return self.per - (current - self._window)
+
+        return 0.0
+
+    def update_rate_limit(self, current: float | None = None) -> float | None:
+        current = current or time()
+        self._last = current
+
+        self._tokens = self.get_tokens(current)
+
+        # first token used means that we start a new rate limit window
+        if self._tokens == self.rate:
+            self._window = current
+
+        # check if we are rate limited
+        if self._tokens == 0:
+            return self.per - (current - self._window)
+
+        # we're not so decrement our tokens
+        self._tokens -= 1
+        return None
+
+    def reset(self) -> None:
+        self._tokens = self.rate
+        self._last = 0.0
 
 
 class Cooldown(Generic[_K]):
@@ -75,9 +97,9 @@ class Cooldown(Generic[_K]):
     def __setitem__(self, key: _K, value: SlidingWindow) -> None:
         self.cur[key] = value
 
-    async def loop_cycle(self) -> None:
+    async def loop_cycle(self, delay: int) -> None:
         while True:
-            await asyncio.sleep(CONFIG.max_cooldown_period * 2)
+            await asyncio.sleep(delay)
 
             del self.old
             self.old = self.cur
@@ -92,4 +114,4 @@ class Cooldown(Generic[_K]):
             return b
 
     def trigger(self, key: _K, cap: int, period: int) -> bool:
-        return self.get_bucket(key, cap, period).trigger()
+        return self.get_bucket(key, cap, period).update_rate_limit() is None

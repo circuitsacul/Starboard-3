@@ -71,6 +71,7 @@ class Bot(crescent.Bot):
 
         # locks and cooldowns
         self.star_cooldown: Cooldown[tuple[int, int]] = Cooldown()
+        self.edit_cooldown: Cooldown[int] = Cooldown()
         self.asc_cooldown: Cooldown[int] = Cooldown()
         self.xpr_cooldown: Cooldown[int] = Cooldown()
         self.pr_cooldown: Cooldown[int] = Cooldown()
@@ -125,11 +126,30 @@ class Bot(crescent.Bot):
 
         # cache cycles
         self._tasks.append(
-            asyncio.create_task(self.star_cooldown.loop_cycle())
+            asyncio.create_task(
+                self.star_cooldown.loop_cycle(CONFIG.max_cooldown_period * 2)
+            )
         )
-        self._tasks.append(asyncio.create_task(self.asc_cooldown.loop_cycle()))
-        self._tasks.append(asyncio.create_task(self.xpr_cooldown.loop_cycle()))
-        self._tasks.append(asyncio.create_task(self.pr_cooldown.loop_cycle()))
+        self._tasks.append(
+            asyncio.create_task(
+                self.edit_cooldown.loop_cycle(CONFIG.edit_cooldown_period * 2)
+            )
+        )
+        self._tasks.append(
+            asyncio.create_task(
+                self.asc_cooldown.loop_cycle(CONFIG.asc_cooldown_period * 2)
+            )
+        )
+        self._tasks.append(
+            asyncio.create_task(
+                self.xpr_cooldown.loop_cycle(CONFIG.xpr_cooldown_period * 2)
+            )
+        )
+        self._tasks.append(
+            asyncio.create_task(
+                self.pr_cooldown.loop_cycle(CONFIG.pr_cooldown_period * 2)
+            )
+        )
 
         await super().start(
             **kwargs, activity=hikari.Activity(name="Mention me for help")

@@ -29,6 +29,7 @@ from typing import TYPE_CHECKING, Awaitable, Sequence
 import hikari
 from apgorm import sql
 
+from starboard.config import CONFIG
 from starboard.database import Guild, Message, SBMessage, Star, Starboard
 
 from .config import StarboardConfig, get_config
@@ -49,15 +50,10 @@ async def refresh_message(
     orig_message: Message,
     sbids: Sequence[int] | None = None,
     force: bool = False,
-    _nest: int = 0,
 ) -> None:
     if orig_message.id in LOCK:
-        if _nest >= 4:
-            return
-        await asyncio.sleep(5)
-        return await refresh_message(
-            bot, orig_message, sbids, force, _nest + 1
-        )
+        return
+
     LOCK.add(orig_message.id)
     try:
         await orig_message.refetch()
@@ -256,8 +252,6 @@ async def _refresh_message_for_starboard(
                 bot, config, sbmsg_obj, content, None, orig_msg.author_id
             )
 
-        await asyncio.sleep(10)
-
     else:
         sbmsg.sb_message_id = None
 
@@ -273,6 +267,11 @@ async def _edit(
     embeds: list[hikari.Embed] | None,
     author_id: int,
 ) -> None:
+    if not bot.edit_cooldown.trigger(
+        message.id, CONFIG.edit_cooldown_cap, CONFIG.edit_cooldown_period
+    ):
+        return
+
     if message.author.id != bot.me.id:
         wh = await _webhook(bot, config, False)
         if (not wh) or wh.webhook_id != message.author.id:
