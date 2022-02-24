@@ -36,6 +36,7 @@ from .models import (
     starboard,
     user,
     xprole,
+    permrole
 )
 
 
@@ -68,6 +69,8 @@ class Database(apgorm.Database):
 
     starboards = starboard.Starboard
     overrides = override.Override
+    permroles = permrole.PermRole
+    permrole_starboards = permrole.PermRoleStarboard
     aschannels = aschannel.AutoStarChannel
 
     xproles = xprole.XPRole
