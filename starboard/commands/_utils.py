@@ -36,6 +36,10 @@ if TYPE_CHECKING:
     from starboard.bot import Bot
 
 
+TRIBOOL = {"True": True, "False": False, "Default": None}
+TRIBOOL_CHOICES = [(k, k) for k in TRIBOOL]
+
+
 _T = TypeVar("_T")
 
 

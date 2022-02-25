@@ -30,6 +30,7 @@ import hikari
 from starboard.database import Message, Star, User
 
 from .config import StarboardConfig
+from .permrole import get_permissions
 
 if TYPE_CHECKING:
     from starboard.bot import Bot
@@ -40,6 +41,7 @@ async def is_star_valid_for(
     config: StarboardConfig,
     orig_message: Message,
     author: User,
+    author_obj: hikari.Member | None,
     star_adder: hikari.Member,
 ) -> bool:
     if (not config.self_star) and star_adder.id == orig_message.author_id:
@@ -60,6 +62,28 @@ async def is_star_valid_for(
         config.cooldown_count,
         config.cooldown_period,
     ):
+        return False
+
+    # check permissions
+    guild = bot.cache.get_guild(orig_message.guild_id)
+    assert guild
+
+    adder_perms = await get_permissions(
+        guild, set(star_adder.role_ids), config.starboard.id
+    )
+    if not adder_perms.give_stars:
+        return False
+
+    author_roles: set[int]
+    if author_obj:
+        author_roles = set(author_obj.role_ids)
+    else:
+        # the author left
+        author_roles = {guild.id}
+    author_perms = await get_permissions(
+        guild, author_roles, config.starboard.id
+    )
+    if not author_perms.recv_stars:
         return False
 
     return True

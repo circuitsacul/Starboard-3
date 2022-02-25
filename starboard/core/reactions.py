@@ -78,6 +78,7 @@ async def handle_reaction_add(event: hikari.GuildReactionAddEvent) -> None:
     await goc_member(event.guild_id, event.member.id, event.member.is_bot)
 
     author = await User.fetch(id=orig_msg.author_id)
+    author_obj = await bot.cache.gof_member(event.guild_id, author.id)
     valid_starboard_ids: list[int] = []
     remove_invalid: bool = True
     allow_xp: bool = False
@@ -88,7 +89,9 @@ async def handle_reaction_add(event: hikari.GuildReactionAddEvent) -> None:
         if not c.enabled:
             remove_invalid = False
             continue
-        if await is_star_valid_for(bot, c, orig_msg, author, event.member):
+        if await is_star_valid_for(
+            bot, c, orig_msg, author, author_obj, event.member
+        ):
             valid_starboard_ids.append(s.id)
             if not s.disable_xp:
                 allow_xp = True

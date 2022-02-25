@@ -20,40 +20,35 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-from .database import Database
-from .models.aschannel import AutoStarChannel
-from .models.guild import Guild, goc_guild
-from .models.member import Member, goc_member
-from .models.message import Message, goc_message
-from .models.override import Override
-from .models.permrole import PermRole, PermRoleStarboard
-from .models.posrole import PosRole, PosRoleMember
-from .models.sb_message import SBMessage
-from .models.star import Star
-from .models.starboard import Starboard, validate_sb_changes
-from .models.user import PatreonStatus, User, goc_user
-from .models.xprole import XPRole
+from __future__ import annotations
 
-__all__ = (
-    "Database",
-    "AutoStarChannel",
-    "Guild",
-    "Member",
-    "Message",
-    "Override",
-    "PermRole",
-    "PermRoleStarboard",
-    "PosRole",
-    "PosRoleMember",
-    "SBMessage",
-    "Star",
-    "Starboard",
-    "User",
-    "PatreonStatus",
-    "XPRole",
-    "goc_guild",
-    "goc_member",
-    "goc_message",
-    "goc_user",
-    "validate_sb_changes",
-)
+from apgorm import ForeignKey, Model, types
+
+from ._converters import DecimalC
+from .guild import Guild
+from .starboard import Starboard
+
+
+class PermRole(Model):
+    id = types.Numeric().field().with_converter(DecimalC)
+    guild_id = types.Numeric().field().with_converter(DecimalC)
+
+    xproles = types.Boolean().nullablefield()
+    give_stars = types.Boolean().nullablefield()
+    recv_stars = types.Boolean().nullablefield()
+
+    primary_key = (id,)
+
+    guild_id_fk = ForeignKey(guild_id, Guild.id)
+
+
+class PermRoleStarboard(Model):
+    permrole_id = types.Numeric().field().with_converter(DecimalC)
+    starboard_id = types.Numeric().field().with_converter(DecimalC)
+
+    give_stars = types.Boolean().nullablefield()
+    recv_stars = types.Boolean().nullablefield()
+
+    primary_key = (permrole_id, starboard_id)
+
+    starboard_id_fk = ForeignKey(starboard_id, Starboard.id)
