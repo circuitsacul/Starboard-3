@@ -42,6 +42,4 @@ class SBMessage(apgorm.Model):
     message_id_fk = apgorm.ForeignKey(message_id, Message.id)
     starboard_id_fk = apgorm.ForeignKey(starboard_id, Starboard.id)
 
-    sb_message_id_unique = apgorm.Unique(sb_message_id)
-
     primary_key = (message_id, starboard_id)

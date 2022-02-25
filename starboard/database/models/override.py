@@ -25,7 +25,7 @@ from __future__ import annotations
 import json
 from typing import Any
 
-from apgorm import ForeignKey, Model, Unique, types
+from apgorm import ForeignKey, Model, types
 
 from starboard.config import CONFIG
 
@@ -51,8 +51,6 @@ class Override(Model):
     _overrides = types.Json().field(default="{}")
 
     primary_key = (id,)
-
-    name_unique = Unique(guild_id, name)
 
     guild_fk = ForeignKey(guild_id, Guild.id)
     starboard_fk = ForeignKey(starboard_id, Starboard.id)
