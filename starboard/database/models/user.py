@@ -26,14 +26,16 @@ from enum import IntEnum
 
 import apgorm
 from apgorm import types
+from asyncpg import UniqueViolationError
 
 from ._converters import DecimalC
 
 
 async def goc_user(user_id: int, is_bot: bool) -> User:
-    if (u := await User.exists(id=user_id)) is not None:
-        return u
-    return await User(id=user_id, is_bot=is_bot).create()
+    try:
+        return await User(id=user_id, is_bot=is_bot).create()
+    except UniqueViolationError:
+        return await User.fetch(id=user_id)
 
 
 class PatreonStatus(IntEnum):

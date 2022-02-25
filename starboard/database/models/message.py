@@ -24,6 +24,7 @@ from __future__ import annotations
 
 import apgorm
 from apgorm import types
+from asyncpg import UniqueViolationError
 
 from ._converters import DecimalArrayC, DecimalC
 from .guild import Guild
@@ -44,13 +45,16 @@ async def goc_message(
 
     await goc_member(guild_id, author_id, is_author_bot)
 
-    return await Message(
-        guild_id=guild_id,
-        author_id=author_id,
-        channel_id=channel_id,
-        id=message_id,
-        is_nsfw=is_nsfw,
-    ).create()
+    try:
+        return await Message(
+            guild_id=guild_id,
+            author_id=author_id,
+            channel_id=channel_id,
+            id=message_id,
+            is_nsfw=is_nsfw,
+        ).create()
+    except UniqueViolationError:
+        return await Message.fetch(id=message_id)
 
 
 class Message(apgorm.Model):

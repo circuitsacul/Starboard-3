@@ -22,25 +22,39 @@
 
 from __future__ import annotations
 
-import apgorm
-from apgorm import types
-from asyncpg import UniqueViolationError
+from typing import Any, TypeVar
 
-from ._converters import DecimalC
+from apgorm import Model, join, raw, sql
 
-
-async def goc_guild(guild_id: int) -> Guild:
-    try:
-        return await Guild(id=guild_id).create()
-    except UniqueViolationError:
-        return await Guild.fetch(id=guild_id)
+_T = TypeVar("_T", bound=Model)
 
 
-class Guild(apgorm.Model):
-    id = types.Numeric().field().with_converter(DecimalC)
-
-    # config options
-    premium_end = types.TimestampTZ().nullablefield()
-
-    # primary key
-    primary_key = (id,)
+async def goc(
+    model: type[_T], get_fields: dict[str, Any], create_fields: dict[str, Any]
+) -> _T:
+    ins = sql(
+        raw(f"INSERT INTO {model.tablename}"),
+        join(raw(","), *(raw(n) for n in create_fields.keys()), wrap=True),
+        raw("VALUES"),
+        join(raw(","), *create_fields.values(), wrap=True),
+        raw("ON CONFLICT"),
+        join(raw(","), *(raw(n) for n in get_fields.keys()), wrap=True),
+        raw("DO NOTHING RETURNING *"),
+    )
+    sel = sql(
+        raw(f"SELECT * FROM {model.tablename} WHERE"),
+        join(
+            raw("AND"),
+            *(sql(raw(k), raw("="), v) for k, v in get_fields.items()),
+        ),
+    )
+    final = sql(
+        raw("WITH ins AS"),
+        sql(ins, wrap=True),
+        raw(", sel AS"),
+        sql(sel, wrap=True),
+        raw("\nSELECT * FROM ins UNION SELECT * FROM sel"),
+    )
+    dct = await model.database.fetchrow(*final.render())
+    assert dct
+    return model._from_raw(**dct)

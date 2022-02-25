@@ -24,6 +24,7 @@ from __future__ import annotations
 
 import apgorm
 from apgorm import types
+from asyncpg import UniqueViolationError
 
 from starboard.config import CONFIG
 
@@ -42,7 +43,10 @@ async def goc_member(guild_id: int, user_id: int, is_bot: bool) -> Member:
     await goc_guild(guild_id)
     await goc_user(user_id, is_bot)
 
-    return await Member(guild_id=guild_id, user_id=user_id).create()
+    try:
+        return await Member(guild_id=guild_id, user_id=user_id).create()
+    except UniqueViolationError:
+        return await Member.fetch(guild_id=guild_id, user_id=user_id)
 
 
 class Member(apgorm.Model):
