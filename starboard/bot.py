@@ -23,6 +23,7 @@
 from __future__ import annotations
 
 import asyncio
+import subprocess
 import traceback
 from contextlib import redirect_stdout
 from datetime import datetime
@@ -35,7 +36,14 @@ import aiohttp
 import crescent
 import hikari
 import miru
-from hikari_clusters import Brain, Cluster, ClusterLauncher, Server
+from hikari_clusters import (
+    Brain,
+    Cluster,
+    ClusterLauncher,
+    Server,
+    commands,
+    payload,
+)
 
 from .cache import Cache
 from .config import CONFIG, Config
@@ -105,6 +113,9 @@ class Bot(crescent.Bot):
         return self._aiohttp_session
 
     async def start(self, **kwargs) -> None:
+        self.cluster.ipc.commands.include(BOT_CMD)
+        self.cluster.ipc.commands.cmd_kwargs["bot"] = self
+
         await self.database.connect(
             migrate=self.cluster.cluster_id == 0,
             host=CONFIG.db_host,
@@ -216,10 +227,36 @@ def _get_cluster_launcher() -> ClusterLauncher:
 
 
 def get_server(config: Config) -> Server:
-    return Server(
+    server = Server(
         host=config.host,
         port=config.port,
         token=config.ipc_token,
         cluster_launcher=_get_cluster_launcher(),
         certificate_path=config.certificate_path,
     )
+    server.ipc.commands.include(SERVER_CMD)
+    return server
+
+
+BOT_CMD = commands.CommandGroup()
+
+
+@BOT_CMD.add("eval")
+async def eval_cmd(pl: payload.COMMAND, bot: Bot) -> payload.DATA:
+    assert pl.data.data
+    out, ret = await bot.exec_code(pl.data.data["code"], {"_bot": bot})
+    return {"result": f"Return:\n{ret}\nOutput:\n{out}"}
+
+
+SERVER_CMD = commands.CommandGroup()
+
+
+@SERVER_CMD.add("run_shell")
+async def run_shell(pl: payload.COMMAND) -> payload.DATA:
+    assert pl.data.data
+    command = pl.data.data["command"]
+    p = subprocess.Popen(
+        command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE
+    )
+    out, err = p.communicate()
+    return {"result": (out or err).decode()}
