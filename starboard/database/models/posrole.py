@@ -23,7 +23,7 @@
 from __future__ import annotations
 
 import apgorm
-from apgorm import Unique, types
+from apgorm import types
 
 from starboard.config import CONFIG
 
@@ -42,7 +42,6 @@ class PosRole(apgorm.Model):
 
     primary_key = (id,)
 
-    maxm_gid_unique = Unique(guild_id, max_members)
     max_members.add_validator(
         int_range("max-members", CONFIG.min_pr_members, CONFIG.max_pr_members)
     )

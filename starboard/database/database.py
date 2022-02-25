@@ -23,6 +23,7 @@
 from __future__ import annotations
 
 import apgorm
+from apgorm import Index, IndexType
 
 from .models import (
     aschannel,
@@ -81,4 +82,32 @@ class Database(apgorm.Database):
     sb_messages = sb_message.SBMessage
     stars = star.Star
 
-    indexes = [apgorm.Index(sb_messages, sb_messages.sb_message_id)]
+    indexes = [
+        # autostar channels
+        Index(aschannels, aschannels.guild_id, IndexType.HASH),
+        # guild
+        Index(guilds, guilds.premium_end),
+        # member
+        Index(members, members.guild_id, IndexType.HASH),
+        Index(members, members.autoredeem_enabled, IndexType.HASH),
+        Index(members, members.xp),
+        # overrides
+        Index(overrides, (overrides.guild_id, overrides.name), unique=True),
+        Index(overrides, overrides.starboard_id, IndexType.HASH),
+        Index(overrides, overrides.channel_ids, IndexType.GIN),
+        # sbmessages
+        Index(sb_messages, sb_messages.sb_message_id, unique=True),
+        Index(sb_messages, sb_messages.last_known_star_count),
+        Index(sb_messages, sb_messages.starboard_id, IndexType.HASH),
+        # permroles
+        Index(permroles, permroles.guild_id, IndexType.HASH),
+        # posroles
+        Index(
+            posroles, (posroles.guild_id, posroles.max_members), unique=True
+        ),
+        # starboards
+        Index(starboards, starboards.guild_id, IndexType.HASH),
+        Index(starboards, starboards.star_emojis, IndexType.GIN),
+        # xproles
+        Index(xproles, xproles.guild_id, IndexType.HASH),
+    ]

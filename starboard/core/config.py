@@ -24,7 +24,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any, Iterable
 
-from apgorm import sql
+from apgorm import raw, sql
 
 from starboard.database import Override
 
@@ -84,5 +84,7 @@ async def get_config(sb: Starboard, channel_id: int) -> StarboardConfig:
 async def fetch_overrides(sb: int, ch: int) -> Iterable[Override]:
     q = Override.fetch_query()
     q.where(starboard_id=sb)
-    q.where(sql(ch).eq(Override.channel_ids.any))
+    q.where(
+        sql(Override.channel_ids, raw("&& array["), ch, raw("]::numeric[]"))
+    )
     return await q.fetchmany()
