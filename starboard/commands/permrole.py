@@ -76,7 +76,6 @@ async def view_permroles(ctx: crescent.Context) -> None:
                 f"give-stars: {r.permrole.give_stars}\n"
                 f"receive-stars: {r.permrole.recv_stars}\n"
                 f"gain-xproles: {r.permrole.xproles}\n"
-                f"gain-posroles: {r.permrole.posroles}\n"
                 + (
                     "\n".join(
                         f"\nPermissions for <#{sid}>\n"
@@ -176,12 +175,6 @@ class EditPermRoleGlobal:
         "Whether to allow gaining XPRoles",
         choices=TRIBOOL_CHOICES,
         name="gain-xproles",
-    )
-    posroles = optiond(
-        str,
-        "Whether to allow gaining PosRoles",
-        choices=TRIBOOL_CHOICES,
-        name="gain-posroles",
     )
 
     async def callback(self, ctx: crescent.Context) -> None:

@@ -34,7 +34,6 @@ from starboard.database import PermRole, PermRoleStarboard
 class Permissions:
     give_stars: bool = True
     recv_stars: bool = True
-    posroles: bool = True
     xproles: bool = True
 
 
@@ -85,8 +84,6 @@ async def get_permissions(
             perms.recv_stars = role.permrole.recv_stars
         if role.permrole.xproles is not None:
             perms.xproles = role.permrole.xproles
-        if role.permrole.posroles is not None:
-            perms.posroles = role.permrole.posroles
 
         if starboard_id in role.starboards and starboard_id is not None:
             sbperms = role.starboards[starboard_id]

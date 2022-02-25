@@ -33,7 +33,6 @@ class PermRole(Model):
     id = types.Numeric().field().with_converter(DecimalC)
     guild_id = types.Numeric().field().with_converter(DecimalC)
 
-    posroles = types.Boolean().nullablefield()
     xproles = types.Boolean().nullablefield()
     give_stars = types.Boolean().nullablefield()
     recv_stars = types.Boolean().nullablefield()
