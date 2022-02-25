@@ -24,9 +24,9 @@ from __future__ import annotations
 
 from apgorm import ForeignKey, Model, types
 
+from ._converters import DecimalC
 from .guild import Guild
 from .starboard import Starboard
-from ._converters import DecimalC
 
 
 class PermRole(Model):
@@ -49,6 +49,9 @@ class PermRoleStarboard(Model):
     give_stars = types.Boolean().nullablefield()
     recv_stars = types.Boolean().nullablefield()
 
-    primary_key = (permrole_id, starboard_id,)
+    primary_key = (
+        permrole_id,
+        starboard_id,
+    )
 
     starboard_id_fk = ForeignKey(starboard_id, Starboard.id)

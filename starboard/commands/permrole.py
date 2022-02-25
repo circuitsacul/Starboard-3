@@ -22,16 +22,16 @@
 
 from __future__ import annotations
 
-from typing import cast, TYPE_CHECKING
+from typing import TYPE_CHECKING, cast
 
 import asyncpg
 import crescent
 import hikari
 
-from starboard.database import PermRole, goc_guild, Starboard
+from starboard.core.permrole import get_permroles
+from starboard.database import PermRole, Starboard, goc_guild
 from starboard.database.models.permrole import PermRoleStarboard
 from starboard.exceptions import StarboardErr, StarboardNotFound
-from starboard.core.permrole import get_permroles
 from starboard.undefined import UNDEF
 
 from ._checks import has_guild_perms

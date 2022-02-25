@@ -30,13 +30,13 @@ from .models import (
     member,
     message,
     override,
+    permrole,
     posrole,
     sb_message,
     star,
     starboard,
     user,
     xprole,
-    permrole
 )
 
 
