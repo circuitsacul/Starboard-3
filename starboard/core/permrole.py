@@ -78,6 +78,9 @@ async def get_permissions(
     perms = Permissions()
 
     for role in permroles:
+        if role.permrole.id not in role_ids:
+            continue
+
         if role.permrole.give_stars is not None:
             perms.give_stars = role.permrole.give_stars
         if role.permrole.recv_stars is not None:
