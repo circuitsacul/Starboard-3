@@ -106,7 +106,7 @@ class Redeem:
 
         success = await redeem(bot, u.id, g.id, self.months)
         if not success:
-            await m.edit("You don't have enough credits.", components=[])
+            await ctx.edit("You don't have enough credits.", components=[])
             return
 
         await ctx.edit("Done.", components=[])
