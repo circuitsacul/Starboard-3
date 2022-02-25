@@ -49,9 +49,6 @@ class PermRoleStarboard(Model):
     give_stars = types.Boolean().nullablefield()
     recv_stars = types.Boolean().nullablefield()
 
-    primary_key = (
-        permrole_id,
-        starboard_id,
-    )
+    primary_key = (permrole_id, starboard_id)
 
     starboard_id_fk = ForeignKey(starboard_id, Starboard.id)
