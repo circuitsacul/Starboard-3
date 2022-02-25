@@ -28,12 +28,15 @@ import asyncpg
 import crescent
 import hikari
 
-from starboard.database import PermRole, goc_guild
-from starboard.exceptions import StarboardErr
+from starboard.database import PermRole, goc_guild, Starboard
+from starboard.database.models.permrole import PermRoleStarboard
+from starboard.exceptions import StarboardErr, StarboardNotFound
 from starboard.core.permrole import get_permroles
+from starboard.undefined import UNDEF
 
 from ._checks import has_guild_perms
 from ._converters import disid
+from ._utils import TRIBOOL, TRIBOOL_CHOICES, optiond
 
 if TYPE_CHECKING:
     from starboard.bot import Bot
@@ -49,7 +52,7 @@ permrole = crescent.Group(
 
 @plugin.include
 @permrole.child
-@crescent.command(name="view", description="View permroles for this server")
+@crescent.command(name="view", description="View PermRoles for this server")
 async def view_permroles(ctx: crescent.Context) -> None:
     assert ctx.guild
     bot = cast("Bot", ctx.app)
@@ -57,9 +60,9 @@ async def view_permroles(ctx: crescent.Context) -> None:
     pr = await get_permroles(ctx.guild)
 
     if not pr:
-        raise StarboardErr("This server has no permroles.")
+        raise StarboardErr("This server has no PermRoles.")
 
-    embed = bot.embed(title="Permroles")
+    embed = bot.embed(title="PermRoles")
     for r in pr:
         obj = ctx.guild.get_role(r.permrole.id)
         if obj:
@@ -73,7 +76,7 @@ async def view_permroles(ctx: crescent.Context) -> None:
                 f"give-stars: {r.permrole.give_stars}\n"
                 f"receive-stars: {r.permrole.recv_stars}\n"
                 f"gain-xproles: {r.permrole.xproles}\n"
-                f"gain-posroles: {r.permrole.posroles}"
+                f"gain-posroles: {r.permrole.posroles}\n"
                 + (
                     "\n".join(
                         f"\nPermissions for <#{sid}>\n"
@@ -82,7 +85,7 @@ async def view_permroles(ctx: crescent.Context) -> None:
                         for sid, conf in r.starboards.items()
                     )
                 )
-            )
+            ),
         )
 
     await ctx.respond(embed=embed)
@@ -90,9 +93,9 @@ async def view_permroles(ctx: crescent.Context) -> None:
 
 @plugin.include
 @permrole.child
-@crescent.command(name="create", description="Create a permrole")
+@crescent.command(name="create", description="Create a PermRole")
 class CreatePermRole:
-    role = crescent.option(hikari.Role, "The role to use as a permrole")
+    role = crescent.option(hikari.Role, "The role to use as a PermRole")
 
     async def callback(self, ctx: crescent.Context) -> None:
         assert ctx.guild_id
@@ -101,34 +104,34 @@ class CreatePermRole:
         try:
             await PermRole(id=self.role.id, guild_id=ctx.guild_id).create()
         except asyncpg.UniqueViolationError:
-            raise StarboardErr(f"**{self.role}** is already a permrole.")
+            raise StarboardErr(f"**{self.role}** is already a PermRole.")
 
-        await ctx.respond(f"**{self.role}** is now a permrole.")
+        await ctx.respond(f"**{self.role}** is now a PermRole.")
 
 
 @plugin.include
 @permrole.child
-@crescent.command(name="delete", description="Delete a permrole")
+@crescent.command(name="delete", description="Delete a PermRole")
 class DeletePermRole:
-    permrole = crescent.option(
-        hikari.Role, "The permrole to delete", default=None
+    by_role = crescent.option(
+        hikari.Role, "The PermRole to delete", default=None, name="by-role"
     )
     by_id = crescent.option(
-        str, "The ID of the permrole to delete", default=None
+        str, "The ID of the PermRole to delete", default=None, name="by-id"
     )
 
     async def callback(self, ctx: crescent.Context) -> None:
-        if not (self.permrole or self.by_id):
-            raise StarboardErr("Please specify a permrole to delete.")
+        if not (self.by_role or self.by_id):
+            raise StarboardErr("Please specify a PermRole to delete.")
 
-        if self.permrole and self.by_id:
+        if self.by_role and self.by_id:
             raise StarboardErr(
                 "You can only specify either the role or the ID."
             )
 
         roleid: int
-        if self.permrole:
-            roleid = self.permrole.id
+        if self.by_role:
+            roleid = self.by_role.id
         else:
             roleid = disid(self.by_id)
 
@@ -140,9 +143,106 @@ class DeletePermRole:
         if self.by_id:
             name = self.by_id
         else:
-            assert self.permrole
-            name = self.permrole.name
+            assert self.by_role
+            name = self.by_role.name
         if not ret:
-            raise StarboardErr(f"**{name}** is not a permrole.")
+            raise StarboardErr(f"**{name}** is not a PermRole.")
 
-        await ctx.respond(f"Deleted permrole **{name}**.")
+        await ctx.respond(f"Deleted PermRole **{name}**.")
+
+
+@plugin.include
+@permrole.child
+@crescent.command(
+    name="edit", description="Edit the permissions for a PermRole"
+)
+class EditPermRoleGlobal:
+    permrole = crescent.option(hikari.Role, "The PermRole to edit")
+
+    give_stars = optiond(
+        str,
+        "Whether to allow giving stars",
+        choices=TRIBOOL_CHOICES,
+        name="give-stars",
+    )
+    recv_stars = optiond(
+        str,
+        "Whether to allow receiving stars",
+        choices=TRIBOOL_CHOICES,
+        name="receive-stars",
+    )
+    xproles = optiond(
+        str,
+        "Whether to allow gaining XPRoles",
+        choices=TRIBOOL_CHOICES,
+        name="gain-xproles",
+    )
+    posroles = optiond(
+        str,
+        "Whether to allow gaining PosRoles",
+        choices=TRIBOOL_CHOICES,
+        name="gain-posroles",
+    )
+
+    async def callback(self, ctx: crescent.Context) -> None:
+        pr = await PermRole.exists(id=self.permrole.id)
+        if not pr:
+            raise StarboardErr(f"**{self.permrole}** is not a PermRole.")
+
+        for k, v in self.__dict__.items():
+            if k == "permrole":
+                continue
+
+            if v is UNDEF.UNDEF:
+                continue
+
+            setattr(pr, k, TRIBOOL[v])
+
+        await pr.save()
+        await ctx.respond(f"Settings for **{self.permrole}** update.")
+
+
+@plugin.include
+@permrole.child
+@crescent.command(
+    name="edit-starboard",
+    description="Edit the permissions of a PermRole for a specific starboard",
+)
+class EditPermRoleStarboard:
+    permrole = crescent.option(hikari.Role, "The PermRole to edit")
+    starboard = crescent.option(
+        hikari.TextableGuildChannel, "The starboard to edit the PermRole for"
+    )
+
+    give_stars = optiond(
+        str, "Whether to allow giving stars", choices=TRIBOOL_CHOICES
+    )
+    recv_stars = optiond(
+        str, "Whether to allow receiving stars", choices=TRIBOOL_CHOICES
+    )
+
+    async def callback(self, ctx: crescent.Context) -> None:
+        sb = await Starboard.exists(id=self.starboard.id)
+        if not sb:
+            raise StarboardNotFound(self.starboard.id)
+
+        try:
+            pr = await PermRoleStarboard(
+                permrole_id=self.permrole.id, starboard_id=sb.id
+            ).create()
+        except asyncpg.ForeignKeyViolationError:
+            raise StarboardErr(f"**{self.permrole}** is not a PermRole.")
+        except asyncpg.UniqueViolationError:
+            pr = await PermRoleStarboard.fetch(
+                permrole_id=self.permrole.id, starboard_id=sb.id
+            )
+
+        if self.give_stars is not UNDEF.UNDEF:
+            pr.give_stars = TRIBOOL[self.give_stars]
+        if self.recv_stars is not UNDEF.UNDEF:
+            pr.recv_stars = TRIBOOL[self.recv_stars]
+
+        await pr.save()
+        await ctx.respond(
+            f"Updated **{self.permrole}** for <#{self.starboard.id}>."
+        )
