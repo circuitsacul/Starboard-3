@@ -6,7 +6,6 @@ ALTER TABLE permrole_starboards ADD COLUMN give_stars BOOLEAN;
 ALTER TABLE permrole_starboards ADD COLUMN recv_stars BOOLEAN;
 ALTER TABLE permroles ADD COLUMN id NUMERIC;
 ALTER TABLE permroles ADD COLUMN guild_id NUMERIC;
-ALTER TABLE permroles ADD COLUMN posroles BOOLEAN;
 ALTER TABLE permroles ADD COLUMN xproles BOOLEAN;
 ALTER TABLE permroles ADD COLUMN give_stars BOOLEAN;
 ALTER TABLE permroles ADD COLUMN recv_stars BOOLEAN;

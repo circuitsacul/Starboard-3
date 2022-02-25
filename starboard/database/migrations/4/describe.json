@@ -312,11 +312,6 @@
                     "not_null": true
                 },
                 {
-                    "name": "posroles",
-                    "type_": "BOOLEAN",
-                    "not_null": false
-                },
-                {
                     "name": "xproles",
                     "type_": "BOOLEAN",
                     "not_null": false
