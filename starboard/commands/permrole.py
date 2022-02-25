@@ -33,6 +33,7 @@ from starboard.database import PermRole, Starboard, goc_guild
 from starboard.database.models.permrole import PermRoleStarboard
 from starboard.exceptions import StarboardErr, StarboardNotFound
 from starboard.undefined import UNDEF
+from starboard.config import CONFIG
 
 from ._checks import has_guild_perms
 from ._converters import disid
@@ -98,6 +99,12 @@ class CreatePermRole:
 
     async def callback(self, ctx: crescent.Context) -> None:
         assert ctx.guild_id
+
+        count = await PermRole.count(guild_id=ctx.guild_id)
+        if count > CONFIG.max_permroles:
+            raise StarboardErr(
+                f"You can only have up to {CONFIG.max_permroles} PermRoles."
+            )
 
         await goc_guild(ctx.guild_id)
         try:

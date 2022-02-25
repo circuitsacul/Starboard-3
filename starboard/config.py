@@ -70,6 +70,9 @@ class Config:
     max_pr_members: int = 1_000
     min_pr_members: int = 1
 
+    # permrole restrictions
+    max_permroles: int = 50
+
     # non-premium restrictions
     np_max_starboards: int = 3
     np_max_autostar: int = 1
