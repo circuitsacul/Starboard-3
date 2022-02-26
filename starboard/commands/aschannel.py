@@ -111,7 +111,7 @@ class DeleteAutoStar:
                 "Please specify either a channel or channel id."
             )
 
-        confirm = Confirm(ctx.user.id)
+        confirm = Confirm(ctx.user.id, danger=True)
         msg = await ctx.respond(
             "Are you sure? All data will be lost **permanently**.",
             components=confirm.build(),

@@ -27,29 +27,33 @@ import miru
 
 
 class Confirm(miru.View):
-    def __init__(self, user_id: int) -> None:
+    def __init__(self, user_id: int, danger: bool = False) -> None:
         super().__init__(timeout=30)
 
         self.user_id = user_id
         self.result: bool | None = None
 
+        if danger:
+            self.confirm.style = hikari.ButtonStyle.DANGER
+        else:
+            self.confirm.style = hikari.ButtonStyle.PRIMARY
+
     async def view_check(self, ctx: miru.Context) -> bool:
         return ctx.user.id == self.user_id
 
     @miru.button(
-        label="Confirm",
-        style=hikari.ButtonStyle.SUCCESS,
-        custom_id="confirm.confirm",
-    )
-    async def confirm(self, btn: miru.Button, ctx: miru.Context) -> None:
-        self.result = True
-        self.stop()
-
-    @miru.button(
         label="Cancel",
-        style=hikari.ButtonStyle.DANGER,
+        style=hikari.ButtonStyle.SECONDARY,
         custom_id="confirm.cancel",
     )
     async def cancel(self, btn: miru.Button, ctx: miru.Context) -> None:
         self.result = False
+        self.stop()
+
+    @miru.button(
+        label="Confirm",
+        custom_id="confirm.confirm",
+    )
+    async def confirm(self, btn: miru.Button, ctx: miru.Context) -> None:
+        self.result = True
         self.stop()

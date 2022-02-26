@@ -189,7 +189,7 @@ async def view_autoredeem(ctx: crescent.Context) -> None:
     name="clear", description="Disables autoredeem in all servers"
 )
 async def clear_autoredeem(ctx: crescent.Context) -> None:
-    conf = Confirm(ctx.user.id)
+    conf = Confirm(ctx.user.id, danger=True)
     m = await ctx.respond(
         "Are you sure? This will disable autoredeem for any servers you've "
         "enabled it in.",

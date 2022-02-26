@@ -200,7 +200,7 @@ class DeleteStarboard:
 
         bot = cast("Bot", ctx.app)
         assert ctx.guild_id
-        confirm = Confirm(ctx.user.id)
+        confirm = Confirm(ctx.user.id, danger=True)
         msg = await ctx.respond(
             "Are you sure? All data will be lost **permanently**.",
             components=confirm.build(),
