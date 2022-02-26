@@ -42,6 +42,7 @@ from hikari_clusters import (
     ClusterLauncher,
     Server,
     commands,
+    events,
     payload,
 )
 
@@ -49,7 +50,7 @@ from .cache import Cache
 from .config import CONFIG, Config
 from .cooldown import Cooldown
 from .database import Database
-from .tasks import expired_premium, patreon, sweep_cache
+from .tasks import expired_premium, patreon, post_stats, sweep_cache
 
 
 class Bot(crescent.Bot):
@@ -68,6 +69,8 @@ class Bot(crescent.Bot):
             default_guild=CONFIG.main_guild if CONFIG.development else None,
             intents=intents,
         )
+
+        self.bot_stats: dict[int, int] = {}
 
         self._aiohttp_session: aiohttp.ClientSession | None = None
         self._tasks: list[asyncio.Task] = []
@@ -116,6 +119,8 @@ class Bot(crescent.Bot):
     async def start(self, **kwargs) -> None:
         self.cluster.ipc.commands.include(BOT_CMD)
         self.cluster.ipc.commands.cmd_kwargs["bot"] = self
+        self.cluster.ipc.events.include(BOT_EVENT)
+        self.cluster.ipc.events.event_kwargs["bot"] = self
 
         await self.database.connect(
             migrate=self.cluster.cluster_id == 0,
@@ -134,6 +139,12 @@ class Bot(crescent.Bot):
         )
         self._tasks.append(
             asyncio.create_task(sweep_cache.loop_sweep_cache(self))
+        )
+        self._tasks.append(
+            asyncio.create_task(post_stats.loop_post_stats(self))
+        )
+        self._tasks.append(
+            asyncio.create_task(post_stats.loop_broadcast_stats(self))
         )
 
         # cache cycles
@@ -254,6 +265,15 @@ async def eval_cmd(pl: payload.COMMAND, bot: Bot) -> payload.DATA:
     assert pl.data.data
     out, ret = await bot.exec_code(pl.data.data["code"], {"_bot": bot})
     return {"result": f"Return:\n{ret}\nOutput:\n{out}"}
+
+
+BOT_EVENT = events.EventGroup()
+
+
+@BOT_EVENT.add("cluster_stats")
+async def set_cluster_stats(pl: payload.EVENT, bot: Bot) -> None:
+    assert pl.data.data
+    bot.bot_stats[pl.author] = pl.data.data["guild_count"]
 
 
 SERVER_CMD = commands.CommandGroup()

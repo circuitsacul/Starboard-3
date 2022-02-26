@@ -33,6 +33,7 @@ from starboard.config import CONFIG
 from starboard.constants import MESSAGE_LEN
 from starboard.database import goc_user
 from starboard.exceptions import StarboardErr
+from starboard.stats import post_stats
 from starboard.utils import trunc_list, truncate
 from starboard.views import Paginator
 
@@ -64,6 +65,28 @@ def _parse_response(
     res = truncate(res, MESSAGE_LEN - 4)
     res += "\n```"
     return res
+
+
+@plugin.include
+@owner.child
+@crescent.command(
+    name="post-stats",
+    description="Manually post guild count",
+    guild=CONFIG.main_guild,
+)
+class PostGuildCount:
+    guilds = crescent.option(int, "The guild count to post")
+
+    async def callback(self, ctx: crescent.Context) -> None:
+        bot = cast("Bot", ctx.app)
+        work, fail = await post_stats(bot, self.guilds)
+        await ctx.respond(
+            "Worked:\n - "
+            + "\n - ".join(work)
+            + "\nFailed:\n - "
+            + "\n - ".join(fail),
+            ephemeral=True,
+        )
 
 
 @plugin.include
