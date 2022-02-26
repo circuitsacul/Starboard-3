@@ -96,6 +96,14 @@ class Config:
     credits_per_month: int = 3
     days_per_month: int = 32  # just be safe
 
+    # cache
+    member_cache_size: int = 10_000
+    user_cache_size: int = 10_000
+    message_cache_size: int = 10_000
+    webhook_cache_size: int = 10_000
+    staremoji_cache_size: int = 10_000
+    clear_internal_members_delay: int = 60 * 60
+
     # botlists & stats
     api_keys: Dict[str, str] = field(default_factory=dict)
     """See botblock.org for more details."""

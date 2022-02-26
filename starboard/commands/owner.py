@@ -131,7 +131,7 @@ class GiveCredits:
 )
 async def clear_cache(ctx: crescent.Context) -> None:
     bot = cast("Bot", ctx.app)
-    bot.cache.sweep()
+    bot.cache.clear_safe()
     await ctx.respond("Cleared the cache.", ephemeral=True)
 
 

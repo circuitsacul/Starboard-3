@@ -26,6 +26,8 @@ import asyncio
 import traceback
 from typing import TYPE_CHECKING
 
+from starboard.config import CONFIG
+
 if TYPE_CHECKING:
     from starboard.bot import Bot
 
@@ -33,8 +35,8 @@ if TYPE_CHECKING:
 async def loop_sweep_cache(bot: Bot) -> None:
     while True:
         try:
-            bot.cache.sweep()
+            bot.cache.clear_members()
         except Exception:
             traceback.print_exc()
 
-        await asyncio.sleep(60 * 60)
+        await asyncio.sleep(CONFIG.clear_internal_members_delay)

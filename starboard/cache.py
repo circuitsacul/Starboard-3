@@ -28,6 +28,7 @@ import hikari
 from cachetools import LFUCache
 from hikari.impl.cache import CacheImpl
 
+from starboard.config import CONFIG
 from starboard.database import Starboard
 from starboard.undefined import UNDEF
 
@@ -40,22 +41,28 @@ class Cache(CacheImpl):
         super().__init__(*args, **kwargs)
 
         # discord side
-        self.__messages: LFUCache[int, hikari.Message | None] = LFUCache(1000)
+        self.__messages: LFUCache[int, hikari.Message | None] = LFUCache(
+            CONFIG.message_cache_size
+        )
         self.__members: LFUCache[
             tuple[int, int], hikari.Member | None
-        ] = LFUCache(1000)
+        ] = LFUCache(CONFIG.member_cache_size)
         self.__webhooks: LFUCache[int, hikari.ExecutableWebhook] = LFUCache(
-            1000
+            CONFIG.webhook_cache_size
         )
-        self.__users: LFUCache[int, hikari.User | None] = LFUCache(1000)
+        self.__users: LFUCache[int, hikari.User | None] = LFUCache(
+            CONFIG.user_cache_size
+        )
 
         # db side
-        self.__star_emojis: LFUCache[int, set[str]] = LFUCache(1000)
+        self.__star_emojis: LFUCache[int, set[str]] = LFUCache(
+            CONFIG.staremoji_cache_size
+        )
 
         if TYPE_CHECKING:
             self._app = cast(Bot, self._app)
 
-    def sweep(self) -> None:
+    def clear_safe(self) -> None:
         self.__messages.clear()
         self.__members.clear()
         self.__webhooks.clear()
@@ -64,7 +71,7 @@ class Cache(CacheImpl):
         self.clear_messages()
 
     def clear(self) -> None:
-        self.sweep()
+        self.clear_safe()
         super().clear()
 
     def invalidate_star_emojis(
