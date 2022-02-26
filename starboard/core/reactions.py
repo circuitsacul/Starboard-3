@@ -29,6 +29,7 @@ import hikari
 
 from starboard.database import Starboard, goc_member, goc_message
 from starboard.database.models.user import User
+from starboard.config import CONFIG
 
 from .config import get_config
 from .leaderboard import add_xp
@@ -49,6 +50,13 @@ async def handle_reaction_add(event: hikari.GuildReactionAddEvent) -> None:
     if not emoji_str:
         return
     if emoji_str not in await bot.cache.guild_star_emojis(event.guild_id):
+        return
+
+    if not bot.guild_star_cooldown.trigger(
+        event.guild_id,
+        CONFIG.guild_star_cooldown_cap,
+        CONFIG.guild_star_cooldown_period,
+    ):
         return
 
     starboards = await _get_starboards_for_emoji(emoji_str, event.guild_id)

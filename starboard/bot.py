@@ -83,6 +83,7 @@ class Bot(crescent.Bot):
         self.asc_cooldown: Cooldown[int] = Cooldown()
         self.xpr_cooldown: Cooldown[int] = Cooldown()
         self.pr_cooldown: Cooldown[int] = Cooldown()
+        self.guild_star_cooldown: Cooldown[int] = Cooldown()
 
         def load_modules(parent: Path):
             for module in parent.glob("*.py"):
@@ -159,6 +160,13 @@ class Bot(crescent.Bot):
         self._tasks.append(
             asyncio.create_task(
                 self.pr_cooldown.loop_cycle(CONFIG.pr_cooldown_period * 2)
+            )
+        )
+        self._tasks.append(
+            asyncio.create_task(
+                self.guild_star_cooldown.loop_cycle(
+                    CONFIG.guild_star_cooldown_period * 2
+                )
             )
         )
 
