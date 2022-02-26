@@ -27,9 +27,9 @@ from typing import TYPE_CHECKING, cast
 import apgorm
 import hikari
 
+from starboard.config import CONFIG
 from starboard.database import Starboard, goc_member, goc_message
 from starboard.database.models.user import User
-from starboard.config import CONFIG
 
 from .config import get_config
 from .leaderboard import add_xp

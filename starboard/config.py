@@ -96,6 +96,11 @@ class Config:
     credits_per_month: int = 3
     days_per_month: int = 32  # just be safe
 
+    # botlists & stats
+    api_keys: dict[str, str] = field(default_factory=dict)
+    """See botblock.org for more details."""
+    post_delay: int = 60 * 10
+
     # links
     docs_link: Optional[str] = None
     support_invite: Optional[str] = None
