@@ -28,12 +28,12 @@ import asyncpg
 import crescent
 import hikari
 
+from starboard.config import CONFIG
 from starboard.core.permrole import get_permroles
 from starboard.database import PermRole, Starboard, goc_guild
 from starboard.database.models.permrole import PermRoleStarboard
 from starboard.exceptions import StarboardErr, StarboardNotFound
 from starboard.undefined import UNDEF
-from starboard.config import CONFIG
 
 from ._checks import has_guild_perms
 from ._converters import disid

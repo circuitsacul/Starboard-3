@@ -29,7 +29,13 @@ import hikari
 
 from starboard.config import CONFIG
 from starboard.core.config import StarboardConfig
-from starboard.database import Guild, Starboard, goc_guild, validate_sb_changes
+from starboard.database import (
+    Guild,
+    Override,
+    Starboard,
+    goc_guild,
+    validate_sb_changes,
+)
 from starboard.exceptions import StarboardErr, StarboardNotFound
 from starboard.undefined import UNDEF
 from starboard.views import Confirm
@@ -111,8 +117,15 @@ class ViewStarboard:
             if not starboard:
                 raise StarboardNotFound(self.starboard.id)
 
+            overrides = await Override.count(starboard_id=starboard.id)
+
             config = pretty_sb_config(StarboardConfig(starboard, None), bot)
             embed = bot.embed(title=self.starboard.name)
+            if overrides:
+                embed.description = (
+                    f"This starboard also has {overrides} channel-specific "
+                    "overrides."
+                )
             embed.add_field(
                 name="Appearance", value=config.appearance, inline=True
             )
