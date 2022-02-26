@@ -25,7 +25,7 @@ import json
 import secrets
 from dataclasses import asdict, dataclass, field
 from pathlib import Path
-from typing import List, Optional, cast
+from typing import Dict, List, Optional, cast
 
 
 @dataclass
@@ -97,7 +97,7 @@ class Config:
     days_per_month: int = 32  # just be safe
 
     # botlists & stats
-    api_keys: dict[str, str] = field(default_factory=dict)
+    api_keys: Dict[str, str] = field(default_factory=dict)
     """See botblock.org for more details."""
     post_delay: int = 60 * 10
 
