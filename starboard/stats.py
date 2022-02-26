@@ -38,9 +38,12 @@ async def post_stats(
     bot: Bot, guild_count: int | None = None
 ) -> tuple[list[str], list[str]]:
     ses = await bot.session()
+    gc = (
+        guild_count if guild_count is not None else sum(bot.bot_stats.values())
+    )
     data: dict[str, str | int] = {
         "bot_id": str(bot.me.id),
-        "server_count": guild_count or sum(bot.bot_stats.values()),
+        "server_count": gc,
         **CONFIG.api_keys,
     }
     async with ses.post(BASE_URL, data=json.dumps(data)) as ret:
