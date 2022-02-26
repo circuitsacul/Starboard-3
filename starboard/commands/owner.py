@@ -48,7 +48,7 @@ owner = crescent.Group("owner", "Owner only commands", hooks=[owner_only])
 
 
 def _parse_response(
-    rid: int, pl: payload.RESPONSE | callbacks.NoResponse
+    rid: int, pl: payload.RESPONSE | callbacks.NoResponse, block: bool = False
 ) -> str:
     if isinstance(pl, callbacks.NoResponse):
         return f"Client {rid} failed to respond."
@@ -61,9 +61,13 @@ def _parse_response(
         assert pl.data.data is not None
         res = pl.data.data["result"]
 
-    res = f"Client {pl.author} responded with:```\n{res}"
-    res = truncate(res, MESSAGE_LEN - 4)
-    res += "\n```"
+    if not block:
+        res = f"Client {pl.author} responded with:\n\n{res}"
+        res = truncate(res, MESSAGE_LEN)
+    else:
+        res = f"Client {pl.author} responded with:\n```\n{res}"
+        res = truncate(res, MESSAGE_LEN-4)
+        res += "\n```"
     return res
 
 
@@ -190,17 +194,25 @@ class EvalBroadcast:
 )
 class ShellCommand:
     command = crescent.option(str, "The command to run")
+    broadcast = crescent.option(
+        bool, "Whether or not to broadcast to all servers", default=False
+    )
 
     async def callback(self, ctx: crescent.Context) -> None:
         bot = cast("Bot", ctx.app)
 
+        if self.broadcast:
+            send_to = bot.cluster.ipc.server_uids
+        else:
+            send_to = {bot.cluster.server_uid}
+
         ret = await bot.cluster.ipc.send_command(
-            bot.cluster.ipc.server_uids, "run_shell", {"command": self.command}
+            send_to, "run_shell", {"command": self.command}
         )
 
         pages: list[str] = []
         for rid, pl in ret.items():
-            pages.append(_parse_response(rid, pl))
+            pages.append(_parse_response(rid, pl, block=True))
 
         if not pages:
             raise StarboardErr("No responses were received.")

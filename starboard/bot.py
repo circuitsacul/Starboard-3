@@ -264,7 +264,7 @@ BOT_CMD = commands.CommandGroup()
 async def eval_cmd(pl: payload.COMMAND, bot: Bot) -> payload.DATA:
     assert pl.data.data
     out, ret = await bot.exec_code(pl.data.data["code"], {"_bot": bot})
-    return {"result": f"Return:\n{ret}\nOutput:\n{out}"}
+    return {"result": f"Return:\n{ret}\n\nOutput:\n{out}"}
 
 
 BOT_EVENT = events.EventGroup()
