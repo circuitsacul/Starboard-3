@@ -26,6 +26,7 @@ from dataclasses import dataclass
 from datetime import datetime
 from typing import Awaitable, Callable
 
+import json
 import emoji
 import pytz
 from apgorm.connection import Connection as OrmCon
@@ -69,6 +70,7 @@ async def migrate() -> None:
     # await _run(app, _migrate_reactions)
     # await _run(app, _migrate_xproles)
     # await _run(app, _migrate_posroles)
+    await _run(app, _migrate_channel_bl)
 
 
 async def _run(
@@ -303,7 +305,7 @@ async def _migrate_starboard_messages(new: OrmCon, old: ApgCon) -> None:
 async def _migrate_reactions(new: OrmCon, old: ApgCon) -> None:
     sb_emoji_map: dict[int, dict[int, set[str]]] = {}
 
-    for s in await newdb.Starboard.fetch_query().fetchmany():
+    for s in await newdb.Starboard.fetch_query(new).fetchmany():
         sb_emoji_map.setdefault(s.guild_id, dict()).setdefault(
             s.id, set()
         ).update(s.star_emojis)
@@ -325,8 +327,7 @@ async def _migrate_reactions(new: OrmCon, old: ApgCon) -> None:
     count = 0
     with tqdm(desc="Reactions", total=total) as pb:
         async for oldreact in old.cursor(
-            "SELECT * FROM reactions",
-            prefetch=10_000,
+            "SELECT * FROM reactions", prefetch=10_000
         ):
             count += 1
             if count % 1000 == 0:
@@ -355,17 +356,53 @@ async def _migrate_xproles(new: OrmCon, old: ApgCon) -> None:
             id=oldxp["id"],
             guild_id=oldxp["guild_id"],
             required=max(5, oldxp["req_xp"]),
-        ).create()
+        ).create(new)
 
 
 async def _migrate_posroles(new: OrmCon, old: ApgCon) -> None:
     for oldpr in tqdm(await old.fetch("SELECT * FROM posroles")):
         gid = oldpr["guild_id"]
         mu = oldpr["max_users"]
-        if await newdb.PosRole.exists(guild_id=gid, max_members=mu):
+        if await newdb.PosRole.exists(new, guild_id=gid, max_members=mu):
             mu += 1
         await newdb.PosRole(
-            id=oldpr["id"],
-            guild_id=gid,
-            max_members=mu,
+            id=oldpr["id"], guild_id=gid, max_members=mu
         ).create(con=new)
+
+
+async def _migrate_channel_bl(new: OrmCon, old: ApgCon) -> None:
+    sb: newdb.Starboard
+    for x, sb in enumerate(
+        tqdm(await newdb.Starboard.fetch_query(new).fetchmany())
+    ):
+        oldbl = await old.fetch(
+            "SELECT * FROM channelbl WHERE starboard_id=$1 AND "
+            "is_whitelist=False",
+            sb.id,
+        )
+        oldwl = await old.fetch(
+            "SELECT * FROM channelbl WHERE starboard_id=$1 AND "
+            "is_whitelist=True",
+            sb.id,
+        )
+
+        if oldwl:
+            channels = [c["channel_id"] for c in oldwl]
+            wl = True
+        else:
+            channels = [c["channel_id"] for c in oldbl]
+            wl = False
+
+        if not channels:
+            continue
+
+        await newdb.Override._from_raw(
+            guild_id=sb.guild_id,
+            name="channel-" + ("wl" if wl else "bl") + f"-{x}",
+            starboard_id=sb.id,
+            channel_ids=channels,
+            _overrides=json.dumps({"enabled": wl is True}),
+        ).create(new)
+        if wl:
+            sb.enabled = False
+            await sb.save(new)
