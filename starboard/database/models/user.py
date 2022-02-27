@@ -49,7 +49,6 @@ class User(apgorm.Model):
     id = types.Numeric().field().with_converter(DecimalC)
 
     is_bot = types.Boolean().field()
-    votes = types.Int().field(default=0)
     credits = types.Int().field(default=0)
 
     last_patreon_total_cents = types.BigInt().field(default=0)
