@@ -110,4 +110,6 @@ class Database(apgorm.Database):
         Index(starboards, starboards.star_emojis, IndexType.GIN),
         # xproles
         Index(xproles, xproles.guild_id, IndexType.HASH),
+        # stars
+        Index(stars, (stars.message_id, stars.starboard_id)),
     ]
