@@ -26,6 +26,5 @@ import asyncio
 
 from .migrate import migrate
 
-
 if __name__ == "__main__":
     asyncio.run(migrate())

@@ -22,11 +22,11 @@
 
 from __future__ import annotations
 
+import json
 from dataclasses import dataclass
 from datetime import datetime
 from typing import Awaitable, Callable
 
-import json
 import emoji
 import pytz
 from apgorm.connection import Connection as OrmCon

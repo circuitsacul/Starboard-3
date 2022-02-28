@@ -66,7 +66,7 @@ def _parse_response(
         res = truncate(res, MESSAGE_LEN)
     else:
         res = f"Client {pl.author} responded with:\n```\n{res}"
-        res = truncate(res, MESSAGE_LEN-4)
+        res = truncate(res, MESSAGE_LEN - 4)
         res += "\n```"
     return res
 
