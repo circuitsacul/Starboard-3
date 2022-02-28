@@ -1,0 +1,1 @@
+CREATE INDEX _btree_index_stars__message_id_starboard_id ON stars USING BTREE ( ( message_id ) , ( starboard_id ) );

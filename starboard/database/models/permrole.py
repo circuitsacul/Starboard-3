@@ -52,3 +52,4 @@ class PermRoleStarboard(Model):
     primary_key = (permrole_id, starboard_id)
 
     starboard_id_fk = ForeignKey(starboard_id, Starboard.id)
+    permrole_id_fk = ForeignKey(permrole_id, PermRole.id)

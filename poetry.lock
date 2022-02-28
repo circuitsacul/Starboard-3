@@ -536,6 +536,22 @@ optional = false
 python-versions = ">=3.7"
 
 [[package]]
+name = "tqdm"
+version = "4.62.3"
+description = "Fast, Extensible Progress Meter"
+category = "main"
+optional = false
+python-versions = "!=3.0.*,!=3.1.*,!=3.2.*,!=3.3.*,>=2.7"
+
+[package.dependencies]
+colorama = {version = "*", markers = "platform_system == \"Windows\""}
+
+[package.extras]
+dev = ["py-make (>=0.1.0)", "twine", "wheel"]
+notebook = ["ipywidgets (>=6)"]
+telegram = ["requests"]
+
+[[package]]
 name = "types-cachetools"
 version = "4.2.9"
 description = "Typing stubs for cachetools"
@@ -608,7 +624,7 @@ multidict = ">=4.0"
 [metadata]
 lock-version = "1.1"
 python-versions = ">=3.8,<3.11"
-content-hash = "48559c6472fd0fbcee1f0bbac13439db46b97853dd6b076abcf4643616b4bcc2"
+content-hash = "3464037744f583c423106ec47f7c4befff9e0b772693697efe1042384e8d9e47"
 
 [metadata.files]
 aiohttp = [
@@ -1112,6 +1128,10 @@ six = [
 tomli = [
     {file = "tomli-2.0.1-py3-none-any.whl", hash = "sha256:939de3e7a6161af0c887ef91b7d41a53e7c5a1ca976325f429cb46ea9bc30ecc"},
     {file = "tomli-2.0.1.tar.gz", hash = "sha256:de526c12914f0c550d15924c62d72abc48d6fe7364aa87328337a31007fe8a4f"},
+]
+tqdm = [
+    {file = "tqdm-4.62.3-py2.py3-none-any.whl", hash = "sha256:8dd278a422499cd6b727e6ae4061c40b48fce8b76d1ccbf5d34fca9b7f925b0c"},
+    {file = "tqdm-4.62.3.tar.gz", hash = "sha256:d359de7217506c9851b7869f3708d8ee53ed70a1b8edbba4dbcb47442592920d"},
 ]
 types-cachetools = [
     {file = "types-cachetools-4.2.9.tar.gz", hash = "sha256:4ac4b7866da8d3f750413a3e91809c2bf6124aa920ef6dc32c5df2d84a53585c"},
