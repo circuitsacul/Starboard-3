@@ -70,7 +70,8 @@ async def migrate() -> None:
     # await _run(app, _migrate_reactions)
     # await _run(app, _migrate_xproles)
     # await _run(app, _migrate_posroles)
-    await _run(app, _migrate_channel_bl)
+    # await _run(app, _migrate_channel_bl)
+    await _run(app, _migrate_role_bl)
 
 
 async def _run(
@@ -406,3 +407,53 @@ async def _migrate_channel_bl(new: OrmCon, old: ApgCon) -> None:
         if wl:
             sb.enabled = False
             await sb.save(new)
+
+
+async def _migrate_role_bl(new: OrmCon, old: ApgCon) -> None:
+    role_bl_and_wl = 0
+
+    sb: newdb.Starboard
+    for sb in tqdm(await newdb.Starboard.fetch_query(new).fetchmany()):
+        role_wl = await old.fetch(
+            "SELECT * FROM rolebl WHERE starboard_id=$1 AND is_whitelist=True",
+            sb.id,
+        )
+        role_bl = await old.fetch(
+            "SELECT * FROM rolebl WHERE starboard_id=$1 AND "
+            "is_whitelist=False",
+            sb.id,
+        )
+
+        if (not role_wl) and (not role_bl):
+            continue
+
+        bl_roles: list[int] = [r["role_id"] for r in role_bl]
+        wl_roles: list[int] = [r["role_id"] for r in role_wl]
+
+        if wl_roles and not bl_roles:
+            bl_roles.append(sb.guild_id)
+
+        async def create(rid: int, wl: bool) -> None:
+            nonlocal role_bl_and_wl
+            pr = await newdb.PermRole.exists(new, id=rid)
+            if not pr:
+                pr = await newdb.PermRole(id=rid, guild_id=sb.guild_id).create(
+                    new
+                )
+
+            if await newdb.PermRoleStarboard.exists(
+                new, permrole_id=pr.id, starboard_id=sb.id
+            ):
+                role_bl_and_wl += 1
+                return
+
+            await newdb.PermRoleStarboard(
+                permrole_id=pr.id, starboard_id=sb.id, give_stars=wl
+            ).create(new)
+
+        for role in bl_roles:
+            await create(role, False)
+        for role in wl_roles:
+            await create(role, True)
+
+    print(f"Roles that were blacklisted and whitelisted: {role_bl_and_wl}")
