@@ -537,7 +537,7 @@ python-versions = ">=3.7"
 
 [[package]]
 name = "tqdm"
-version = "4.62.3"
+version = "4.63.0"
 description = "Fast, Extensible Progress Meter"
 category = "main"
 optional = false
@@ -624,7 +624,7 @@ multidict = ">=4.0"
 [metadata]
 lock-version = "1.1"
 python-versions = ">=3.8,<3.11"
-content-hash = "3464037744f583c423106ec47f7c4befff9e0b772693697efe1042384e8d9e47"
+content-hash = "d460e5e444f9e1bdc5951494a0ff25d22ed4c3cf1d745e941240ef7aeaf47fc5"
 
 [metadata.files]
 aiohttp = [
@@ -1130,8 +1130,8 @@ tomli = [
     {file = "tomli-2.0.1.tar.gz", hash = "sha256:de526c12914f0c550d15924c62d72abc48d6fe7364aa87328337a31007fe8a4f"},
 ]
 tqdm = [
-    {file = "tqdm-4.62.3-py2.py3-none-any.whl", hash = "sha256:8dd278a422499cd6b727e6ae4061c40b48fce8b76d1ccbf5d34fca9b7f925b0c"},
-    {file = "tqdm-4.62.3.tar.gz", hash = "sha256:d359de7217506c9851b7869f3708d8ee53ed70a1b8edbba4dbcb47442592920d"},
+    {file = "tqdm-4.63.0-py2.py3-none-any.whl", hash = "sha256:e643e071046f17139dea55b880dc9b33822ce21613b4a4f5ea57f202833dbc29"},
+    {file = "tqdm-4.63.0.tar.gz", hash = "sha256:1d9835ede8e394bb8c9dcbffbca02d717217113adc679236873eeaac5bc0b3cd"},
 ]
 types-cachetools = [
     {file = "types-cachetools-4.2.9.tar.gz", hash = "sha256:4ac4b7866da8d3f750413a3e91809c2bf6124aa920ef6dc32c5df2d84a53585c"},
