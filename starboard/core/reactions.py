@@ -22,13 +22,16 @@
 
 from __future__ import annotations
 
+import asyncio
 from typing import TYPE_CHECKING, cast
 
 import apgorm
 import hikari
 
 from starboard.config import CONFIG
-from starboard.database import Starboard, goc_member, goc_message
+from starboard.core.posrole import update_posroles
+from starboard.core.xprole import refresh_xpr
+from starboard.database import Guild, Starboard, goc_member, goc_message
 from starboard.database.models.user import User
 
 from .config import get_config
@@ -130,9 +133,18 @@ async def handle_reaction_add(event: hikari.GuildReactionAddEvent) -> None:
     if allow_xp and not author.is_bot:
         await add_xp(orig_msg.author_id, orig_msg.guild_id, 1)
 
+    guild = await Guild.fetch(id=event.guild_id)
+    ip = guild.premium_end is not None
+
     await refresh_message(
-        cast("Bot", event.app), orig_msg, valid_starboard_ids
+        cast("Bot", event.app), orig_msg, valid_starboard_ids, premium=ip
     )
+
+    if ip:
+        asyncio.create_task(
+            refresh_xpr(bot, event.guild_id, orig_msg.author_id)
+        )
+        asyncio.create_task(update_posroles(bot, event.guild_id))
 
 
 async def handle_reaction_remove(

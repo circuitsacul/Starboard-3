@@ -50,9 +50,7 @@ class Confirm(miru.View):
         self.result = False
         self.stop()
 
-    @miru.button(
-        label="Confirm", custom_id="confirm.confirm",
-    )
+    @miru.button(label="Confirm", custom_id="confirm.confirm")
     async def confirm(self, btn: miru.Button, ctx: miru.Context) -> None:
         self.result = True
         self.stop()

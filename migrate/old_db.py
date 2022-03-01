@@ -34,8 +34,5 @@ class Database:
 
     async def connect(self) -> None:
         self.pool = await asyncpg.create_pool(
-            host=self.host,
-            user=self.user,
-            password=self.pwd,
-            database=self.db,
+            host=self.host, user=self.user, password=self.pwd, database=self.db
         )

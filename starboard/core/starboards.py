@@ -35,8 +35,6 @@ from starboard.database import Guild, Message, SBMessage, Star, Starboard
 from .config import StarboardConfig, get_config
 from .has_image import has_image
 from .messages import get_sbmsg_content
-from .posrole import update_posroles
-from .xprole import refresh_xpr
 
 if TYPE_CHECKING:
     from starboard.bot import Bot
@@ -50,17 +48,23 @@ async def refresh_message(
     orig_message: Message,
     sbids: Sequence[int] | None = None,
     force: bool = False,
+    premium: bool | None = None,
 ) -> None:
     if orig_message.id in LOCK:
         return
 
     LOCK.add(orig_message.id)
     try:
+        if premium is None:
+            premium = (
+                await Guild.fetch(id=orig_message.guild_id)
+            ).premium_end is not None
+
         await orig_message.refetch()
         if orig_message.trashed:
             await _handle_trashed_message(bot, orig_message)
         else:
-            await _refresh_message(bot, orig_message, sbids, force)
+            await _refresh_message(bot, orig_message, sbids, force, premium)
     finally:
         LOCK.remove(orig_message.id)
 
@@ -104,7 +108,11 @@ async def _handle_trashed_message(bot: Bot, orig_message: Message) -> None:
 
 
 async def _refresh_message(
-    bot: Bot, orig_message: Message, sbids: Sequence[int] | None, force: bool
+    bot: Bot,
+    orig_message: Message,
+    sbids: Sequence[int] | None,
+    force: bool,
+    premium: bool,
 ) -> None:
     if sbids:
         _s = (
@@ -120,21 +128,15 @@ async def _refresh_message(
         )
     configs = [await get_config(s, orig_message.channel_id) for s in _s]
 
-    guild = await Guild.fetch(id=orig_message.guild_id)
-    ip = guild.premium_end is not None
     tasks: list[asyncio.Task] = []
     for c in configs:
         t = asyncio.create_task(
-            _refresh_message_for_starboard(bot, orig_message, c, force, ip)
+            _refresh_message_for_starboard(
+                bot, orig_message, c, force, premium
+            )
         )
         tasks.append(t)
     await asyncio.gather(*tasks)
-
-    if ip:
-        asyncio.create_task(
-            refresh_xpr(bot, orig_message.guild_id, orig_message.author_id)
-        )
-        asyncio.create_task(update_posroles(bot, orig_message.guild_id))
 
 
 async def _refresh_message_for_starboard(
