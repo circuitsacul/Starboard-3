@@ -160,8 +160,8 @@ async def _migrate_autostars(new: OrmCon, old: ApgCon) -> None:
 
         await new.execute(
             "INSERT INTO aschannels (id, guild_id, emojis, min_chars, "
-            "max_chars, require_image, delete_invalid) VALUES ($1, $2, $3, "
-            "$4, 0, $5, $6)",
+            "require_image, delete_invalid) VALUES ($1, $2, $3, "
+            "$4, $5, $6)",
             [
                 oldasc["id"],
                 oldasc["guild_id"],

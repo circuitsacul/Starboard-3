@@ -62,7 +62,7 @@ async def handle_message(event: hikari.MessageCreateEvent) -> None:
     ln = len(content)
     if ln < asc.min_chars:
         valid = False
-    elif asc.max_chars and ln > asc.max_chars:
+    elif asc.max_chars is not None and ln > asc.max_chars:
         valid = False
     elif asc.require_image and not has_image(event.message):
         await asyncio.sleep(0.5)

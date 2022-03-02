@@ -232,6 +232,9 @@ class EditAutoStar:
         if not asc:
             raise ASCNotFound(self.channel.id)
 
+        if params.get("max_chars") == -1:
+            params["max_chars"] = None
+
         for k, v in params.items():
             if v is UNDEF.UNDEF:
                 continue

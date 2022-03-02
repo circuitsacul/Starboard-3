@@ -1,0 +1,1 @@
+ALTER TABLE aschannels ALTER COLUMN max_chars DROP NOT NULL;
