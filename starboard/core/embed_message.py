@@ -28,7 +28,7 @@ import hikari
 
 from starboard.constants import EMBED_DESC_LEN, EMBED_FIELD_LEN, ZWS
 from starboard.core.gifs import get_gif_url
-from starboard.utils import trunc_list, truncate
+from starboard.utils import trunc_list, truncate, rendered_content
 
 if TYPE_CHECKING:
     from starboard.bot import Bot
@@ -177,8 +177,9 @@ async def _get_gifv(bot: Bot, embed: hikari.Embed) -> str | None:
 
 
 def _extract_main_content(message: hikari.Message) -> str | None:
-    if message.content:
-        return truncate(message.content, EMBED_DESC_LEN)
+    content = rendered_content(message)
+    if content:
+        return truncate(content, EMBED_DESC_LEN)
     return None
 
 
