@@ -210,10 +210,18 @@ class EditAutoStar:
     )
 
     min_chars = optiond(
-        int, "The minimum length of messages", name="min-chars"
+        int,
+        "The minimum length of messages",
+        name="min-chars",
+        max_value=CONFIG.max_minchars,
+        min_value=0,
     )
     max_chars = optiond(
-        int, "The maximum length of messages", name="max-chars"
+        int,
+        "The maximum length of messages (use -1 to disable)",
+        name="max-chars",
+        max_value=CONFIG.max_maxchars,
+        min_value=-1,
     )
     require_image = optiond(
         bool, "Whether images must include images", name="require-image"
