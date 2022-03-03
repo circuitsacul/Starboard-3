@@ -215,7 +215,7 @@ def _extract_extra_embeds(message: hikari.Message) -> list[hikari.Embed]:
 def _extract_file_str(message: hikari.Message) -> str | None:
     files: list[str] = []
     for a in message.attachments:
-        if a.filename.startswith("SPOILER_"):
+        if _is_spoiler(a.filename):
             files.append(f"||[{a.filename}]({a.url})||\n")
         else:
             files.append(f"[{a.filename}]({a.url})\n")
@@ -232,7 +232,7 @@ async def _extract_images(
         for a in message.attachments
         if a.media_type is not None
         and a.media_type.lower().startswith("image")
-        and not a.filename.startswith("SPOILER")
+        and not a.filename.startswith("SPOILER_")
     ]
 
     for embed in message.embeds:
@@ -240,9 +240,13 @@ async def _extract_images(
         if gif_url is not None:
             urls.append(gif_url)
         elif not _is_rich(embed):
-            if embed.image:
+            if embed.image and not _is_spoiler(embed.image.filename):
                 urls.append(embed.image.url)
-            if embed.thumbnail:
+            if embed.thumbnail and not _is_spoiler(embed.thumbnail.filename):
                 urls.append(embed.thumbnail.url)
 
     return urls
+
+
+def _is_spoiler(name: str) -> bool:
+    return name.startswith("SPOILER_")
