@@ -322,7 +322,8 @@ async def _migrate_reactions(new: OrmCon, old: ApgCon) -> None:
 
         return sbids
 
-    invalid = 0
+    bot_reactions = 0
+    no_starboards = 0
 
     total = await old.fetchval("SELECT count(1) FROM reactions")
     count = 0
@@ -335,9 +336,13 @@ async def _migrate_reactions(new: OrmCon, old: ApgCon) -> None:
                 pb.update(count)
                 count = 0
 
+            if oldreact["is_bot"]:
+                bot_reactions += 1
+                continue
+
             sbids = get_sb(int(oldreact["guild_id"]), oldreact["name"])
             if not sbids:
-                invalid += 1
+                no_starboards += 1
                 continue
 
             for id in sbids:
@@ -348,7 +353,8 @@ async def _migrate_reactions(new: OrmCon, old: ApgCon) -> None:
                     [oldreact["message_id"], id, oldreact["user_id"]],
                 )
 
-    print(f"Invalid Reaction: {invalid}")
+    print(f"Bot reactions: {bot_reactions}")
+    print(f"Reactions that belonged to no starboards: {no_starboards}")
 
 
 async def _migrate_xproles(new: OrmCon, old: ApgCon) -> None:
