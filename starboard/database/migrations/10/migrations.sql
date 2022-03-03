@@ -1,0 +1,2 @@
+ALTER TABLE users ADD COLUMN donated_cents BIGINT;
+ALTER TABLE users ALTER COLUMN donated_cents SET NOT NULL;

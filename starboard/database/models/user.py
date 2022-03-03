@@ -51,6 +51,8 @@ class User(apgorm.Model):
     is_bot = types.Boolean().field()
     credits = types.Int().field(default=0)
 
+    donated_cents = types.BigInt().field(default=0)
+    """Total cents donated, excluding Patreon."""
     last_patreon_total_cents = types.BigInt().field(default=0)
     patreon_status = (
         types.SmallInt()
