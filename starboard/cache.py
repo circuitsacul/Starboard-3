@@ -78,7 +78,6 @@ class Cache(CacheImpl):
         self.__members.clear()
         self.__webhooks.clear()
         self.__star_emojis.clear()
-        self.clear_members()
         self.clear_messages()
 
     def clear(self) -> None:
