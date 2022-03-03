@@ -28,7 +28,7 @@ import hikari
 
 from starboard.constants import EMBED_DESC_LEN, EMBED_FIELD_LEN, ZWS
 from starboard.core.gifs import get_gif_url
-from starboard.utils import trunc_list, truncate, rendered_content
+from starboard.utils import rendered_content, trunc_list, truncate
 
 if TYPE_CHECKING:
     from starboard.bot import Bot

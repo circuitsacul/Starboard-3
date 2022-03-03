@@ -37,12 +37,22 @@ if TYPE_CHECKING:
 
 
 class Cache(CacheImpl):
-    def __init__(self, *args, **kwargs) -> None:
-        super().__init__(*args, **kwargs)
+    def __init__(self, app: Bot) -> None:
+        settings = hikari.CacheSettings(
+            components=(
+                hikari.CacheComponents.GUILDS
+                | hikari.CacheComponents.GUILD_CHANNELS
+                | hikari.CacheComponents.ROLES
+                | hikari.CacheComponents.EMOJIS
+                | hikari.CacheComponents.MESSAGES
+            ),
+            max_messages=CONFIG.message_cache_size,
+        )
+        super().__init__(app, settings=settings)
 
         # discord side
-        self.__messages: LFUCache[int, hikari.Message | None] = LFUCache(
-            CONFIG.message_cache_size
+        self.__null_messages: LFUCache[int, None] = LFUCache(
+            CONFIG.message_null_cache_size
         )
         self.__members: LFUCache[
             tuple[int, int], hikari.Member | None
@@ -50,8 +60,8 @@ class Cache(CacheImpl):
         self.__webhooks: LFUCache[int, hikari.ExecutableWebhook] = LFUCache(
             CONFIG.webhook_cache_size
         )
-        self.__users: LFUCache[int, hikari.User | None] = LFUCache(
-            CONFIG.user_cache_size
+        self.__null_users: LFUCache[int, None] = LFUCache(
+            CONFIG.user_null_cache_size
         )
 
         # db side
@@ -63,7 +73,7 @@ class Cache(CacheImpl):
             self._app = cast(Bot, self._app)
 
     def clear_safe(self) -> None:
-        self.__messages.clear()
+        self.__null_messages.clear()
         self.__members.clear()
         self.__webhooks.clear()
         self.__star_emojis.clear()
@@ -120,16 +130,16 @@ class Cache(CacheImpl):
         if (ic := self.get_user(uid)) is not None:
             return ic
 
-        c = self.__users.get(uid, UNDEF.UNDEF)
-        if c is not UNDEF.UNDEF:
+        if (c := self.__null_users.get(uid, UNDEF.UNDEF)) is not UNDEF.UNDEF:
             return c
 
         try:
             obj = await self._app.rest.fetch_user(uid)
         except hikari.NotFoundError:
-            obj = None
+            self.__null_users[uid] = None
+            return None
 
-        self.__users[uid] = obj
+        self._set_user(obj)
         return obj
 
     async def gof_member(
@@ -138,9 +148,6 @@ class Cache(CacheImpl):
         user: hikari.SnowflakeishOr[hikari.PartialUser],
     ) -> hikari.Member | None:
         key = (int(guild), int(user))
-        if (ic := self.get_member(*key)) is not None:
-            return ic
-
         c = self.__members.get(key, UNDEF.UNDEF)
         if c is not UNDEF.UNDEF:
             return c
@@ -159,19 +166,20 @@ class Cache(CacheImpl):
         message: hikari.SnowflakeishOr[hikari.PartialMessage],
     ) -> hikari.Message | None:
         id = int(message)
-        if (ic := self.get_message(id)) is not None:
+
+        if ic := self.get_message(id):
             return ic
 
-        c = self.__messages.get(id, UNDEF.UNDEF)
-        if c is not UNDEF.UNDEF:
+        if (c := self.__null_messages.get(id, UNDEF.UNDEF)) is not UNDEF.UNDEF:
             return c
 
         try:
             obj = await self._app.rest.fetch_message(channel, id)
         except hikari.NotFoundError:
-            obj = None
+            self.__null_messages[id] = None
+            return None
 
-        self.__messages[id] = obj
+        self.set_message(obj)
         return obj
 
     async def gof_guild_channel_wnsfw(
@@ -194,7 +202,7 @@ class Cache(CacheImpl):
         self, message: hikari.SnowflakeishOr[hikari.PartialMessage], /
     ) -> hikari.Message | None:
         id = int(message)
-        self.__messages.pop(id, None)
+        self.__null_messages[id] = None
         return super().delete_message(id)
 
     def delete_member(
@@ -204,5 +212,18 @@ class Cache(CacheImpl):
         /,
     ) -> hikari.Member | None:
         key = (int(guild), int(user))
-        self.__members.pop(key, None)
-        return super().delete_member(*key)
+        orig = self.__members.get(key)
+        if orig:
+            self.__members[key] = None
+        return orig
+
+    def update_member(
+        self, member: hikari.Member, /
+    ) -> tuple[hikari.Member | None, hikari.Member]:
+        cached = self.get_member(member.guild_id, member.user.id)
+        self.set_member(member)
+        return cached, member
+
+    def set_member(self, member: hikari.Member, /) -> None:
+        key = (int(member.guild_id), int(member.user.id))
+        self.__members[key] = member

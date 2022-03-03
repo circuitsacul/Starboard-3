@@ -22,9 +22,9 @@
 
 from __future__ import annotations
 
-from typing import Callable, TYPE_CHECKING, cast
+from typing import TYPE_CHECKING, Callable, cast
 
-from hikari import Message, MessageType, UNDEFINED
+from hikari import UNDEFINED, Message, MessageType
 
 if TYPE_CHECKING:
     from starboard.bot import Bot

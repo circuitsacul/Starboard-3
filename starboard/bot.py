@@ -30,7 +30,7 @@ from datetime import datetime
 from io import StringIO
 from pathlib import Path
 from textwrap import indent
-from typing import TYPE_CHECKING, Any
+from typing import Any
 
 import aiohttp
 import crescent
@@ -50,7 +50,7 @@ from .cache import Cache
 from .config import CONFIG, Config
 from .cooldown import Cooldown
 from .database import Database
-from .tasks import expired_premium, patreon, post_stats, sweep_cache
+from .tasks import expired_premium, patreon, post_stats
 
 
 class Bot(crescent.Bot):
@@ -63,6 +63,7 @@ class Bot(crescent.Bot):
             | hikari.Intents.GUILD_MEMBERS
             | hikari.Intents.GUILDS
         )
+        self._real_cache = Cache(self)
         super().__init__(
             token=CONFIG.discord_token,
             tracked_guilds=[CONFIG.main_guild] if CONFIG.main_guild else None,
@@ -75,8 +76,6 @@ class Bot(crescent.Bot):
         self._aiohttp_session: aiohttp.ClientSession | None = None
         self._tasks: list[asyncio.Task] = []
         self.database = Database()
-        self._cache = Cache(self, self._cache._settings)
-        self._event_manager._cache = self._cache
 
         miru.load(self)
 
@@ -100,11 +99,17 @@ class Bot(crescent.Bot):
         load_modules(Path("starboard/commands"))
         load_modules(Path("starboard/events"))
 
-    if TYPE_CHECKING:
+    @property
+    def cache(self) -> Cache:
+        return self._real_cache
 
-        @property
-        def cache(self) -> Cache:
-            ...
+    @property  # type: ignore
+    def _cache(self) -> Cache:  # type: ignore
+        return self._real_cache
+
+    @_cache.setter
+    def _cache(self, ot: Any) -> None:
+        pass
 
     @property
     def me(self) -> hikari.OwnUser:
@@ -136,9 +141,6 @@ class Bot(crescent.Bot):
         )
         self._tasks.append(
             asyncio.create_task(patreon.loop_update_patrons(self))
-        )
-        self._tasks.append(
-            asyncio.create_task(sweep_cache.loop_sweep_cache(self))
         )
         self._tasks.append(
             asyncio.create_task(post_stats.loop_post_stats(self))
