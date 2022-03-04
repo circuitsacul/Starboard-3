@@ -26,6 +26,7 @@ import asyncio
 from typing import TYPE_CHECKING, cast
 
 import hikari
+from pycooldown import FixedCooldown
 
 from starboard.config import CONFIG
 from starboard.database import AutoStarChannel
@@ -37,6 +38,11 @@ if TYPE_CHECKING:
     from starboard.bot import Bot
 
 
+COOLDOWN: FixedCooldown[int] = FixedCooldown(
+    CONFIG.asc_cooldown_period, CONFIG.asc_cooldown_cap
+)
+
+
 async def handle_message(event: hikari.MessageCreateEvent) -> None:
     bot = cast("Bot", event.app)
 
@@ -46,9 +52,7 @@ async def handle_message(event: hikari.MessageCreateEvent) -> None:
     if event.channel_id not in bot.database.asc:
         return
 
-    if not bot.asc_cooldown.trigger(
-        event.channel_id, CONFIG.asc_cooldown_cap, CONFIG.asc_cooldown_period
-    ):
+    if COOLDOWN.update_rate_limit(event.channel_id):
         return
 
     asc = await AutoStarChannel.exists(id=event.channel_id)

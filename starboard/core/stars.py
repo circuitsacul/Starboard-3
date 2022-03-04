@@ -26,7 +26,9 @@ from typing import TYPE_CHECKING
 
 import apgorm
 import hikari
+from pycooldown import FlexibleCooldown
 
+from starboard.config import CONFIG
 from starboard.database import Message, Star, User
 
 from .config import StarboardConfig
@@ -34,6 +36,11 @@ from .permrole import get_permissions
 
 if TYPE_CHECKING:
     from starboard.bot import Bot
+
+
+COOLDOWN: FlexibleCooldown[tuple[int, int]] = FlexibleCooldown(
+    CONFIG.max_cooldown_period
+)
 
 
 async def is_star_valid_for(
@@ -57,10 +64,10 @@ async def is_star_valid_for(
         return False
 
     # check cooldown
-    if config.cooldown_enabled and not bot.star_cooldown.trigger(
+    if config.cooldown_enabled and COOLDOWN.update_rate_limit(
         (star_adder.id, config.starboard.id),
-        config.cooldown_count,
         config.cooldown_period,
+        config.cooldown_count,
     ):
         return False
 

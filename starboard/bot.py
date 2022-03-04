@@ -48,7 +48,6 @@ from hikari_clusters import (
 
 from .cache import Cache
 from .config import CONFIG, Config
-from .cooldown import Cooldown
 from .database import Database
 from .tasks import expired_premium, patreon, post_stats
 
@@ -78,20 +77,6 @@ class Bot(crescent.Bot):
         self.database = Database()
 
         miru.load(self)
-
-        # locks and cooldowns
-        self.star_cooldown: Cooldown[tuple[int, int]] = Cooldown(
-            CONFIG.max_cooldown_period
-        )
-        self.edit_cooldown: Cooldown[int] = Cooldown(
-            CONFIG.edit_cooldown_period
-        )
-        self.asc_cooldown: Cooldown[int] = Cooldown(CONFIG.asc_cooldown_period)
-        self.xpr_cooldown: Cooldown[int] = Cooldown(CONFIG.xpr_cooldown_period)
-        self.pr_cooldown: Cooldown[int] = Cooldown(CONFIG.pr_cooldown_period)
-        self.guild_star_cooldown: Cooldown[int] = Cooldown(
-            CONFIG.guild_star_cooldown_period
-        )
 
         def load_modules(parent: Path):
             for module in parent.glob("*.py"):

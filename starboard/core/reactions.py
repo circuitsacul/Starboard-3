@@ -27,6 +27,7 @@ from typing import TYPE_CHECKING, cast
 
 import apgorm
 import hikari
+from pycooldown import FixedCooldown
 
 from starboard.config import CONFIG
 from starboard.core.posrole import update_posroles
@@ -44,6 +45,11 @@ if TYPE_CHECKING:
     from starboard.bot import Bot
 
 
+COOLDOWN: FixedCooldown[int] = FixedCooldown(
+    CONFIG.guild_star_cooldown_period, CONFIG.guild_star_cooldown_cap
+)
+
+
 async def handle_reaction_add(event: hikari.GuildReactionAddEvent) -> None:
     if event.member.is_bot:
         return
@@ -55,11 +61,7 @@ async def handle_reaction_add(event: hikari.GuildReactionAddEvent) -> None:
     if emoji_str not in await bot.cache.guild_star_emojis(event.guild_id):
         return
 
-    if not bot.guild_star_cooldown.trigger(
-        event.guild_id,
-        CONFIG.guild_star_cooldown_cap,
-        CONFIG.guild_star_cooldown_period,
-    ):
+    if COOLDOWN.update_rate_limit(event.guild_id):
         return
 
     starboards = await _get_starboards_for_emoji(emoji_str, event.guild_id)

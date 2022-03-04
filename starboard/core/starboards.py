@@ -28,6 +28,7 @@ from typing import TYPE_CHECKING, Awaitable, Sequence
 
 import hikari
 from apgorm import sql
+from pycooldown import FixedCooldown
 
 from starboard.config import CONFIG
 from starboard.database import Guild, Message, SBMessage, Star, Starboard
@@ -261,6 +262,11 @@ async def _refresh_message_for_starboard(
     await sbmsg.save()
 
 
+EDIT_COOLDOWN: FixedCooldown[int] = FixedCooldown(
+    CONFIG.edit_cooldown_period, CONFIG.edit_cooldown_cap
+)
+
+
 async def _edit(
     bot: Bot,
     config: StarboardConfig,
@@ -269,9 +275,7 @@ async def _edit(
     embeds: list[hikari.Embed] | None,
     author_id: int,
 ) -> None:
-    if not bot.edit_cooldown.trigger(
-        message.id, CONFIG.edit_cooldown_cap, CONFIG.edit_cooldown_period
-    ):
+    if EDIT_COOLDOWN.update_rate_limit(message.id):
         return
 
     if message.author.id != bot.me.id:

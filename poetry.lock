@@ -360,7 +360,7 @@ python2 = ["typed-ast (>=1.4.0,<2)"]
 name = "mypy-extensions"
 version = "0.4.3"
 description = "Experimental type system extensions for programs checked with the mypy typechecker."
-category = "dev"
+category = "main"
 optional = false
 python-versions = "*"
 
@@ -440,6 +440,17 @@ description = "Python style guide checker"
 category = "dev"
 optional = false
 python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*"
+
+[[package]]
+name = "pycooldown"
+version = "0.1.0b0"
+description = "A lightning fast cooldown/ratelimit implementation."
+category = "main"
+optional = false
+python-versions = ">=3.8,<3.11"
+
+[package.dependencies]
+mypy-extensions = ">=0.4.3,<0.5.0"
 
 [[package]]
 name = "pydantic"
@@ -624,7 +635,7 @@ multidict = ">=4.0"
 [metadata]
 lock-version = "1.1"
 python-versions = ">=3.8,<3.11"
-content-hash = "d460e5e444f9e1bdc5951494a0ff25d22ed4c3cf1d745e941240ef7aeaf47fc5"
+content-hash = "f77695462c7ec844d66d9997b3cb4efbf72e025543f72305d7bedc35aac645fb"
 
 [metadata.files]
 aiohttp = [
@@ -1063,6 +1074,10 @@ py = [
 pycodestyle = [
     {file = "pycodestyle-2.8.0-py2.py3-none-any.whl", hash = "sha256:720f8b39dde8b293825e7ff02c475f3077124006db4f440dcbc9a20b76548a20"},
     {file = "pycodestyle-2.8.0.tar.gz", hash = "sha256:eddd5847ef438ea1c7870ca7eb78a9d47ce0cdb4851a5523949f2601d0cbbe7f"},
+]
+pycooldown = [
+    {file = "pycooldown-0.1.0b0-py3-none-any.whl", hash = "sha256:0a3bcf9b75adf7278e7b0f3ee1d66aa2be83c0c560094fcd097aee9a1b58ecf0"},
+    {file = "pycooldown-0.1.0b0.tar.gz", hash = "sha256:48b5d747687b0b94e93e7a3a7aca938e7d7bef69fd18169a9fbbfa39b43fba04"},
 ]
 pydantic = [
     {file = "pydantic-1.9.0-cp310-cp310-macosx_10_9_x86_64.whl", hash = "sha256:cb23bcc093697cdea2708baae4f9ba0e972960a835af22560f6ae4e7e47d33f5"},

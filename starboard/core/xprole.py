@@ -24,6 +24,8 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
+from pycooldown import FixedCooldown
+
 from starboard.config import CONFIG
 from starboard.database import XPRole, goc_member
 
@@ -31,10 +33,13 @@ if TYPE_CHECKING:
     from starboard.bot import Bot
 
 
+COOLDOWN: FixedCooldown[int] = FixedCooldown(
+    CONFIG.xpr_cooldown_period, CONFIG.xpr_cooldown_cap
+)
+
+
 async def refresh_xpr(bot: Bot, guild_id: int, user_id: int) -> bool:
-    if not bot.xpr_cooldown.trigger(
-        user_id, CONFIG.xpr_cooldown_cap, CONFIG.xpr_cooldown_period
-    ):
+    if COOLDOWN.update_rate_limit(user_id):
         return False
 
     obj = await bot.cache.gof_member(guild_id, user_id)

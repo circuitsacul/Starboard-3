@@ -26,6 +26,7 @@ from typing import TYPE_CHECKING
 
 import hikari
 from apgorm import sql
+from pycooldown import FixedCooldown
 
 from starboard.config import CONFIG
 from starboard.database import PosRole, PosRoleMember
@@ -37,15 +38,16 @@ if TYPE_CHECKING:
 
 
 LOCK: set[int] = set()
+COOLDOWN: FixedCooldown[int] = FixedCooldown(
+    CONFIG.pr_cooldown_period, CONFIG.pr_cooldown_cap
+)
 
 
 async def update_posroles(bot: Bot, guild_id: int) -> bool:
     if guild_id in LOCK:
         False
 
-    if not bot.pr_cooldown.trigger(
-        guild_id, CONFIG.pr_cooldown_cap, CONFIG.pr_cooldown_period
-    ):
+    if COOLDOWN.update_rate_limit(guild_id):
         return False
 
     LOCK.add(guild_id)
