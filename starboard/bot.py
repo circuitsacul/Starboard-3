@@ -80,12 +80,18 @@ class Bot(crescent.Bot):
         miru.load(self)
 
         # locks and cooldowns
-        self.star_cooldown: Cooldown[tuple[int, int]] = Cooldown()
-        self.edit_cooldown: Cooldown[int] = Cooldown()
-        self.asc_cooldown: Cooldown[int] = Cooldown()
-        self.xpr_cooldown: Cooldown[int] = Cooldown()
-        self.pr_cooldown: Cooldown[int] = Cooldown()
-        self.guild_star_cooldown: Cooldown[int] = Cooldown()
+        self.star_cooldown: Cooldown[tuple[int, int]] = Cooldown(
+            CONFIG.max_cooldown_period
+        )
+        self.edit_cooldown: Cooldown[int] = Cooldown(
+            CONFIG.edit_cooldown_period
+        )
+        self.asc_cooldown: Cooldown[int] = Cooldown(CONFIG.asc_cooldown_period)
+        self.xpr_cooldown: Cooldown[int] = Cooldown(CONFIG.xpr_cooldown_period)
+        self.pr_cooldown: Cooldown[int] = Cooldown(CONFIG.pr_cooldown_period)
+        self.guild_star_cooldown: Cooldown[int] = Cooldown(
+            CONFIG.guild_star_cooldown_period
+        )
 
         def load_modules(parent: Path):
             for module in parent.glob("*.py"):
@@ -147,40 +153,6 @@ class Bot(crescent.Bot):
         )
         self._tasks.append(
             asyncio.create_task(post_stats.loop_broadcast_stats(self))
-        )
-
-        # cache cycles
-        self._tasks.append(
-            asyncio.create_task(
-                self.star_cooldown.loop_cycle(CONFIG.max_cooldown_period * 2)
-            )
-        )
-        self._tasks.append(
-            asyncio.create_task(
-                self.edit_cooldown.loop_cycle(CONFIG.edit_cooldown_period * 2)
-            )
-        )
-        self._tasks.append(
-            asyncio.create_task(
-                self.asc_cooldown.loop_cycle(CONFIG.asc_cooldown_period * 2)
-            )
-        )
-        self._tasks.append(
-            asyncio.create_task(
-                self.xpr_cooldown.loop_cycle(CONFIG.xpr_cooldown_period * 2)
-            )
-        )
-        self._tasks.append(
-            asyncio.create_task(
-                self.pr_cooldown.loop_cycle(CONFIG.pr_cooldown_period * 2)
-            )
-        )
-        self._tasks.append(
-            asyncio.create_task(
-                self.guild_star_cooldown.loop_cycle(
-                    CONFIG.guild_star_cooldown_period * 2
-                )
-            )
         )
 
         await super().start(

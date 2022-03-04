@@ -22,7 +22,6 @@
 
 from __future__ import annotations
 
-import asyncio
 from time import time
 from typing import Generic, TypeVar
 
@@ -85,9 +84,11 @@ class SlidingWindow:
 
 
 class Cooldown(Generic[_K]):
-    def __init__(self) -> None:
+    def __init__(self, max_period: float) -> None:
         self.old: dict[_K, SlidingWindow] = {}
         self.cur: dict[_K, SlidingWindow] = {}
+        self.max_period = max_period
+        self.last_cycle = time()
 
     def __getitem__(self, key: _K) -> SlidingWindow:
         if v := self.old.pop(key, None):
@@ -97,15 +98,16 @@ class Cooldown(Generic[_K]):
     def __setitem__(self, key: _K, value: SlidingWindow) -> None:
         self.cur[key] = value
 
-    async def loop_cycle(self, delay: int) -> None:
-        while True:
-            await asyncio.sleep(delay)
-
-            del self.old
-            self.old = self.cur
-            self.cur = dict()
-
     def get_bucket(self, key: _K, cap: int, period: int) -> SlidingWindow:
+        now = time()
+        if now > self.last_cycle + self.max_period:
+            self.last_cycle = now
+
+            self.old.clear()
+            cur = self.cur
+            self.cur = self.old
+            self.old = cur
+
         try:
             return self[key]
         except KeyError:
