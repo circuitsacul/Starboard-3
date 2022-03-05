@@ -196,7 +196,8 @@ def rendered_content(msg: Message) -> str | None:
             "you build the server!"
         )
 
-    assert False, "Missed a type?"
+    print(f"WARNING: Uncaught type {msg.type}")
+    return msg.content
 
 
 def truncate(text: str, max: int, ddd: str = "...") -> str:
