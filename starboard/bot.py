@@ -68,6 +68,7 @@ class Bot(crescent.Bot):
             tracked_guilds=[CONFIG.main_guild] if CONFIG.main_guild else None,
             default_guild=CONFIG.main_guild if CONFIG.development else None,
             intents=intents,
+            update_commands=False,
         )
 
         self.bot_stats: dict[int, int] = {}
@@ -143,6 +144,10 @@ class Bot(crescent.Bot):
         await super().start(
             **kwargs, activity=hikari.Activity(name="Mention me for help")
         )
+
+        if self.cluster.cluster_id == 0:
+            print("Posting commands...")
+            await self._command_handler.register_commands()
 
     async def close(self) -> None:
         await super().close()
