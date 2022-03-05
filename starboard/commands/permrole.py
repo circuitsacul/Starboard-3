@@ -215,10 +215,16 @@ class EditPermRoleStarboard:
     )
 
     give_stars = optiond(
-        str, "Whether to allow giving stars", choices=TRIBOOL_CHOICES
+        str,
+        "Whether to allow giving stars",
+        choices=TRIBOOL_CHOICES,
+        name="give-stars",
     )
     recv_stars = optiond(
-        str, "Whether to allow receiving stars", choices=TRIBOOL_CHOICES
+        str,
+        "Whether to allow receiving stars",
+        choices=TRIBOOL_CHOICES,
+        name="recv-stars",
     )
 
     async def callback(self, ctx: crescent.Context) -> None:
