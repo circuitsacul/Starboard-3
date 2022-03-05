@@ -224,7 +224,7 @@ class EditPermRoleStarboard:
         str,
         "Whether to allow receiving stars",
         choices=TRIBOOL_CHOICES,
-        name="recv-stars",
+        name="receive-stars",
     )
 
     async def callback(self, ctx: crescent.Context) -> None:
