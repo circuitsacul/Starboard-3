@@ -113,17 +113,6 @@ async def help_command(ctx: crescent.Context) -> None:
             )
         ),
     )
-    emb.add_field(
-        name="Privacy Policy",
-        value=(
-            "Starboard tracks the bare minimum information necessary to keep "
-            "the bot running. The only data that is really included are "
-            "object IDs (message IDs, channel IDs, user IDs, etc.) as well as "
-            "bot-specific information (how much XP a user has, how many stars "
-            "a message has, etc.). Starboard does not store usernames, guild "
-            "names, or message content."
-        ),
-    )
 
     await ctx.respond(
         embed=emb, component=act if act.components else hikari.UNDEFINED
