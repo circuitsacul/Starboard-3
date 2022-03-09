@@ -24,7 +24,7 @@ hikari-crescent = "^0.1.0-beta.3"
 types-pytz = "^2021.3.5"
 pytz = "^2021.3"
 tqdm = "^4.63.0"
-pycooldown = "^0.1.0b1"
+pycooldown = "^0.1.0b3"
 
 [tool.poetry.dev-dependencies]
 black = "^22.1"
