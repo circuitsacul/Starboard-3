@@ -22,14 +22,14 @@
 
 from __future__ import annotations
 
-from typing import cast, TYPE_CHECKING
+from typing import TYPE_CHECKING, cast
 
 import crescent
 import hikari
 
-from starboard.database import goc_user
 from starboard.config import CONFIG
 from starboard.core.premium import update_supporter_roles
+from starboard.database import goc_user
 
 if TYPE_CHECKING:
     from starboard.bot import Bot
