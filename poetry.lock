@@ -564,7 +564,7 @@ telegram = ["requests"]
 
 [[package]]
 name = "types-cachetools"
-version = "4.2.10"
+version = "5.0.0"
 description = "Typing stubs for cachetools"
 category = "main"
 optional = false
@@ -635,7 +635,7 @@ multidict = ">=4.0"
 [metadata]
 lock-version = "1.1"
 python-versions = ">=3.8,<3.11"
-content-hash = "36039f3f80ae69155159c435e7705c75095f1e3cda16d2ed78fc72ec23f84383"
+content-hash = "3841c99cfada533159ca2943a3b1ab836e5a236a8954262621f4434f6349e1d3"
 
 [metadata.files]
 aiohttp = [
@@ -1149,8 +1149,8 @@ tqdm = [
     {file = "tqdm-4.63.0.tar.gz", hash = "sha256:1d9835ede8e394bb8c9dcbffbca02d717217113adc679236873eeaac5bc0b3cd"},
 ]
 types-cachetools = [
-    {file = "types-cachetools-4.2.10.tar.gz", hash = "sha256:b1cb18aaff25d2ad47a060413c660c39fadddb01f72012dd1134584b1fdaada5"},
-    {file = "types_cachetools-4.2.10-py3-none-any.whl", hash = "sha256:48301115189d4879d0960baac5a8a2b2d31ce6129b2ce3b915000ed337284898"},
+    {file = "types-cachetools-5.0.0.tar.gz", hash = "sha256:b207dd2bc8cc7371433caa024e8aebf6171f3a693eaec631933989dfcde8d3ed"},
+    {file = "types_cachetools-5.0.0-py3-none-any.whl", hash = "sha256:7615cab1ff52d350019c5c5a54bab1b73e5e12b409291aba0db8442290610226"},
 ]
 types-emoji = [
     {file = "types-emoji-1.2.7.tar.gz", hash = "sha256:3be036d560ff90351944bb08f8e70447c7e831660fe51c4599974a326585aacb"},
