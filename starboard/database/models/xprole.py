@@ -22,6 +22,8 @@
 
 from __future__ import annotations
 
+from typing import Iterable
+
 import apgorm
 from apgorm import types
 
@@ -33,6 +35,8 @@ from .guild import Guild
 
 
 class XPRole(apgorm.Model):
+    __slots__: Iterable[str] = tuple()
+
     id = types.Numeric().field().with_converter(DecimalC)
     guild_id = types.Numeric().field().with_converter(DecimalC)
     required = types.SmallInt().field()

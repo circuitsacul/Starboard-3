@@ -22,6 +22,8 @@
 
 from __future__ import annotations
 
+from typing import Iterable
+
 from apgorm import ForeignKey, Model, types
 
 from ._converters import DecimalC
@@ -30,6 +32,8 @@ from .starboard import Starboard
 
 
 class PermRole(Model):
+    __slots__: Iterable[str] = tuple()
+
     id = types.Numeric().field().with_converter(DecimalC)
     guild_id = types.Numeric().field().with_converter(DecimalC)
 
@@ -43,6 +47,8 @@ class PermRole(Model):
 
 
 class PermRoleStarboard(Model):
+    __slots__: Iterable[str] = tuple()
+
     permrole_id = types.Numeric().field().with_converter(DecimalC)
     starboard_id = types.Numeric().field().with_converter(DecimalC)
 

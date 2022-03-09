@@ -23,6 +23,7 @@
 from __future__ import annotations
 
 from enum import IntEnum
+from typing import Iterable
 
 import apgorm
 from apgorm import types
@@ -46,6 +47,8 @@ class PatreonStatus(IntEnum):
 
 
 class User(apgorm.Model):
+    __slots__: Iterable[str] = tuple()
+
     id = types.Numeric().field().with_converter(DecimalC)
 
     is_bot = types.Boolean().field()

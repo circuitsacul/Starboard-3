@@ -22,6 +22,8 @@
 
 from __future__ import annotations
 
+from typing import Iterable
+
 import apgorm
 from apgorm import types
 
@@ -32,6 +34,8 @@ from .user import User
 
 
 class Star(apgorm.Model):
+    __slots__: Iterable[str] = tuple()
+
     message_id = types.Numeric().field().with_converter(DecimalC)
     starboard_id = types.Numeric().field().with_converter(DecimalC)
     user_id = types.Numeric().field().with_converter(DecimalC)

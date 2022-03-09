@@ -22,6 +22,8 @@
 
 from __future__ import annotations
 
+from typing import Iterable
+
 import apgorm
 from apgorm import types
 
@@ -31,6 +33,8 @@ from .starboard import Starboard
 
 
 class SBMessage(apgorm.Model):
+    __slots__: Iterable[str] = tuple()
+
     message_id = types.Numeric().field().with_converter(DecimalC)
     starboard_id = types.Numeric().field().with_converter(DecimalC)
     sb_message_id = (

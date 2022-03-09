@@ -22,6 +22,8 @@
 
 from __future__ import annotations
 
+from typing import Iterable
+
 import apgorm
 from apgorm import types
 from asyncpg import UniqueViolationError
@@ -37,6 +39,8 @@ async def goc_guild(guild_id: int) -> Guild:
 
 
 class Guild(apgorm.Model):
+    __slots__: Iterable[str] = tuple()
+
     id = types.Numeric().field().with_converter(DecimalC)
 
     # config options

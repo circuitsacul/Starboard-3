@@ -23,7 +23,7 @@
 from __future__ import annotations
 
 import json
-from typing import Any
+from typing import Any, Iterable
 
 from apgorm import ForeignKey, Model, types
 
@@ -36,6 +36,8 @@ from .starboard import Starboard
 
 
 class Override(Model):
+    __slots__: Iterable[str] = tuple()
+
     id = types.Serial().field()
     guild_id = types.Numeric().field().with_converter(DecimalC)
     name = types.Text().field()

@@ -22,6 +22,8 @@
 
 from __future__ import annotations
 
+from typing import Iterable
+
 import apgorm
 from apgorm import types
 
@@ -34,6 +36,8 @@ from .user import User
 
 
 class PosRole(apgorm.Model):
+    __slots__: Iterable[str] = tuple()
+
     id = types.Numeric().field().with_converter(DecimalC)
     guild_id = types.Numeric().field().with_converter(DecimalC)
     max_members = types.Int().field()
@@ -48,6 +52,8 @@ class PosRole(apgorm.Model):
 
 
 class PosRoleMember(apgorm.Model):
+    __slots__: Iterable[str] = tuple()
+
     role_id = types.Numeric().field().with_converter(DecimalC)
     user_id = types.Numeric().field().with_converter(DecimalC)
 

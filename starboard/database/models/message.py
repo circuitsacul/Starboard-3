@@ -22,6 +22,8 @@
 
 from __future__ import annotations
 
+from typing import Iterable
+
 import apgorm
 from apgorm import types
 from asyncpg import UniqueViolationError
@@ -58,6 +60,8 @@ async def goc_message(
 
 
 class Message(apgorm.Model):
+    __slots__: Iterable[str] = tuple()
+
     id = types.Numeric().field().with_converter(DecimalC)
     guild_id = types.Numeric().field().with_converter(DecimalC)
     channel_id = types.Numeric().field().with_converter(DecimalC)

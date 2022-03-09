@@ -22,7 +22,7 @@
 
 from __future__ import annotations
 
-from typing import Any, Callable
+from typing import Any, Callable, Iterable
 
 import apgorm
 from apgorm import types
@@ -84,6 +84,8 @@ def validate_sb_changes(**changes: Any) -> None:
 
 
 class Starboard(apgorm.Model):
+    __slots__: Iterable[str] = tuple()
+
     id = types.Numeric().field().with_converter(DecimalC)
     guild_id = types.Numeric().field().with_converter(DecimalC)
 
