@@ -443,7 +443,7 @@ python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*"
 
 [[package]]
 name = "pycooldown"
-version = "0.1.0b2"
+version = "0.1.0b3"
 description = "A lightning fast cooldown/ratelimit implementation."
 category = "main"
 optional = false
@@ -635,7 +635,7 @@ multidict = ">=4.0"
 [metadata]
 lock-version = "1.1"
 python-versions = ">=3.8,<3.11"
-content-hash = "120b1f6f4161c5a47275a0a68a2d25ce8c6bd8be24f8f62cd9fd2703b35fd373"
+content-hash = "36039f3f80ae69155159c435e7705c75095f1e3cda16d2ed78fc72ec23f84383"
 
 [metadata.files]
 aiohttp = [
@@ -1076,8 +1076,8 @@ pycodestyle = [
     {file = "pycodestyle-2.8.0.tar.gz", hash = "sha256:eddd5847ef438ea1c7870ca7eb78a9d47ce0cdb4851a5523949f2601d0cbbe7f"},
 ]
 pycooldown = [
-    {file = "pycooldown-0.1.0b2-py3-none-any.whl", hash = "sha256:9072c675558054019f821cf5a1f69fd08395dca81ba5e4f1f006f13a6981b897"},
-    {file = "pycooldown-0.1.0b2.tar.gz", hash = "sha256:5bea6fe0daad8d050d731c2bff5a9e1993d85977c88f8f65a9e1685c4f13b94b"},
+    {file = "pycooldown-0.1.0b3-py3-none-any.whl", hash = "sha256:bba6b26d6233066188d621b6dc78b53342ec395aa7c178c07b6482ce8145bd6e"},
+    {file = "pycooldown-0.1.0b3.tar.gz", hash = "sha256:1c6ca98dd19f6f38de348cb25b29dc2c60963e0709eff7ca881e219013683255"},
 ]
 pydantic = [
     {file = "pydantic-1.9.0-cp310-cp310-macosx_10_9_x86_64.whl", hash = "sha256:cb23bcc093697cdea2708baae4f9ba0e972960a835af22560f6ae4e7e47d33f5"},
