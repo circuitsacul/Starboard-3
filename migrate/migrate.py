@@ -20,12 +20,15 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
+# NOTE: added indexes
+# - guild_id of reactions (btree, allow for ordering)
+
 from __future__ import annotations
 
 import json
 from dataclasses import dataclass
 from datetime import datetime
-from typing import Awaitable, Callable
+from typing import Any, Awaitable, Callable
 
 import emoji
 import pytz
@@ -38,6 +41,9 @@ from starboard.config import CONFIG
 from starboard.database import Database as NewDB
 
 from .old_db import Database as OldDB
+
+
+CHUNK = 10_000
 
 
 @dataclass
@@ -60,14 +66,14 @@ async def migrate() -> None:
 
     app = App(newdb, olddb)
 
-    await _run(app, _migrate_guilds)
-    await _run(app, _migrate_users)
-    await _run(app, _migrate_members)
-    await _run(app, _migrate_autostars)
-    await _run(app, _migrate_starboards)
-    await _run(app, _migrate_orig_messages)
-    await _run(app, _migrate_starboard_messages)
-    await _run(app, _migrate_reactions)
+    # await _run(app, _migrate_guilds)
+    # await _run(app, _migrate_users)
+    # await _run(app, _migrate_members)
+    # await _run(app, _migrate_autostars)
+    # await _run(app, _migrate_starboards)
+    # await _run(app, _migrate_orig_messages)
+    # await _run(app, _migrate_starboard_messages)
+    # await _run(app, _migrate_reactions)
     await _run(app, _migrate_xproles)
     await _run(app, _migrate_posroles)
     await _run(app, _migrate_channel_bl)
@@ -99,43 +105,69 @@ async def _migrate_guilds(new: OrmCon, old: ApgCon) -> None:
 async def _migrate_users(new: OrmCon, old: ApgCon) -> None:
     total = await old.fetchval("SELECT count(1) FROM users")
     count = 0
+    args: list[list[Any]] = []
+
+    async def do_insert():
+        await new.con.copy_records_to_table(
+            "users",
+            records=args,
+            columns=[
+                "id",
+                "is_bot",
+                "credits",
+                "last_patreon_total_cents",
+                "patreon_status",
+                "donated_cents",
+            ],
+        )
+        args.clear()
+
     with tqdm(desc="Users", total=total) as pb:
-        async for olduser in old.cursor(
-            "SELECT * FROM users", prefetch=10_000
-        ):
+        async for olduser in old.cursor("SELECT * FROM users", prefetch=CHUNK):
             count += 1
-            if count % 1000 == 0:
+            if count % CHUNK == 0:
                 pb.update(count)
                 count = 0
-            await new.execute(
-                "INSERT INTO users (id, is_bot, credits, "
-                "last_patreon_total_cents, patreon_status) "
-                "VALUES ($1, $2, $3, 0, 0)",
-                [olduser["id"], olduser["is_bot"], olduser["credits"]],
+                await do_insert()
+            args.append(
+                [olduser["id"], olduser["is_bot"], olduser["credits"], 0, 0, 0]
             )
+        await do_insert()
+        pb.update(count)
 
 
 async def _migrate_members(new: OrmCon, old: ApgCon) -> None:
     total = await old.fetchval("SELECT count(1) FROM members")
     count = 0
+    args: list[list[Any]] = []
+
+    async def do_insert():
+        await new.con.copy_records_to_table(
+            "members",
+            records=args,
+            columns=["user_id", "guild_id", "xp", "autoredeem_enabled"],
+        )
+        args.clear()
+
     with tqdm(desc="Members", total=total) as pb:
         async for oldmemb in old.cursor(
-            "SELECT * FROM members", prefetch=10_000
+            "SELECT * FROM members", prefetch=CHUNK
         ):
             count += 1
-            if count % 1000 == 0:
+            if count % CHUNK == 0:
                 pb.update(count)
                 count = 0
-            await new.execute(
-                "INSERT INTO members (user_id, guild_id, xp, "
-                "autoredeem_enabled) VALUES ($1, $2, $3, $4)",
+                await do_insert()
+            args.append(
                 [
                     oldmemb["user_id"],
                     oldmemb["guild_id"],
                     oldmemb["xp"],
                     oldmemb["autoredeem"],
-                ],
+                ]
             )
+        pb.update(count)
+        await do_insert()
 
 
 async def _migrate_autostars(new: OrmCon, old: ApgCon) -> None:
@@ -223,23 +255,41 @@ async def _migrate_orig_messages(new: OrmCon, old: ApgCon) -> None:
         "SELECT count(1) FROM messages WHERE is_orig=True"
     )
     count = 0
+    args: list[list[Any]] = []
+
+    async def do_insert():
+        await new.con.copy_records_to_table(
+            "messages",
+            records=args,
+            columns=[
+                "id",
+                "guild_id",
+                "channel_id",
+                "author_id",
+                "is_nsfw",
+                "forced_to",
+                "trashed",
+                "trash_reason",
+                "frozen",
+            ],
+        )
+        args.clear()
+
     with tqdm(desc="Original Messages", total=total) as pb:
         async for oldmsg in old.cursor(
-            "SELECT * FROM messages WHERE is_orig=True", prefetch=10000
+            "SELECT * FROM messages WHERE is_orig=True", prefetch=CHUNK
         ):
             count += 1
-            if count % 1000 == 0:
+            if count % CHUNK == 0:
                 pb.update(count)
                 count = 0
+                await do_insert()
             forced_to = (
                 set()
                 if not oldmsg["is_forced"]
                 else sbids_guild.get(oldmsg["guild_id"], set())
             )
-            await new.execute(
-                "INSERT INTO messages (id, guild_id, channel_id, author_id, "
-                "is_nsfw, forced_to, trashed, trash_reason, frozen) VALUES "
-                "($1, $2, $3, $4, $5, $6, $7, NULL, $8)",
+            args.append(
                 [
                     oldmsg["id"],
                     oldmsg["guild_id"],
@@ -248,63 +298,92 @@ async def _migrate_orig_messages(new: OrmCon, old: ApgCon) -> None:
                     oldmsg["is_nsfw"],
                     forced_to,
                     oldmsg["is_trashed"],
+                    None,
                     oldmsg["is_frozen"],
-                ],
+                ]
             )
+        pb.update(count)
+        count = 0
+        await do_insert()
 
 
 async def _migrate_starboard_messages(new: OrmCon, old: ApgCon) -> None:
     sbids: set[int] = {
         r["id"] for r in await old.fetch("SELECT id FROM starboards")
     }
+    pairs: set[tuple[int, int]] = set()
+    valid_orig_ids: set[int] = {
+        r["id"] for r in await new.fetchmany("SELECT id FROM messages")
+    }
 
     missing_sb: int = 0
     missing_orig: int = 0
+    duplicate: int = 0
 
     count = 0
     total = await old.fetchval(
         "SELECT count(1) FROM messages WHERE is_orig=False"
     )
+    args: list[list[Any]] = []
+
+    async def do_insert():
+        await new.con.copy_records_to_table(
+            "sb_messages",
+            records=args,
+            columns=[
+                "message_id",
+                "starboard_id",
+                "sb_message_id",
+                "last_known_star_count",
+            ],
+        )
+        args.clear()
+
     with tqdm(desc="Starboard Messages", total=total) as pb:
         async for oldmsg in old.cursor(
-            "SELECT * FROM messages WHERE is_orig=False", prefetch=10_000
+            "SELECT * FROM messages WHERE is_orig=False", prefetch=CHUNK
         ):
             count += 1
-            if count % 1000 == 0:
+            if count % CHUNK == 0:
                 pb.update(count)
                 count = 0
+                await do_insert()
 
             if oldmsg["channel_id"] not in sbids:
                 missing_sb += 1
                 continue
 
-            ret = await new.fetchval(
-                "SELECT 1 FROM messages WHERE id=$1",
-                [oldmsg["orig_message_id"]],
-            )
-            if not ret:
+            uq = (oldmsg["orig_message_id"], oldmsg["channel_id"])
+            if uq in pairs:
+                duplicate += 1
+                continue
+            pairs.add(uq)
+
+            if oldmsg["orig_message_id"] not in valid_orig_ids:
                 missing_orig += 1
                 continue
 
-            await new.execute(
-                "INSERT INTO sb_messages (message_id, starboard_id, "
-                "sb_message_id, last_known_star_count) "
-                "VALUES ($1, $2, $3, $4) "
-                "ON CONFLICT (message_id, starboard_id) DO NOTHING ",
+            args.append(
                 [
                     oldmsg["orig_message_id"],
                     oldmsg["channel_id"],
                     oldmsg["id"],
                     oldmsg["points"] or 0,
-                ],
+                ]
             )
+        pb.update(count)
+        count = 0
+        await do_insert()
 
-    print(f"Missing Starboard: {missing_sb}")
     print(f"Missing Orig: {missing_orig}")
+    print(f"Missing Starboard: {missing_sb}")
+    print(f"Duplicates: {duplicate}")
 
 
 async def _migrate_reactions(new: OrmCon, old: ApgCon) -> None:
     sb_emoji_map: dict[int, dict[int, set[str]]] = {}
+    current_guild: int = -1
+    unique: set[tuple[int, int, int]] = set()
 
     for s in await newdb.Starboard.fetch_query(new).fetchmany():
         sb_emoji_map.setdefault(s.guild_id, dict()).setdefault(
@@ -322,43 +401,56 @@ async def _migrate_reactions(new: OrmCon, old: ApgCon) -> None:
 
         return sbids
 
-    bot_reactions = 0
     no_starboards = 0
+    duplicate = 0
 
     total = await old.fetchval("SELECT count(1) FROM reactions")
     count = 0
+    args: list[list[Any]] = []
+
+    async def do_insert():
+        await new.con.copy_records_to_table(
+            "stars",
+            records=args,
+            columns=["message_id", "starboard_id", "user_id"],
+        )
+        args.clear()
+
     with tqdm(desc="Reactions", total=total) as pb:
         async for oldreact in old.cursor(
-            "SELECT * FROM reactions", prefetch=10_000
+            "SELECT * FROM reactions ORDER BY guild_id", prefetch=CHUNK
         ):
             count += 1
-            if count % 1000 == 0:
+            if count % CHUNK == 0:
                 pb.update(count)
                 count = 0
-
-            if oldreact["is_bot"]:
-                bot_reactions += 1
-                continue
+                await do_insert()
 
             sbids = get_sb(int(oldreact["guild_id"]), oldreact["name"])
             if not sbids:
                 no_starboards += 1
                 continue
 
+            if current_guild != oldreact["guild_id"]:
+                unique.clear()
+                current_guild = oldreact["guild_id"]
             for id in sbids:
-                await new.execute(
-                    "INSERT INTO stars (message_id, starboard_id, user_id) "
-                    "VALUES ($1, $2, $3) ON CONFLICT (message_id, "
-                    "starboard_id, user_id) DO NOTHING",
-                    [oldreact["message_id"], id, oldreact["user_id"]],
-                )
+                key = (oldreact["message_id"], id, oldreact["user_id"])
+                if key in unique:
+                    duplicate += 1
+                    continue
+                unique.add(key)
+                args.append([oldreact["message_id"], id, oldreact["user_id"]])
+        pb.update(count)
+        count = 0
+        await do_insert()
 
-    print(f"Bot reactions: {bot_reactions}")
+    print(f"Duplicates: {duplicate}")
     print(f"Reactions that belonged to no starboards: {no_starboards}")
 
 
 async def _migrate_xproles(new: OrmCon, old: ApgCon) -> None:
-    for oldxp in tqdm(await old.fetch("SELECT * FROM xproles")):
+    for oldxp in tqdm(await old.fetch("SELECT * FROM xproles"), "XPRoles"):
         await newdb.XPRole(
             id=oldxp["id"],
             guild_id=oldxp["guild_id"],
@@ -367,7 +459,7 @@ async def _migrate_xproles(new: OrmCon, old: ApgCon) -> None:
 
 
 async def _migrate_posroles(new: OrmCon, old: ApgCon) -> None:
-    for oldpr in tqdm(await old.fetch("SELECT * FROM posroles")):
+    for oldpr in tqdm(await old.fetch("SELECT * FROM posroles"), "PosRoles"):
         gid = oldpr["guild_id"]
         mu = oldpr["max_users"]
         if await newdb.PosRole.exists(new, guild_id=gid, max_members=mu):
@@ -380,7 +472,9 @@ async def _migrate_posroles(new: OrmCon, old: ApgCon) -> None:
 async def _migrate_channel_bl(new: OrmCon, old: ApgCon) -> None:
     sb: newdb.Starboard
     for x, sb in enumerate(
-        tqdm(await newdb.Starboard.fetch_query(new).fetchmany())
+        tqdm(
+            await newdb.Starboard.fetch_query(new).fetchmany(), "Channel BL/WL"
+        )
     ):
         oldbl = await old.fetch(
             "SELECT * FROM channelbl WHERE starboard_id=$1 AND "
@@ -419,7 +513,9 @@ async def _migrate_role_bl(new: OrmCon, old: ApgCon) -> None:
     role_bl_and_wl = 0
 
     sb: newdb.Starboard
-    for sb in tqdm(await newdb.Starboard.fetch_query(new).fetchmany()):
+    for sb in tqdm(
+        await newdb.Starboard.fetch_query(new).fetchmany(), "Role BL/WL"
+    ):
         role_wl = await old.fetch(
             "SELECT * FROM rolebl WHERE starboard_id=$1 AND is_whitelist=True",
             sb.id,
