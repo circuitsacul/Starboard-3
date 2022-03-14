@@ -29,6 +29,7 @@ import hikari
 from pycooldown import FixedCooldown
 
 from starboard.config import CONFIG
+from starboard.core.notifications import notify
 from starboard.database import AutoStarChannel
 
 from .emojis import stored_to_emoji
@@ -82,6 +83,18 @@ async def handle_message(event: hikari.MessageCreateEvent) -> None:
                 await event.message.delete()
             except hikari.ForbiddenError:
                 pass
+
+            await notify(
+                event.message.author,
+                f"Your message in <#{event.channel_id}> was deleted because "
+                "it didn't meet the requirements for that autostar channel. "
+                "Here is the content of your message:",
+            )
+            await notify(
+                event.message.author,
+                event.message.content
+                or "Your message doesn't seem to have any text content.",
+            )
 
         return
 
