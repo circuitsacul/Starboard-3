@@ -29,7 +29,7 @@ apgorm = "^1.0.0-beta.8"
 [tool.poetry.dev-dependencies]
 black = "^22.1"
 isort = "^5.9.3"
-mypy = "^0.940"
+mypy = "^0.941"
 flake8 = "^4.0.1"
 pytest = "^7.0.1"
 pytest-cov = "^3.0.0"
