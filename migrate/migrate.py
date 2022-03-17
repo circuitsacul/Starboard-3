@@ -42,8 +42,7 @@ from starboard.database import Database as NewDB
 
 from .old_db import Database as OldDB
 
-
-CHUNK = 10_000
+CHUNK = 100_000
 
 
 @dataclass
@@ -66,14 +65,14 @@ async def migrate() -> None:
 
     app = App(newdb, olddb)
 
-    # await _run(app, _migrate_guilds)
-    # await _run(app, _migrate_users)
-    # await _run(app, _migrate_members)
-    # await _run(app, _migrate_autostars)
-    # await _run(app, _migrate_starboards)
-    # await _run(app, _migrate_orig_messages)
-    # await _run(app, _migrate_starboard_messages)
-    # await _run(app, _migrate_reactions)
+    await _run(app, _migrate_guilds)
+    await _run(app, _migrate_users)
+    await _run(app, _migrate_members)
+    await _run(app, _migrate_autostars)
+    await _run(app, _migrate_starboards)
+    await _run(app, _migrate_orig_messages)
+    await _run(app, _migrate_starboard_messages)
+    await _run(app, _migrate_reactions)
     await _run(app, _migrate_xproles)
     await _run(app, _migrate_posroles)
     await _run(app, _migrate_channel_bl)
@@ -421,7 +420,7 @@ async def _migrate_reactions(new: OrmCon, old: ApgCon) -> None:
             "SELECT * FROM reactions ORDER BY guild_id", prefetch=CHUNK
         ):
             count += 1
-            if count % CHUNK == 0:
+            if not (count % CHUNK):
                 pb.update(count)
                 count = 0
                 await do_insert()
