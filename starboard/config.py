@@ -25,7 +25,7 @@ import json
 import secrets
 from dataclasses import asdict, dataclass, field
 from pathlib import Path
-from typing import Dict, List, Optional, cast
+from typing import Any, Dict, List, Optional, cast
 
 
 @dataclass
@@ -149,8 +149,18 @@ class Config:
 
     def save(self):
         pth = Path("config.json")
+
+        dct = asdict(self)
+        tosave: dict[str, Any] = {}
+        defaults = self.__class__()
+        for k, v in dct.items():
+            if getattr(defaults, k) == v:
+                continue
+
+            tosave[k] = v
+
         with pth.open("w+") as f:
-            f.write(json.dumps(asdict(self), indent=4))
+            f.write(json.dumps(tosave, indent=4))
 
     @classmethod
     def load(cls) -> "Config":
