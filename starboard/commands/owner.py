@@ -83,6 +83,7 @@ class PostGuildCount:
 
     async def callback(self, ctx: crescent.Context) -> None:
         bot = cast("Bot", ctx.app)
+        await ctx.defer(True)
         work, fail = await post_stats(bot, self.guilds)
         await ctx.respond(
             "Worked:\n - "
