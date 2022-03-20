@@ -29,6 +29,7 @@ from typing import TYPE_CHECKING
 
 import pytz
 
+from starboard.config import CONFIG
 from starboard.core.notifications import notify
 from starboard.core.premium import try_autoredeem
 from starboard.database import Guild
@@ -47,7 +48,7 @@ async def check_expired_premium(bot: Bot) -> None:
         except Exception:
             traceback.print_exc()
 
-        await asyncio.sleep(60 * 60)
+        await asyncio.sleep(CONFIG.check_expired_premium_delay)
 
 
 async def _check_expired_premium(bot) -> None:
@@ -82,8 +83,9 @@ async def _check_for_server(bot: Bot, g: Guild, now: datetime) -> None:
 
     await notify(
         member.user,
-        f"You have autoredeem enabled in {guild.name}, so 3 credits were "
-        "taken from your account to redeem premium. You can disable "
-        "autoredeem by running `/premium autoredeem disable` in that server, "
-        "or `/premium autoredeem clear` to disable in all servers.",
+        f"You have autoredeem enabled in {guild.name}, so "
+        f"{CONFIG.credits_per_month} credits were taken from your account to "
+        "redeem premium. You can disable autoredeem by running `/premium "
+        "autoredeem disable` in that server, or `/premium autoredeem clear` "
+        "to disable in all servers.",
     )

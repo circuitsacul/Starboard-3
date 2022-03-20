@@ -65,7 +65,7 @@ async def loop_update_patrons(bot: Bot) -> None:
             except Exception:
                 traceback.print_exc()
 
-            await asyncio.sleep(60 * 5)
+            await asyncio.sleep(CONFIG.update_patreons_delay)
     finally:
         global SES
         if SES is not None and not SES.closed:

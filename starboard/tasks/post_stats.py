@@ -41,7 +41,7 @@ async def loop_post_stats(bot: Bot) -> None:
         return
 
     while True:
-        await asyncio.sleep(CONFIG.post_delay)
+        await asyncio.sleep(CONFIG.post_stats_delay)
 
         try:
             work, fail = await post_stats(bot)
@@ -57,7 +57,7 @@ async def loop_post_stats(bot: Bot) -> None:
 
 async def loop_broadcast_stats(bot: Bot) -> None:
     while True:
-        await asyncio.sleep(CONFIG.post_delay - 30)
+        await asyncio.sleep(CONFIG.post_stats_delay - 30)
 
         await bot.cluster.ipc.send_event(
             [bot.cluster.ipc.clusters_by_cluster_id[0].uid],

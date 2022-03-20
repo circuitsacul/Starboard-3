@@ -96,6 +96,11 @@ class Config:
     credits_per_month: int = 3
     days_per_month: int = 32  # just be safe
 
+    # tasks
+    check_expired_premium_delay: int = 60 * 60
+    update_patreons_delay: int = 60 * 5
+    post_stats_delay: int = 60 * 10
+
     # cache
     member_cache_size: int = 1_000
     user_null_cache_size: int = 1_000
@@ -107,7 +112,6 @@ class Config:
     # botlists & stats
     api_keys: Dict[str, str] = field(default_factory=dict)
     """See botblock.org for more details."""
-    post_delay: int = 60 * 10
 
     # links
     docs_link: Optional[str] = None
