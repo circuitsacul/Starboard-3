@@ -160,13 +160,14 @@ class ViewAutoStar:
                 raise ASCNotFound(self.channel.id)
 
             es = pretty_emoji_str(*asc.emojis, bot=bot)
+            maxc = asc.max_chars if asc.max_chars is not None else "none"
             await ctx.respond(
                 embed=bot.embed(
                     title=self.channel.name,
                     description=(
                         f"emojis: {es}\n"
                         f"min-chars: {asc.min_chars}\n"
-                        f"max-chars: {asc.max_chars or 'none'}\n"
+                        f"max-chars: {maxc}\n"
                         f"require-image: {asc.require_image}\n"
                         f"delete-invalid: {asc.delete_invalid}\n"
                     ),
