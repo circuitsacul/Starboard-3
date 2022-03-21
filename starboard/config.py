@@ -169,12 +169,13 @@ class Config:
         if not pth.exists():
             c = Config()
         else:
+            keys = set(inspect.signature(Config).parameters)
             with pth.open("r") as f:
                 c = Config(
                     **{
                         k: v
                         for k, v in cast(dict, json.loads(f.read())).items()
-                        if k in inspect.signature(Config).parameters
+                        if k in keys
                     }
                 )
 
