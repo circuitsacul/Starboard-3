@@ -119,38 +119,41 @@ class CreatePermRole:
 @permrole.child
 @crescent.command(name="delete", description="Delete a PermRole")
 class DeletePermRole:
-    by_role = crescent.option(
-        hikari.Role, "The PermRole to delete", default=None, name="by-role"
+    permrole = crescent.option(
+        hikari.Role, "The PermRole to delete", default=None
     )
-    by_id = crescent.option(
-        str, "The ID of the PermRole to delete", default=None, name="by-id"
+    permrole_id = crescent.option(
+        str,
+        "The ID of the PermRole to delete",
+        default=None,
+        name="permrole-id",
     )
 
     async def callback(self, ctx: crescent.Context) -> None:
-        if not (self.by_role or self.by_id):
+        if not (self.permrole or self.permrole_id):
             raise StarboardErr("Please specify a PermRole to delete.")
 
-        if self.by_role and self.by_id:
+        if self.permrole and self.permrole_id:
             raise StarboardErr(
                 "You can only specify either the role or the ID."
             )
 
         roleid: int
-        if self.by_role:
-            roleid = self.by_role.id
+        if self.permrole:
+            roleid = self.permrole.id
         else:
-            roleid = disid(self.by_id)
+            roleid = disid(self.permrole_id)
 
         ret = (
             await PermRole.delete_query()
             .where(id=roleid, guild_id=ctx.guild_id)
             .execute()
         )
-        if self.by_id:
-            name = self.by_id
+        if self.permrole_id:
+            name = self.permrole_id
         else:
-            assert self.by_role
-            name = self.by_role.name
+            assert self.permrole
+            name = self.permrole.name
         if not ret:
             raise StarboardErr(f"**{name}** is not a PermRole.")
 
