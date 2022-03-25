@@ -34,6 +34,8 @@ import emoji
 import pytz
 from apgorm.connection import Connection as OrmCon
 from asyncpg.connection import Connection as ApgCon
+from hikari import RESTApp, TokenType
+from hikari.impl import RESTClientImpl
 from tqdm import tqdm
 
 import starboard.database as newdb
@@ -41,6 +43,7 @@ from starboard.config import CONFIG
 from starboard.database import Database as NewDB
 
 from .old_db import Database as OldDB
+from .old_reaction_valid import is_user_blacklisted
 
 CHUNK = 100_000
 
@@ -49,6 +52,7 @@ CHUNK = 100_000
 class App:
     new: NewDB
     old: OldDB
+    bot: RESTClientImpl
 
 
 async def migrate() -> None:
@@ -63,34 +67,42 @@ async def migrate() -> None:
     olddb = OldDB()
     await olddb.connect()
 
-    app = App(newdb, olddb)
+    rbot = RESTApp()
+    bot = rbot.acquire(CONFIG.discord_token, TokenType.BOT)
+    bot.start()
 
-    await _run(app, _migrate_guilds)
-    await _run(app, _migrate_users)
-    await _run(app, _migrate_members)
-    await _run(app, _migrate_autostars)
-    await _run(app, _migrate_starboards)
-    await _run(app, _migrate_orig_messages)
-    await _run(app, _migrate_starboard_messages)
+    app = App(newdb, olddb, bot)
+
+    # await _run(app, _migrate_guilds)
+    # await _run(app, _migrate_users)
+    # await _run(app, _migrate_members)
+    # await _run(app, _migrate_autostars)
+    # await _run(app, _migrate_starboards)
+    # await _run(app, _migrate_orig_messages)
+    # await _run(app, _migrate_starboard_messages)
     await _run(app, _migrate_reactions)
-    await _run(app, _migrate_xproles)
-    await _run(app, _migrate_posroles)
-    await _run(app, _migrate_channel_bl)
-    await _run(app, _migrate_role_bl)
+    # await _run(app, _migrate_xproles)
+    # await _run(app, _migrate_posroles)
+    # await _run(app, _migrate_channel_bl)
+    # await _run(app, _migrate_role_bl)
+
+    bot.close()
 
 
 async def _run(
-    app: App, func: Callable[[OrmCon, ApgCon], Awaitable[None]]
+    app: App, func: Callable[[OrmCon, ApgCon, RESTClientImpl], Awaitable[None]]
 ) -> None:
     assert app.new.pool
     async with app.old.pool.acquire() as old:
         async with old.transaction():
             async with app.new.pool.acquire() as new:
                 async with new.transaction():
-                    await func(new, old)
+                    await func(new, old, app.bot)
 
 
-async def _migrate_guilds(new: OrmCon, old: ApgCon) -> None:
+async def _migrate_guilds(
+    new: OrmCon, old: ApgCon, bot: RESTClientImpl
+) -> None:
     for oldguild in tqdm(await old.fetch("SELECT * FROM guilds"), "Guilds"):
         prem_end: datetime | None = oldguild["premium_end"]
         if prem_end:
@@ -101,7 +113,9 @@ async def _migrate_guilds(new: OrmCon, old: ApgCon) -> None:
         )
 
 
-async def _migrate_users(new: OrmCon, old: ApgCon) -> None:
+async def _migrate_users(
+    new: OrmCon, old: ApgCon, bot: RESTClientImpl
+) -> None:
     total = await old.fetchval("SELECT count(1) FROM users")
     count = 0
     args: list[list[Any]] = []
@@ -135,7 +149,9 @@ async def _migrate_users(new: OrmCon, old: ApgCon) -> None:
         pb.update(count)
 
 
-async def _migrate_members(new: OrmCon, old: ApgCon) -> None:
+async def _migrate_members(
+    new: OrmCon, old: ApgCon, bot: RESTClientImpl
+) -> None:
     total = await old.fetchval("SELECT count(1) FROM members")
     count = 0
     args: list[list[Any]] = []
@@ -169,7 +185,9 @@ async def _migrate_members(new: OrmCon, old: ApgCon) -> None:
         await do_insert()
 
 
-async def _migrate_autostars(new: OrmCon, old: ApgCon) -> None:
+async def _migrate_autostars(
+    new: OrmCon, old: ApgCon, bot: RESTClientImpl
+) -> None:
     bad_emojis: int = 0
     for oldasc in tqdm(
         await old.fetch("SELECT * FROM aschannels"), "AutoStar Channels"
@@ -206,7 +224,9 @@ async def _migrate_autostars(new: OrmCon, old: ApgCon) -> None:
     print(f"Bad Emojis: {bad_emojis}")
 
 
-async def _migrate_starboards(new: OrmCon, old: ApgCon) -> None:
+async def _migrate_starboards(
+    new: OrmCon, old: ApgCon, bot: RESTClientImpl
+) -> None:
     bad_emojis: int = 0
     for oldsb in tqdm(
         await old.fetch("SELECT * FROM starboards"), "Starboards"
@@ -245,7 +265,9 @@ async def _migrate_starboards(new: OrmCon, old: ApgCon) -> None:
     print(f"Bad Emojis: {bad_emojis}")
 
 
-async def _migrate_orig_messages(new: OrmCon, old: ApgCon) -> None:
+async def _migrate_orig_messages(
+    new: OrmCon, old: ApgCon, bot: RESTClientImpl
+) -> None:
     sbids_guild: dict[int, set[int]] = {}
     for sb in await new.fetchmany("SELECT * FROM starboards"):
         sbids_guild.setdefault(sb["guild_id"], set()).add(sb["id"])
@@ -306,7 +328,9 @@ async def _migrate_orig_messages(new: OrmCon, old: ApgCon) -> None:
         await do_insert()
 
 
-async def _migrate_starboard_messages(new: OrmCon, old: ApgCon) -> None:
+async def _migrate_starboard_messages(
+    new: OrmCon, old: ApgCon, bot: RESTClientImpl
+) -> None:
     sbids: set[int] = {
         r["id"] for r in await old.fetch("SELECT id FROM starboards")
     }
@@ -379,9 +403,15 @@ async def _migrate_starboard_messages(new: OrmCon, old: ApgCon) -> None:
     print(f"Duplicates: {duplicate}")
 
 
-async def _migrate_reactions(new: OrmCon, old: ApgCon) -> None:
+async def _migrate_reactions(
+    new: OrmCon, old: ApgCon, bot: RESTClientImpl
+) -> None:
     sb_emoji_map: dict[int, dict[int, set[str]]] = {}
     current_guild: int = -1
+    current_guild_member_roles: dict[int, set[int]] = {}
+    current_guild_role_wl: dict[int, set[int]] = {}
+    current_guild_role_bl: dict[int, set[int]] = {}
+    current_guild_check_bl: bool = True
     unique: set[tuple[int, int, int]] = set()
 
     for s in await newdb.Starboard.fetch_query(new).fetchmany():
@@ -402,6 +432,7 @@ async def _migrate_reactions(new: OrmCon, old: ApgCon) -> None:
 
     no_starboards = 0
     duplicate = 0
+    blacklisted = 0
 
     total = await old.fetchval("SELECT count(1) FROM reactions")
     count = 0
@@ -433,7 +464,53 @@ async def _migrate_reactions(new: OrmCon, old: ApgCon) -> None:
             if current_guild != oldreact["guild_id"]:
                 unique.clear()
                 current_guild = oldreact["guild_id"]
+                current_guild_role_bl.clear()
+                current_guild_role_wl.clear()
+
+                for sbid in sb_emoji_map[current_guild].keys():
+                    role_wl = set(
+                        r["role_id"]
+                        for r in await old.fetch(
+                            "SELECT role_id FROM rolebl WHERE guild_id=$1 AND "
+                            "is_whitelist=True AND starboard_id=$2",
+                            current_guild,
+                            sbid,
+                        )
+                    )
+                    role_bl = set(
+                        r["role_id"]
+                        for r in await old.fetch(
+                            "SELECT role_id FROM rolebl WHERE guild_id=$1 AND "
+                            "is_whitelist=False AND starboard_id=$2",
+                            current_guild,
+                            sbid,
+                        )
+                    )
+                    if role_wl:
+                        current_guild_role_wl[sbid] = role_wl
+                    if role_bl:
+                        current_guild_role_bl[sbid] = role_bl
+
+                if current_guild_role_wl or current_guild_role_bl:
+                    current_guild_check_bl = True
+                    current_guild_member_roles = {
+                        m.id: set(m.role_ids)
+                        for m in await bot.fetch_members(current_guild)
+                    }
+                else:
+                    current_guild_check_bl = False
+
             for id in sbids:
+                # check if the user is blacklisted, if so, skip the reaction
+                if current_guild_check_bl:
+                    if is_user_blacklisted(
+                        current_guild_member_roles[oldreact["user_id"]],
+                        current_guild_role_bl[id],
+                        current_guild_role_wl[id],
+                    ):
+                        blacklisted += 1
+                        continue
+
                 key = (oldreact["message_id"], id, oldreact["user_id"])
                 if key in unique:
                     duplicate += 1
@@ -444,11 +521,14 @@ async def _migrate_reactions(new: OrmCon, old: ApgCon) -> None:
         count = 0
         await do_insert()
 
+    print(f"Blacklisted: {blacklisted}")
     print(f"Duplicates: {duplicate}")
     print(f"Reactions that belonged to no starboards: {no_starboards}")
 
 
-async def _migrate_xproles(new: OrmCon, old: ApgCon) -> None:
+async def _migrate_xproles(
+    new: OrmCon, old: ApgCon, bot: RESTClientImpl
+) -> None:
     for oldxp in tqdm(await old.fetch("SELECT * FROM xproles"), "XPRoles"):
         await newdb.XPRole(
             id=oldxp["id"],
@@ -457,7 +537,9 @@ async def _migrate_xproles(new: OrmCon, old: ApgCon) -> None:
         ).create(new)
 
 
-async def _migrate_posroles(new: OrmCon, old: ApgCon) -> None:
+async def _migrate_posroles(
+    new: OrmCon, old: ApgCon, bot: RESTClientImpl
+) -> None:
     for oldpr in tqdm(await old.fetch("SELECT * FROM posroles"), "PosRoles"):
         gid = oldpr["guild_id"]
         mu = oldpr["max_users"]
@@ -468,7 +550,9 @@ async def _migrate_posroles(new: OrmCon, old: ApgCon) -> None:
         ).create(con=new)
 
 
-async def _migrate_channel_bl(new: OrmCon, old: ApgCon) -> None:
+async def _migrate_channel_bl(
+    new: OrmCon, old: ApgCon, bot: RESTClientImpl
+) -> None:
     sb: newdb.Starboard
     for x, sb in enumerate(
         tqdm(
@@ -508,7 +592,9 @@ async def _migrate_channel_bl(new: OrmCon, old: ApgCon) -> None:
             await sb.save(new)
 
 
-async def _migrate_role_bl(new: OrmCon, old: ApgCon) -> None:
+async def _migrate_role_bl(
+    new: OrmCon, old: ApgCon, bot: RESTClientImpl
+) -> None:
     role_bl_and_wl = 0
 
     sb: newdb.Starboard
