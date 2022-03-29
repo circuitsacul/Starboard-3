@@ -237,7 +237,7 @@ python-versions = ">=3.7"
 
 [[package]]
 name = "hikari"
-version = "2.0.0.dev107"
+version = "2.0.0.dev108"
 description = "A sane Discord API for Python 3 built on asyncio and good intentions"
 category = "main"
 optional = false
@@ -636,7 +636,7 @@ multidict = ">=4.0"
 [metadata]
 lock-version = "1.1"
 python-versions = ">=3.8,<3.11"
-content-hash = "360f38bb205cfa7bae0e36911046ea20b62b10e05d7f8be7bb745207ba05a4ae"
+content-hash = "930b4d952d1247ca4dc632f69ea81155c2917fa3e9e7de320e74f49d555ad559"
 
 [metadata.files]
 aiohttp = [
@@ -930,8 +930,8 @@ frozenlist = [
     {file = "frozenlist-1.3.0.tar.gz", hash = "sha256:ce6f2ba0edb7b0c1d8976565298ad2deba6f8064d2bebb6ffce2ca896eb35b0b"},
 ]
 hikari = [
-    {file = "hikari-2.0.0.dev107-py3-none-any.whl", hash = "sha256:1df67e6ab75fe804d24aa095377b47e6722b6d366dd9f62a6ba6b59d02e18ffc"},
-    {file = "hikari-2.0.0.dev107.tar.gz", hash = "sha256:dc5676be8b010c64afed1313c6ace2077ccb2bd559ee3b8def1fd97bf551f4dd"},
+    {file = "hikari-2.0.0.dev108-py3-none-any.whl", hash = "sha256:bc78e5c753f0b87ae24e1a644a2e4d01d08d5ed35cbaca0f160da5283a589785"},
+    {file = "hikari-2.0.0.dev108.tar.gz", hash = "sha256:d13cfcd0e3732185fa3048b5d9fd8b6078b5dbb0df7820ba7e3e55083bf9d4b5"},
 ]
 hikari-clusters = [
     {file = "hikari-clusters-0.2.5.tar.gz", hash = "sha256:6760d0e26b11f19158df8f048f4c6e9dbc78b31f89f582d1e1e35ccf053b4137"},
