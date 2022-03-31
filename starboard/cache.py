@@ -26,8 +26,8 @@ from typing import TYPE_CHECKING, cast
 
 import hikari
 from cachetools import LFUCache
-from hikari.impl.cache import CacheImpl
 from hikari.api.config import CacheComponents
+from hikari.impl.cache import CacheImpl
 from hikari.impl.config import CacheSettings
 
 from starboard.config import CONFIG
