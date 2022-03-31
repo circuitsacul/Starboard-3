@@ -186,7 +186,7 @@ class DeleteStarboard:
         hikari.TextableGuildChannel, "Starboard to delete.", default=None
     )
     starboard_id = crescent.option(
-        str, "Starboard to delete, by ID", default=None
+        str, "Starboard to delete, by ID", default=None, name="starboard-id"
     )
 
     async def callback(self, ctx: crescent.Context) -> None:
