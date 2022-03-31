@@ -138,11 +138,11 @@ unicode_backport = ["unicodedata2"]
 
 [[package]]
 name = "click"
-version = "8.0.4"
+version = "8.1.1"
 description = "Composable command line interface toolkit"
 category = "dev"
 optional = false
-python-versions = ">=3.6"
+python-versions = ">=3.7"
 
 [package.dependencies]
 colorama = {version = "*", markers = "platform_system == \"Windows\""}
@@ -237,7 +237,7 @@ python-versions = ">=3.7"
 
 [[package]]
 name = "hikari"
-version = "2.0.0.dev107"
+version = "2.0.0.dev108"
 description = "A sane Discord API for Python 3 built on asyncio and good intentions"
 category = "main"
 optional = false
@@ -268,7 +268,7 @@ websockets = ">=10.1,<11.0"
 
 [[package]]
 name = "hikari-crescent"
-version = "0.1.0b6"
+version = "0.1.0b7"
 description = "🌕 A dead simple command handler for Hikari"
 category = "main"
 optional = false
@@ -276,7 +276,7 @@ python-versions = ">=3.8,<3.11"
 
 [package.dependencies]
 attrs = ">=21.4.0,<22.0.0"
-hikari = ">=2.0.0.dev106"
+hikari = ">=2.0.0.dev108"
 
 [[package]]
 name = "hikari-miru"
@@ -597,7 +597,7 @@ python-versions = ">=3.6"
 
 [[package]]
 name = "virtualenv"
-version = "20.13.4"
+version = "20.14.0"
 description = "Virtual Python Environment builder"
 category = "dev"
 optional = false
@@ -636,7 +636,7 @@ multidict = ">=4.0"
 [metadata]
 lock-version = "1.1"
 python-versions = ">=3.8,<3.11"
-content-hash = "360f38bb205cfa7bae0e36911046ea20b62b10e05d7f8be7bb745207ba05a4ae"
+content-hash = "930b4d952d1247ca4dc632f69ea81155c2917fa3e9e7de320e74f49d555ad559"
 
 [metadata.files]
 aiohttp = [
@@ -799,8 +799,8 @@ charset-normalizer = [
     {file = "charset_normalizer-2.0.12-py3-none-any.whl", hash = "sha256:6881edbebdb17b39b4eaaa821b438bf6eddffb4468cf344f09f89def34a8b1df"},
 ]
 click = [
-    {file = "click-8.0.4-py3-none-any.whl", hash = "sha256:6a7a62563bbfabfda3a38f3023a1db4a35978c0abd76f6c9605ecd6554d6d9b1"},
-    {file = "click-8.0.4.tar.gz", hash = "sha256:8458d7b1287c5fb128c90e23381cf99dcde74beaf6c7ff6384ce84d6fe090adb"},
+    {file = "click-8.1.1-py3-none-any.whl", hash = "sha256:5e0d195c2067da3136efb897449ec1e9e6c98282fbf30d7f9e164af9be901a6b"},
+    {file = "click-8.1.1.tar.gz", hash = "sha256:7ab900e38149c9872376e8f9b5986ddcaf68c0f413cf73678a0bca5547e6f976"},
 ]
 colorama = [
     {file = "colorama-0.4.4-py2.py3-none-any.whl", hash = "sha256:9f47eda37229f68eee03b24b9748937c7dc3868f906e8ba69fbcbdd3bc5dc3e2"},
@@ -930,16 +930,16 @@ frozenlist = [
     {file = "frozenlist-1.3.0.tar.gz", hash = "sha256:ce6f2ba0edb7b0c1d8976565298ad2deba6f8064d2bebb6ffce2ca896eb35b0b"},
 ]
 hikari = [
-    {file = "hikari-2.0.0.dev107-py3-none-any.whl", hash = "sha256:1df67e6ab75fe804d24aa095377b47e6722b6d366dd9f62a6ba6b59d02e18ffc"},
-    {file = "hikari-2.0.0.dev107.tar.gz", hash = "sha256:dc5676be8b010c64afed1313c6ace2077ccb2bd559ee3b8def1fd97bf551f4dd"},
+    {file = "hikari-2.0.0.dev108-py3-none-any.whl", hash = "sha256:bc78e5c753f0b87ae24e1a644a2e4d01d08d5ed35cbaca0f160da5283a589785"},
+    {file = "hikari-2.0.0.dev108.tar.gz", hash = "sha256:d13cfcd0e3732185fa3048b5d9fd8b6078b5dbb0df7820ba7e3e55083bf9d4b5"},
 ]
 hikari-clusters = [
     {file = "hikari-clusters-0.2.5.tar.gz", hash = "sha256:6760d0e26b11f19158df8f048f4c6e9dbc78b31f89f582d1e1e35ccf053b4137"},
     {file = "hikari_clusters-0.2.5-py3-none-any.whl", hash = "sha256:8402c21abadf34f6b93428f0b3f693758baede1fffc1cc37b60b9b0545584ae5"},
 ]
 hikari-crescent = [
-    {file = "hikari-crescent-0.1.0b6.tar.gz", hash = "sha256:b60a8106e63819cb48519d89b0e170df1ae30a242b72aa23d1d8cdfb4895ce24"},
-    {file = "hikari_crescent-0.1.0b6-py3-none-any.whl", hash = "sha256:00840329f2b6324bc183c7a409ffed24359a7f13ab380523a372604bab59064f"},
+    {file = "hikari-crescent-0.1.0b7.tar.gz", hash = "sha256:c156d274cbcbe02954bd5b9b1f9baa04ec45993b88f627ae4deeebd8fe414101"},
+    {file = "hikari_crescent-0.1.0b7-py3-none-any.whl", hash = "sha256:89f173fa3de008ca15eda2152ea1f7eb9de666922bae64482dbe6308fecc7a83"},
 ]
 hikari-miru = [
     {file = "hikari-miru-1.1.1.tar.gz", hash = "sha256:7d9ff975546e963cb0b3f234d3396990dc20d0569a70f42135c3b8a16880bd20"},
@@ -1169,8 +1169,8 @@ typing-extensions = [
     {file = "typing_extensions-4.1.1.tar.gz", hash = "sha256:1a9462dcc3347a79b1f1c0271fbe79e844580bb598bafa1ed208b94da3cdcd42"},
 ]
 virtualenv = [
-    {file = "virtualenv-20.13.4-py2.py3-none-any.whl", hash = "sha256:c3e01300fb8495bc00ed70741f5271fc95fed067eb7106297be73d30879af60c"},
-    {file = "virtualenv-20.13.4.tar.gz", hash = "sha256:ce8901d3bbf3b90393498187f2d56797a8a452fb2d0d7efc6fd837554d6f679c"},
+    {file = "virtualenv-20.14.0-py2.py3-none-any.whl", hash = "sha256:1e8588f35e8b42c6ec6841a13c5e88239de1e6e4e4cedfd3916b306dc826ec66"},
+    {file = "virtualenv-20.14.0.tar.gz", hash = "sha256:8e5b402037287126e81ccde9432b95a8be5b19d36584f64957060a3488c11ca8"},
 ]
 websockets = [
     {file = "websockets-10.2-cp310-cp310-macosx_10_9_universal2.whl", hash = "sha256:d5396710f86a306cf52f87fd8ea594a0e894ba0cc5a36059eaca3a477dc332aa"},

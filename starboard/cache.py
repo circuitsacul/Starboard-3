@@ -26,7 +26,9 @@ from typing import TYPE_CHECKING, cast
 
 import hikari
 from cachetools import LFUCache
+from hikari.api.config import CacheComponents
 from hikari.impl.cache import CacheImpl
+from hikari.impl.config import CacheSettings
 
 from starboard.config import CONFIG
 from starboard.database import Starboard
@@ -38,13 +40,13 @@ if TYPE_CHECKING:
 
 class Cache(CacheImpl):
     def __init__(self, app: Bot) -> None:
-        settings = hikari.CacheSettings(
+        settings = CacheSettings(
             components=(
-                hikari.CacheComponents.GUILDS
-                | hikari.CacheComponents.GUILD_CHANNELS
-                | hikari.CacheComponents.ROLES
-                | hikari.CacheComponents.EMOJIS
-                | hikari.CacheComponents.MESSAGES
+                CacheComponents.GUILDS
+                | CacheComponents.GUILD_CHANNELS
+                | CacheComponents.ROLES
+                | CacheComponents.EMOJIS
+                | CacheComponents.MESSAGES
             ),
             max_messages=CONFIG.message_cache_size,
         )
