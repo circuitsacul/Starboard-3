@@ -268,7 +268,7 @@ websockets = ">=10.1,<11.0"
 
 [[package]]
 name = "hikari-crescent"
-version = "0.1.0b8"
+version = "0.1.0b9"
 description = "🌕 A dead simple command handler for Hikari"
 category = "main"
 optional = false
@@ -938,8 +938,8 @@ hikari-clusters = [
     {file = "hikari_clusters-0.2.5-py3-none-any.whl", hash = "sha256:8402c21abadf34f6b93428f0b3f693758baede1fffc1cc37b60b9b0545584ae5"},
 ]
 hikari-crescent = [
-    {file = "hikari-crescent-0.1.0b8.tar.gz", hash = "sha256:a86d43465758da6f5401ad702b0006abd1b0ab1a6c633d5566fea0412f7a837a"},
-    {file = "hikari_crescent-0.1.0b8-py3-none-any.whl", hash = "sha256:434542ffff12787e2dab78f263edb826ff30fc803db95eb5ade7b5de0228a2fe"},
+    {file = "hikari-crescent-0.1.0b9.tar.gz", hash = "sha256:02dac45020ab4216644136aaa93e75b41ae6c4b82bbe76a0e9c208ae4044e154"},
+    {file = "hikari_crescent-0.1.0b9-py3-none-any.whl", hash = "sha256:2b6b5108728de779a48ac2961e07fa2bad111e8668dd99a1f2d87d3f53c62b13"},
 ]
 hikari-miru = [
     {file = "hikari-miru-1.1.1.tar.gz", hash = "sha256:7d9ff975546e963cb0b3f234d3396990dc20d0569a70f42135c3b8a16880bd20"},
