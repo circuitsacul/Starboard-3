@@ -47,6 +47,7 @@ class Cache(CacheImpl):
                 | CacheComponents.ROLES
                 | CacheComponents.EMOJIS
                 | CacheComponents.MESSAGES
+                | CacheComponents.ME
             ),
             max_messages=CONFIG.message_cache_size,
         )
