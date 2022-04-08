@@ -62,6 +62,7 @@ class Bot(crescent.Bot):
             | hikari.Intents.GUILD_MEMBERS
             | hikari.Intents.GUILDS
             | hikari.Intents.MESSAGE_CONTENT
+            | hikari.Intents.GUILD_EMOJIS
         )
         self._real_cache = Cache(self)
         super().__init__(
