@@ -117,13 +117,18 @@ def pretty_sb_config(
 
 
 def pretty_emoji_str(*emojis: str | None, bot: Bot) -> str:
-    converted = [stored_to_emoji(e, bot) for e in emojis if e is not None]
+    converted = [(stored_to_emoji(e, bot), e) for e in emojis if e is not None]
 
     return (
         ", ".join(
-            e.mention if isinstance(e, hikari.CustomEmoji) else str(e)
-            for e in converted
-            if e is not None
+            (
+                e.mention
+                if isinstance(e, hikari.CustomEmoji)
+                else str(e)
+                if e is not None
+                else f"Unkown Emoji {orig}"
+            )
+            for e, orig in converted
         )
         or "none"
     )
