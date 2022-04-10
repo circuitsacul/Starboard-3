@@ -1,1 +1,0 @@
-ALTER TABLE permrole_starboards ADD CONSTRAINT permrole_id_fk FOREIGN KEY ( permrole_id ) REFERENCES permroles ( id ) MATCH SIMPLE ON DELETE CASCADE ON UPDATE CASCADE;
