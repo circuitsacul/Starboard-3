@@ -28,20 +28,20 @@ def is_user_blacklisted(
     role_bl: set[int] | None,
     role_wl: set[int] | None,
 ) -> bool:
-    status = True
+    status = False
 
     if user_roles is None:
         user_roles = set()
 
     if role_bl and user_roles & role_bl:
         # User has a blacklisted role
-        status = False
+        status = True
     elif (not role_bl) and role_wl:
         # The blacklist is empty but the whitelist is not
-        status = False
+        status = True
 
     if role_wl and role_wl & user_roles:
         # User has a whitelisted role
-        status = True
+        status = False
 
     return status

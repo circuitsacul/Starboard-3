@@ -45,7 +45,7 @@ from starboard.config import CONFIG
 from starboard.database import Database as NewDB
 
 from .old_db import Database as OldDB
-from .old_reaction_valid import is_user_blacklisted
+from .old_reaction_valid import is_user_blacklisted, is_channel_blacklisted
 
 CHUNK = 100_000
 
@@ -75,18 +75,18 @@ async def migrate() -> None:
 
     app = App(newdb, olddb, bot)
 
-    await _run(app, _migrate_guilds)
-    await _run(app, _migrate_users)
-    await _run(app, _migrate_members)
-    await _run(app, _migrate_autostars)
-    await _run(app, _migrate_starboards)
-    await _run(app, _migrate_orig_messages)
-    await _run(app, _migrate_starboard_messages)
+    # await _run(app, _migrate_guilds)
+    # await _run(app, _migrate_users)
+    # await _run(app, _migrate_members)
+    # await _run(app, _migrate_autostars)
+    # await _run(app, _migrate_starboards)
+    # await _run(app, _migrate_orig_messages)
+    # await _run(app, _migrate_starboard_messages)
     await _run(app, _migrate_reactions)
-    await _run(app, _migrate_xproles)
-    await _run(app, _migrate_posroles)
-    await _run(app, _migrate_channel_bl)
-    await _run(app, _migrate_role_bl)
+    # await _run(app, _migrate_xproles)
+    # await _run(app, _migrate_posroles)
+    # await _run(app, _migrate_channel_bl)
+    # await _run(app, _migrate_role_bl)
 
     bot.close()
 
@@ -413,7 +413,7 @@ async def _migrate_reactions(
     current_guild_member_roles: dict[int, set[int]] = {}
     current_guild_role_wl: dict[int, set[int]] = {}
     current_guild_role_bl: dict[int, set[int]] = {}
-    current_guild_check_bl: bool = True
+    current_guild_check_rbl: bool = True
     unique: set[tuple[int, int, int]] = set()
 
     for s in await newdb.Starboard.fetch_query(new).fetchmany():
@@ -434,7 +434,7 @@ async def _migrate_reactions(
 
     no_starboards = 0
     duplicate = 0
-    blacklisted = 0
+    role_blacklisted = 0
     left_guilds_with_bl = 0
 
     total = await old.fetchval("SELECT count(1) FROM reactions")
@@ -451,7 +451,8 @@ async def _migrate_reactions(
 
     with tqdm(desc="Reactions", total=total) as pb:
         async for oldreact in old.cursor(
-            "SELECT * FROM reactions ORDER BY guild_id", prefetch=CHUNK
+            "SELECT * FROM reactions WHERE guild_id=962027951484977192",
+            prefetch=CHUNK,
         ):
             count += 1
             if not (count % CHUNK):
@@ -474,18 +475,16 @@ async def _migrate_reactions(
                     role_wl = set(
                         r["role_id"]
                         for r in await old.fetch(
-                            "SELECT role_id FROM rolebl WHERE guild_id=$1 AND "
-                            "is_whitelist=True AND starboard_id=$2",
-                            current_guild,
+                            "SELECT role_id FROM rolebl WHERE "
+                            "is_whitelist=True AND starboard_id=$1",
                             sbid,
                         )
                     )
                     role_bl = set(
                         r["role_id"]
                         for r in await old.fetch(
-                            "SELECT role_id FROM rolebl WHERE guild_id=$1 AND "
-                            "is_whitelist=False AND starboard_id=$2",
-                            current_guild,
+                            "SELECT role_id FROM rolebl WHERE "
+                            "is_whitelist=False AND starboard_id=$1",
                             sbid,
                         )
                     )
@@ -494,7 +493,7 @@ async def _migrate_reactions(
                     if role_bl:
                         current_guild_role_bl[sbid] = role_bl
 
-                current_guild_check_bl = False
+                current_guild_check_rbl = False
                 if current_guild_role_wl or current_guild_role_bl:
                     try:
                         current_guild_member_roles = {
@@ -504,11 +503,11 @@ async def _migrate_reactions(
                     except hikari.ForbiddenError:
                         left_guilds_with_bl += 1
                     else:
-                        current_guild_check_bl = True
+                        current_guild_check_rbl = True
 
             for id in sbids:
                 # check if the user is blacklisted, if so, skip the reaction
-                if current_guild_check_bl:
+                if current_guild_check_rbl:
                     if is_user_blacklisted(
                         current_guild_member_roles.get(
                             int(oldreact["user_id"])
@@ -516,7 +515,7 @@ async def _migrate_reactions(
                         current_guild_role_bl.get(id),
                         current_guild_role_wl.get(id),
                     ):
-                        blacklisted += 1
+                        role_blacklisted += 1
                         continue
 
                 key = (oldreact["message_id"], id, oldreact["user_id"])
@@ -529,7 +528,7 @@ async def _migrate_reactions(
         count = 0
         await do_insert()
 
-    print(f"Blacklisted: {blacklisted}")
+    print(f"Role Blacklisted: {role_blacklisted}")
     print(f"Duplicates: {duplicate}")
     print(f"Reactions that belonged to no starboards: {no_starboards}")
     print(f"Left guilds with blacklists: {left_guilds_with_bl}")
