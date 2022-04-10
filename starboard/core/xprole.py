@@ -22,8 +22,10 @@
 
 from __future__ import annotations
 
+import contextlib
 from typing import TYPE_CHECKING
 
+import hikari
 from pycooldown import FixedCooldown
 
 from starboard.config import CONFIG
@@ -58,10 +60,11 @@ async def refresh_xpr(bot: Bot, guild_id: int, user_id: int) -> bool:
         r for r in xpr if member.xp < r.required and r.id in obj.role_ids
     ]
 
-    for r in remove:
-        await obj.remove_role(r.id, reason="XPRoles")
-
-    for r in add:
-        await obj.add_role(r.id, reason="XPRoles")
-
+    with contextlib.suppress(hikari.ForbiddenError):
+        for r in remove:
+            with contextlib.suppress(hikari.NotFoundError):
+                await obj.remove_role(r.id, reason="XPRoles")
+        for r in add:
+            with contextlib.suppress(hikari.NotFoundError):
+                await obj.add_role(r.id, reason="XPRoles")
     return True
