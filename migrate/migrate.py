@@ -20,8 +20,9 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-# NOTE: added indexes
+# NOTE: changes
 # - guild_id of reactions (btree, allow for ordering)
+# - drop reaction id=21150258
 
 from __future__ import annotations
 
@@ -31,6 +32,7 @@ from datetime import datetime
 from typing import Any, Awaitable, Callable
 
 import emoji
+import hikari
 import pytz
 from apgorm.connection import Connection as OrmCon
 from asyncpg.connection import Connection as ApgCon
@@ -433,10 +435,11 @@ async def _migrate_reactions(
     no_starboards = 0
     duplicate = 0
     blacklisted = 0
+    left_guilds_with_bl = 0
 
     total = await old.fetchval("SELECT count(1) FROM reactions")
     count = 0
-    args: list[list[Any]] = []
+    args: list[tuple[Any, ...]] = []
 
     async def do_insert():
         await new.con.copy_records_to_table(
@@ -491,22 +494,27 @@ async def _migrate_reactions(
                     if role_bl:
                         current_guild_role_bl[sbid] = role_bl
 
+                current_guild_check_bl = False
                 if current_guild_role_wl or current_guild_role_bl:
-                    current_guild_check_bl = True
-                    current_guild_member_roles = {
-                        m.id: set(m.role_ids)
-                        for m in await bot.fetch_members(current_guild)
-                    }
-                else:
-                    current_guild_check_bl = False
+                    try:
+                        current_guild_member_roles = {
+                            m.id: set(m.role_ids)
+                            for m in await bot.fetch_members(current_guild)
+                        }
+                    except hikari.ForbiddenError:
+                        left_guilds_with_bl += 1
+                    else:
+                        current_guild_check_bl = True
 
             for id in sbids:
                 # check if the user is blacklisted, if so, skip the reaction
                 if current_guild_check_bl:
                     if is_user_blacklisted(
-                        current_guild_member_roles[oldreact["user_id"]],
-                        current_guild_role_bl[id],
-                        current_guild_role_wl[id],
+                        current_guild_member_roles.get(
+                            int(oldreact["user_id"])
+                        ),
+                        current_guild_role_bl.get(id),
+                        current_guild_role_wl.get(id),
                     ):
                         blacklisted += 1
                         continue
@@ -516,7 +524,7 @@ async def _migrate_reactions(
                     duplicate += 1
                     continue
                 unique.add(key)
-                args.append([oldreact["message_id"], id, oldreact["user_id"]])
+                args.append(key)
         pb.update(count)
         count = 0
         await do_insert()
@@ -524,6 +532,7 @@ async def _migrate_reactions(
     print(f"Blacklisted: {blacklisted}")
     print(f"Duplicates: {duplicate}")
     print(f"Reactions that belonged to no starboards: {no_starboards}")
+    print(f"Left guilds with blacklists: {left_guilds_with_bl}")
 
 
 async def _migrate_xproles(

@@ -36,7 +36,7 @@ from .starboard import Starboard
 
 
 class Override(Model):
-    __slots__: Iterable[str] = tuple()
+    __slots__: Iterable[str] = "__loaded_overrides"
 
     id = types.Serial().field()
     guild_id = types.Numeric().field().with_converter(DecimalC)

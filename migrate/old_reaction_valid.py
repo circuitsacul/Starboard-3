@@ -24,9 +24,14 @@ from __future__ import annotations
 
 
 def is_user_blacklisted(
-    user_roles: set[int], role_bl: set[int], role_wl: set[int]
+    user_roles: set[int] | None,
+    role_bl: set[int] | None,
+    role_wl: set[int] | None,
 ) -> bool:
     status = True
+
+    if user_roles is None:
+        user_roles = set()
 
     if role_bl and user_roles & role_bl:
         # User has a blacklisted role
@@ -35,7 +40,7 @@ def is_user_blacklisted(
         # The blacklist is empty but the whitelist is not
         status = False
 
-    if role_wl & user_roles:
+    if role_wl and role_wl & user_roles:
         # User has a whitelisted role
         status = True
 
