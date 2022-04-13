@@ -50,6 +50,10 @@ class Patron:
 
 
 async def loop_update_patrons(bot: Bot) -> None:
+    if CONFIG.patreon_token is None:
+        bot.cluster.ipc.logger.warning("No patreon token set.")
+        return
+
     if CONFIG.main_guild:
         shard = (CONFIG.main_guild >> 22) % bot.cluster.shard_count
         if shard not in bot.cluster.shard_ids:
