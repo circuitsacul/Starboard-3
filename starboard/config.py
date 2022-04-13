@@ -27,6 +27,8 @@ from dataclasses import asdict, dataclass, field
 from pathlib import Path
 from typing import Any, Dict, List, Optional, cast
 
+_ALWAYS_SAVE = ["discord_token", "db_name", "ipc_token"]
+
 
 @dataclass
 class Config:
@@ -124,7 +126,7 @@ class Config:
     color: int = int("FFE19C", 16)
 
     # ipc stuff
-    host: str = "HOST OF BRAIN SERVER"
+    host: str = "localhost"
     port: int = 8888
     total_servers: int = 1
     clusters_per_server: int = 1
@@ -154,7 +156,7 @@ class Config:
         tosave: dict[str, Any] = {}
         defaults = self.__class__()
         for k, v in dct.items():
-            if getattr(defaults, k) == v:
+            if k not in _ALWAYS_SAVE and getattr(defaults, k) == v:
                 continue
 
             tosave[k] = v
