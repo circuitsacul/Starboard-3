@@ -19,7 +19,7 @@ class EditStarboardConfig:
                 continue
             setattr(cls, k, v)
 
-    color = optiond(str, "The color of the starboard embeds")
+    # General Style
     display_emoji = optiond(
         str, "The emoji next to the point count", name="display-emoji"
     )
@@ -44,6 +44,19 @@ class EditStarboardConfig:
     webhook_avatar = optiond(
         str, "The avatar for webhooks, if enabled", name="webhook-avatar"
     )
+
+    # Embed Style
+    color = optiond(str, "The color of the starboard embeds")
+    jump_to_message = optiond(
+        bool, "Whether to include the message link", name="jump-to-message"
+    )
+    attachments_list = optiond(
+        bool,
+        "Whether to include the list of attachments",
+        name="attachments-list",
+    )
+
+    # Requirements
     required = optiond(
         int, "The number of reactions required for a message to be starboarded"
     )
@@ -67,6 +80,8 @@ class EditStarboardConfig:
         "Whether to require messages to include an image",
         name="require-image",
     )
+
+    # Behaviour
     autoreact = optiond(
         bool,
         "Whether to automatically react to messages sent to the starboard",

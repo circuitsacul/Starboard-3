@@ -60,7 +60,10 @@ class ViewSettingOverrides:
             )
 
             embed.add_field(
-                name="Appearance", value=options.appearance, inline=True
+                name="General Style", value=options.general_style, inline=True
+            )
+            embed.add_field(
+                name="Embed Style", value=options.embed_style, inline=True
             )
             embed.add_field(
                 name="Requirements", value=options.requirements, inline=True

@@ -127,7 +127,10 @@ class ViewStarboard:
                     "overrides."
                 )
             embed.add_field(
-                name="Appearance", value=config.appearance, inline=True
+                name="General Style", value=config.general_style, inline=True
+            )
+            embed.add_field(
+                name="Embed Style", value=config.embed_style, inline=True
             )
             embed.add_field(
                 name="Requirements", value=config.requirements, inline=True

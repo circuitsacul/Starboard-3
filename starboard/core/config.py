@@ -45,8 +45,7 @@ class StarboardConfig:
                 return ov.overrides[key]
         return getattr(self.starboard, key)
 
-    # Appearance
-    color: int
+    # General Style
     display_emoji: str | None
     ping_author: bool
     use_server_profile: bool
@@ -54,6 +53,11 @@ class StarboardConfig:
     use_webhook: bool
     webhook_name: str
     webhook_avatar: str | None
+
+    # Embed Style
+    color: int
+    jump_to_message: bool
+    attachments_list: bool
 
     # Requirements
     required: int
