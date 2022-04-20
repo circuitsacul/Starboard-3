@@ -72,6 +72,8 @@ async def embed_message(
     frozen: bool,
     forced: bool,
     gifs: bool,
+    attachments_list: bool,
+    jump_to_message: bool,
 ) -> tuple[str, hikari.Embed, list[hikari.Embed]]:
     channel = await bot.cache.gof_guild_channel_wnsfw(message.channel_id)
     assert channel is not None
@@ -88,13 +90,13 @@ async def embed_message(
         timestamp=message.created_at,
     ).set_author(name=name, icon=avatar)
 
-    filestr = _extract_file_str(message)
-    if filestr:
+    if attachments_list and (filestr := _extract_file_str(message)):
         embed.add_field(name=ZWS, value=filestr)
 
-    embed.add_field(
-        name=ZWS, value=f"[Go to Message]({message.make_link(guild_id)})"
-    )
+    if jump_to_message:
+        embed.add_field(
+            name=ZWS, value=f"[Go to Message]({message.make_link(guild_id)})"
+        )
 
     image_urls = await _extract_images(bot, message, gifs)
     if image_urls and len(image_urls):

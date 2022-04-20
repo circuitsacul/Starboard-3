@@ -51,7 +51,8 @@ def optiond(type: type[_T], *args, **kwargs) -> _T | UNDEF:
 
 @dataclass
 class _PrettyConfig:
-    appearance: str
+    general_style: str
+    embed_style: str
     behaviour: str
     requirements: str
 
@@ -65,8 +66,7 @@ def pretty_sb_config(
     wha = (
         f"[view]({config.webhook_avatar})" if config.webhook_avatar else "none"
     )
-    appearance = {
-        "color": pretty_color(config.color),
+    general_style = {
         "display-emoji": de,
         "ping-author": config.ping_author,
         "use-server-profile": config.use_server_profile,
@@ -74,6 +74,12 @@ def pretty_sb_config(
         "✨ use-webhook": config.use_webhook,
         "✨ webhook-name": config.webhook_name,
         "✨ webhook-avatar": wha,
+    }
+
+    embed_style = {
+        "color": pretty_color(config.color),
+        "jump-to-message": config.jump_to_message,
+        "attachments-list": config.attachments_list,
     }
 
     se = pretty_emoji_str(*config.star_emojis, bot=bot)
@@ -110,7 +116,8 @@ def pretty_sb_config(
         )
 
     return _PrettyConfig(
-        appearance=gen(appearance),
+        general_style=gen(general_style),
+        embed_style=gen(embed_style),
         behaviour=gen(behaviour),
         requirements=gen(requirements),
     )

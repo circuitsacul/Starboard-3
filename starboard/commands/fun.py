@@ -213,6 +213,8 @@ class Random:
             orig.frozen,
             s.id in orig.forced_to,
             guild.premium_end is not None,
+            config.attachments_list,
+            config.jump_to_message,
         )
 
         await ctx.respond(content=raw, embeds=[e, *es])

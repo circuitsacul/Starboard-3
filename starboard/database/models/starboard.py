@@ -91,8 +91,7 @@ class Starboard(apgorm.Model):
 
     webhook_id = types.Numeric().nullablefield().with_converter(NullDecimalC)
 
-    # Appearance
-    color = types.Int().field(default=CONFIG.color)
+    # General Style
     display_emoji = types.Text().nullablefield(default="⭐")
     ping_author = types.Boolean().field(default=False)
     use_server_profile = types.Boolean().field(default=True)
@@ -100,6 +99,11 @@ class Starboard(apgorm.Model):
     use_webhook = types.Boolean().field(default=False)
     webhook_name = types.Text().field(default="Starboard")
     webhook_avatar = types.Text().nullablefield()
+
+    # Embed Style
+    color = types.Int().field(default=CONFIG.color)
+    jump_to_message = types.Boolean().field(default=True)
+    attachments_list = types.Boolean().field(default=True)
 
     # Requirements
     required = types.SmallInt().field(default=3)

@@ -77,6 +77,8 @@ async def get_sbmsg_content(
             frozen,
             forced,
             premium,
+            config.attachments_list,
+            config.jump_to_message,
         )
         if config.extra_embeds:
             return c, e, es
