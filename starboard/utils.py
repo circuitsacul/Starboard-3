@@ -211,7 +211,7 @@ def truncate(text: str, max: int, ddd: str = "...") -> str:
 def _default_ddd(count: int) -> str:
     if count == 1:
         return "\nand 1 other"
-    return f"\nand {count} other"
+    return f"\nand {count} others"
 
 
 def trunc_list(
