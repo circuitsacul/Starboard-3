@@ -31,12 +31,12 @@ import pytz
 
 from starboard.config import CONFIG
 from starboard.database import (
+    AutoStarChannel,
     Guild,
     Member,
     PatreonStatus,
-    User,
     Starboard,
-    AutoStarChannel,
+    User,
 )
 
 if TYPE_CHECKING:
