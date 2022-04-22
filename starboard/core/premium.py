@@ -30,7 +30,14 @@ import hikari
 import pytz
 
 from starboard.config import CONFIG
-from starboard.database import Guild, Member, PatreonStatus, User
+from starboard.database import (
+    Guild,
+    Member,
+    PatreonStatus,
+    User,
+    Starboard,
+    AutoStarChannel,
+)
 
 if TYPE_CHECKING:
     from starboard.bot import Bot
@@ -52,6 +59,46 @@ async def _rm_role(member: hikari.Member, role_id: int | None) -> None:
         await member.remove_role(role_id)
     except (hikari.ForbiddenError, hikari.NotFoundError):
         pass
+
+
+async def update_prem_locks(bot: Bot, guild_id: int) -> None:
+    guild = await Guild.exists(id=guild_id)
+    if not guild:
+        return
+
+    if guild.premium_end is not None:
+        await Starboard.update_query().where(guild_id=guild_id).set(
+            prem_locked=False
+        ).execute()
+        await AutoStarChannel.update_query().where(guild_id=guild_id).set(
+            prem_locked=False
+        ).execute()
+        return
+
+    # if we get here, the guild doesn't have premium
+    # NOTE: kinda being lazy here. Should really lock the database while doing
+    # this, but worst case they have an extra starboard or so.
+
+    num_sb = await Starboard.count(guild_id=guild_id)
+    num_asc = await AutoStarChannel.count(guild_id=guild_id)
+    if (to_lock := num_sb - CONFIG.np_max_starboards) > 0:
+        sb_to_lock = (
+            await Starboard.fetch_query()
+            .where(guild_id=guild_id)
+            .fetchmany(limit=to_lock)
+        )
+        for sb in sb_to_lock:
+            sb.prem_locked = True
+            await sb.save()
+    if (to_lock := num_asc - CONFIG.np_max_autostar) > 0:
+        asc_to_lock = (
+            await AutoStarChannel.fetch_query()
+            .where(guild_id=guild_id)
+            .fetchmany(limit=to_lock)
+        )
+        for asc in asc_to_lock:
+            asc.prem_locked = True
+            await asc.save()
 
 
 async def update_supporter_roles(bot: Bot, user: User) -> None:
