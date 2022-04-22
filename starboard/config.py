@@ -80,7 +80,6 @@ class Config:
     np_max_autostar: int = 1
     np_max_asc_emojis: int = 3
     np_max_star_emojis: int = 3
-    np_allow_webhook: bool = False
 
     # functionality
     max_xp: int = 999_999_999
