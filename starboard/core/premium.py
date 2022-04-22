@@ -62,7 +62,6 @@ async def _rm_role(member: hikari.Member, role_id: int | None) -> None:
 
 
 async def _try_send(bot: Bot, channel: int, message: str) -> None:
-    print(message, channel)
     try:
         await bot.rest.create_message(channel, message)
     except (hikari.ForbiddenError, hikari.NotFoundError):
