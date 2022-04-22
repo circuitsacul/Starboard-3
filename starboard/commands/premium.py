@@ -141,7 +141,6 @@ class MovePremLock:
         ch_to.prem_locked = True
         await ch_from.save()
         await ch_to.save()
-        print(ch_to.prem_locked, ch_from.prem_locked)
         await ctx.respond(
             f"Moved the lock from <#{self.ch_from.id}> to <#{self.ch_to.id}>."
         )
