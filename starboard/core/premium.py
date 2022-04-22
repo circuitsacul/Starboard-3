@@ -79,25 +79,45 @@ async def update_prem_locks(bot: Bot, guild_id: int) -> None:
     # NOTE: kinda being lazy here. Should really lock the database while doing
     # this, but worst case they have an extra starboard or so.
 
-    num_sb = await Starboard.count(guild_id=guild_id)
-    num_asc = await AutoStarChannel.count(guild_id=guild_id)
+    num_sb = await Starboard.count(guild_id=guild_id, prem_locked=False)
     if (to_lock := num_sb - CONFIG.np_max_starboards) > 0:
         sb_to_lock = (
             await Starboard.fetch_query()
-            .where(guild_id=guild_id)
+            .where(guild_id=guild_id, prem_locked=False)
             .fetchmany(limit=to_lock)
         )
         for sb in sb_to_lock:
             sb.prem_locked = True
             await sb.save()
+    elif to_lock < 0:
+        sb_to_unlock = (
+            await Starboard.fetch_query()
+            .where(guild_id=guild_id, prem_locked=True)
+            .fetchmany(limit=-to_lock)
+        )
+        for sb in sb_to_unlock:
+            sb.prem_locked = False
+            await sb.save()
+
+    num_asc = await AutoStarChannel.count(guild_id=guild_id, prem_locked=False)
     if (to_lock := num_asc - CONFIG.np_max_autostar) > 0:
         asc_to_lock = (
             await AutoStarChannel.fetch_query()
-            .where(guild_id=guild_id)
+            .where(guild_id=guild_id, prem_locked=False)
             .fetchmany(limit=to_lock)
         )
         for asc in asc_to_lock:
             asc.prem_locked = True
+            await asc.save()
+    elif to_lock < 0:
+        asc_to_unlock = (
+            await AutoStarChannel.fetch_query()
+            .where(guild_id=guild_id)
+            .where(prem_locked=True)
+            .fetchmany(limit=-to_lock)
+        )
+        for asc in asc_to_unlock:
+            asc.prem_locked = False
             await asc.save()
 
 
