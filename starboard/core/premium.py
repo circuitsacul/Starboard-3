@@ -61,6 +61,14 @@ async def _rm_role(member: hikari.Member, role_id: int | None) -> None:
         pass
 
 
+async def _try_send(bot: Bot, channel: int, message: str) -> None:
+    print(message, channel)
+    try:
+        await bot.rest.create_message(channel, message)
+    except (hikari.ForbiddenError, hikari.NotFoundError):
+        pass
+
+
 async def update_prem_locks(bot: Bot, guild_id: int) -> None:
     guild = await Guild.exists(id=guild_id)
     if not guild:
@@ -89,6 +97,12 @@ async def update_prem_locks(bot: Bot, guild_id: int) -> None:
         for sb in sb_to_lock:
             sb.prem_locked = True
             await sb.save()
+            await _try_send(
+                bot,
+                sb.id,
+                "This starboard exceeds the non-premium limit and has been "
+                "locked.",
+            )
     elif to_lock < 0:
         sb_to_unlock = (
             await Starboard.fetch_query()
@@ -109,6 +123,12 @@ async def update_prem_locks(bot: Bot, guild_id: int) -> None:
         for asc in asc_to_lock:
             asc.prem_locked = True
             await asc.save()
+            await _try_send(
+                bot,
+                asc.id,
+                "This AutoStar channel exceeds the non-premium limit and has "
+                "been locked.",
+            )
     elif to_lock < 0:
         asc_to_unlock = (
             await AutoStarChannel.fetch_query()
