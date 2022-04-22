@@ -214,6 +214,7 @@ class Redeem:
             return
 
         await ctx.edit("Done.", components=[])
+        await update_prem_locks(bot, ctx.guild_id)
 
 
 @plugin.include
