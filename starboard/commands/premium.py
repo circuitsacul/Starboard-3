@@ -25,14 +25,23 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, cast
 
 import crescent
+import hikari
 
 from starboard.config import CONFIG
-from starboard.core.premium import redeem
-from starboard.database import Guild, Member, User, goc_guild, goc_member
+from starboard.core.premium import redeem, update_prem_locks
+from starboard.database import (
+    AutoStarChannel,
+    Guild,
+    Member,
+    Starboard,
+    User,
+    goc_guild,
+    goc_member,
+)
 from starboard.exceptions import StarboardErr
 from starboard.views import Confirm
 
-from ._checks import guild_only
+from ._checks import guild_only, has_guild_perms
 
 if TYPE_CHECKING:
     from starboard.bot import Bot
@@ -40,6 +49,101 @@ if TYPE_CHECKING:
 
 plugin = crescent.Plugin("premium-commands")
 prem = crescent.Group("premium", "Premium-related commands")
+locks = prem.sub_group(
+    "locks",
+    "Manage premium locks",
+    hooks=[has_guild_perms(hikari.Permissions.MANAGE_GUILD)],
+)
+
+
+@plugin.include
+@locks.child
+@crescent.hook(guild_only)
+@crescent.command(
+    name="refresh", description="Refresh the premium locks for the server"
+)
+async def refresh_prem_lock(ctx: crescent.Context) -> None:
+    assert ctx.guild_id
+
+    conf = Confirm(ctx.user.id)
+    msg = await ctx.respond(
+        "Are you sure you want to refresh the premium locks for this server? "
+        "If anything is over the limit, it may be disabled.",
+        components=conf.build(),
+        ephemeral=True,
+        ensure_message=True,
+    )
+    conf.start(msg)
+    await conf.wait()
+
+    if not conf.result:
+        await ctx.edit("Cancelled.", components=None)
+        return
+
+    await update_prem_locks(cast("Bot", ctx.app), ctx.guild_id)
+    await ctx.edit("Refreshed premium locks.", components=None)
+
+
+@plugin.include
+@locks.child
+@crescent.hook(guild_only)
+@crescent.command(
+    name="move",
+    description="Move a lock from one starboard or AutoStar channel to "
+    "another",
+)
+class MovePremLock:
+    ch_from = crescent.option(
+        hikari.TextableGuildChannel,
+        "The channel to move the lock from",
+        name="from",
+    )
+    ch_to = crescent.option(
+        hikari.TextableGuildChannel,
+        "The channel to move the lock to",
+        name="to",
+    )
+
+    async def callback(self, ctx: crescent.Context) -> None:
+        # first, see if ch_from is a starboard
+        ch_from: Starboard | AutoStarChannel | None
+        ch_from = await Starboard.exists(id=self.ch_from.id)
+        is_sb = True
+
+        if ch_from is None:
+            is_sb = False
+            ch_from = await AutoStarChannel.exists(id=self.ch_from.id)
+
+        if ch_from is None:
+            raise StarboardErr(
+                f"<#{self.ch_from.id}> is not a starboard or AutoStar channel."
+            )
+
+        ch_to: Starboard | AutoStarChannel | None
+        if is_sb:
+            ch_to = await Starboard.exists(id=self.ch_to.id)
+            if ch_to is None:
+                raise StarboardErr(f"<#{self.ch_to.id}> is not a starboard.")
+        else:
+            ch_to = await AutoStarChannel.exists(id=self.ch_to.id)
+            if ch_to is None:
+                raise StarboardErr(
+                    f"<#{self.ch_to.id}> is not an AutoStar channel."
+                )
+
+        if ch_from.prem_locked is False:
+            raise StarboardErr(f"<#{self.ch_from.id}> is not locked.")
+
+        if ch_to.prem_locked is True:
+            raise StarboardErr(f"<#{self.ch_to.id}> is already locked.")
+
+        ch_from.prem_locked = False
+        ch_to.prem_locked = True
+        await ch_from.save()
+        await ch_to.save()
+        await ctx.respond(
+            f"Moved the lock from <#{self.ch_from.id}> to <#{self.ch_to.id}>."
+        )
 
 
 @plugin.include

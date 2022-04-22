@@ -119,12 +119,14 @@ async def _refresh_message(
         _s = (
             await Starboard.fetch_query()
             .where(Starboard.id.eq(sql(sbids).any))
+            .where(prem_locked=False)
             .fetchmany()
         )
     else:
         _s = (
             await Starboard.fetch_query()
             .where(guild_id=orig_message.guild_id)
+            .where(prem_locked=False)
             .fetchmany()
         )
     configs = [await get_config(s, orig_message.channel_id) for s in _s]

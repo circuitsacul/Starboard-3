@@ -90,6 +90,7 @@ class Starboard(apgorm.Model):
     guild_id = types.Numeric().field().with_converter(DecimalC)
 
     webhook_id = types.Numeric().nullablefield().with_converter(NullDecimalC)
+    prem_locked = types.Boolean().field(default=False)
 
     # General Style
     display_emoji = types.Text().nullablefield(default="⭐")

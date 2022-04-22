@@ -40,6 +40,8 @@ class AutoStarChannel(apgorm.Model):
     id = types.Numeric().field().with_converter(DecimalC)
     guild_id = types.Numeric().field().with_converter(DecimalC)
 
+    prem_locked = types.Boolean().field(default=False)
+
     emojis = (
         types.Array(types.Text())
         .field(default_factory=lambda: ["⭐"])

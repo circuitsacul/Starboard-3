@@ -100,6 +100,9 @@ class ViewStarboard:
                     assert channel.name is not None
                     name = channel.name
 
+                if sb.prem_locked:
+                    name = f"{name} (Locked)"
+
                 emoji_str = pretty_emoji_str(*sb.star_emojis, bot=bot)
                 embed.add_field(
                     name=name,
@@ -121,11 +124,20 @@ class ViewStarboard:
 
             config = pretty_sb_config(StarboardConfig(starboard, None), bot)
             embed = bot.embed(title=self.starboard.name)
+            notes: list[str] = []
             if overrides:
-                embed.description = (
+                notes.append(
                     f"This starboard also has {overrides} channel-specific "
                     "overrides."
                 )
+            if starboard.prem_locked:
+                notes.append(
+                    "This starboard exceeds the non-premium limit and is "
+                    "locked. If you believe this is a mistake, run `/premium "
+                    "locks refresh`."
+                )
+            if notes:
+                embed.description = "\n\n".join(notes)
             embed.add_field(
                 name="General Style", value=config.general_style, inline=True
             )

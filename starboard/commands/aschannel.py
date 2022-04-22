@@ -161,6 +161,13 @@ class ViewAutoStar:
 
             es = pretty_emoji_str(*asc.emojis, bot=bot)
             maxc = asc.max_chars if asc.max_chars is not None else "none"
+            notes: list[str] = []
+            if asc.prem_locked:
+                notes.append(
+                    "This AutoStar channel exceeds the non-premium limit and "
+                    "is locked. If you believe this is a mistake, please run "
+                    "`/premium locks refresh`."
+                )
             await ctx.respond(
                 embed=bot.embed(
                     title=self.channel.name,
@@ -170,6 +177,7 @@ class ViewAutoStar:
                         f"max-chars: {maxc}\n"
                         f"require-image: {asc.require_image}\n"
                         f"delete-invalid: {asc.delete_invalid}\n"
+                        + ("\n" + "\n\n".join(notes) if notes else "")
                     ),
                 )
             )
@@ -192,6 +200,9 @@ class ViewAutoStar:
                 else:
                     assert channel.name
                     name = channel.name
+
+                if asc.prem_locked:
+                    name = f"{name} (Locked)"
 
                 es = pretty_emoji_str(*asc.emojis, bot=bot)
                 lines.append(f"{name}: {es}")

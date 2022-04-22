@@ -61,6 +61,9 @@ async def handle_message(event: hikari.MessageCreateEvent) -> None:
         bot.database.asc.discard(event.channel_id)
         return
 
+    if asc.prem_locked:
+        return
+
     # validation
     valid: bool = True
     content = event.message.content or ""
