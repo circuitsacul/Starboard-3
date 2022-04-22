@@ -25,14 +25,15 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, cast
 
 import crescent
+import hikari
 
 from starboard.config import CONFIG
-from starboard.core.premium import redeem
+from starboard.core.premium import redeem, update_prem_locks
 from starboard.database import Guild, Member, User, goc_guild, goc_member
 from starboard.exceptions import StarboardErr
 from starboard.views import Confirm
 
-from ._checks import guild_only
+from ._checks import guild_only, has_guild_perms
 
 if TYPE_CHECKING:
     from starboard.bot import Bot
@@ -40,6 +41,39 @@ if TYPE_CHECKING:
 
 plugin = crescent.Plugin("premium-commands")
 prem = crescent.Group("premium", "Premium-related commands")
+locks = prem.sub_group(
+    "locks",
+    "Manage premium locks",
+    hooks=[has_guild_perms(hikari.Permissions.MANAGE_GUILD)],
+)
+
+
+@plugin.include
+@locks.child
+@crescent.hook(guild_only)
+@crescent.command(
+    name="refresh", description="Refresh the premium locks for the server"
+)
+async def refresh_prem_lock(ctx: crescent.Context) -> None:
+    assert ctx.guild_id
+
+    conf = Confirm(ctx.user.id)
+    msg = await ctx.respond(
+        "Are you sure you want to refresh the premium locks for this server? "
+        "If anything is over the limit, it may be disabled.",
+        components=conf.build(),
+        ephemeral=True,
+        ensure_message=True,
+    )
+    conf.start(msg)
+    await conf.wait()
+
+    if not conf.result:
+        await ctx.edit("Cancelled.", components=None)
+        return
+
+    await update_prem_locks(cast("Bot", ctx.app), ctx.guild_id)
+    await ctx.edit("Refreshed premium locks.", components=None)
 
 
 @plugin.include
