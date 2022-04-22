@@ -193,12 +193,7 @@ async def _refresh_message_for_starboard(
             )
             assert embed
             sbmsg_obj = await _send(
-                bot,
-                config,
-                content,
-                [embed, *embeds],
-                orig_msg.author_id,
-                premium,
+                bot, config, content, [embed, *embeds], orig_msg.author_id
             )
             if sbmsg_obj:
                 sbmsg.sb_message_id = sbmsg_obj.id
@@ -325,11 +320,10 @@ async def _send(
     content: str,
     embeds: list[hikari.Embed] | None,
     author_id: int,
-    premium: bool,
 ) -> hikari.Message | None:
     webhook = await _webhook(bot, config)
 
-    if webhook and config.use_webhook and premium:
+    if webhook and config.use_webhook:
         try:
             botuser = bot.get_me()
             assert botuser

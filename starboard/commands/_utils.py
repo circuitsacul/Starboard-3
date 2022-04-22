@@ -71,9 +71,9 @@ def pretty_sb_config(
         "ping-author": config.ping_author,
         "use-server-profile": config.use_server_profile,
         "extra-embeds": config.extra_embeds,
-        "✨ use-webhook": config.use_webhook,
-        "✨ webhook-name": config.webhook_name,
-        "✨ webhook-avatar": wha,
+        "use-webhook": config.use_webhook,
+        "webhook-name": config.webhook_name,
+        "webhook-avatar": wha,
     }
 
     embed_style = {
