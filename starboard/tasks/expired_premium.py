@@ -31,7 +31,7 @@ import pytz
 
 from starboard.config import CONFIG
 from starboard.core.notifications import notify
-from starboard.core.premium import try_autoredeem
+from starboard.core.premium import try_autoredeem, update_prem_locks
 from starboard.database import Guild
 
 if TYPE_CHECKING:
@@ -79,6 +79,7 @@ async def _check_for_server(bot: Bot, g: Guild, now: datetime) -> None:
         await Guild.update_query().where(
             Guild.premium_end.lt(now), id=g.id
         ).set(premium_end=None).execute()
+        await update_prem_locks(bot, g.id)
         return
 
     await notify(
