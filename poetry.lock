@@ -574,7 +574,7 @@ python-versions = "*"
 
 [[package]]
 name = "types-emoji"
-version = "1.2.7"
+version = "1.2.8"
 description = "Typing stubs for emoji"
 category = "main"
 optional = false
@@ -637,7 +637,7 @@ multidict = ">=4.0"
 [metadata]
 lock-version = "1.1"
 python-versions = ">=3.8,<3.11"
-content-hash = "784885d127a0e81a4537421b2196e097ba6e0cbc3dde622ee7ce989f107a2f8a"
+content-hash = "cd2ac73dc547dfe6cb927d4013c8bb67546a46d05299372b6d6da564f675e0f1"
 
 [metadata.files]
 aiohttp = [
@@ -1158,8 +1158,8 @@ types-cachetools = [
     {file = "types_cachetools-5.0.1-py3-none-any.whl", hash = "sha256:4915e40fce8df222aa9ef118cdbc3e8eef55caefe32b6ded2cd2dbe21a2e2398"},
 ]
 types-emoji = [
-    {file = "types-emoji-1.2.7.tar.gz", hash = "sha256:3be036d560ff90351944bb08f8e70447c7e831660fe51c4599974a326585aacb"},
-    {file = "types_emoji-1.2.7-py3-none-any.whl", hash = "sha256:003f6140fffe8ab8a606bf030416f8a48785039882c97e3d1c5d9a1baf7c7673"},
+    {file = "types-emoji-1.2.8.tar.gz", hash = "sha256:6170e368b596ae32b24204505c5edbd2e17868198aad2ceb5875e3afc5593399"},
+    {file = "types_emoji-1.2.8-py3-none-any.whl", hash = "sha256:49b87d2f0a178d4df2a41dccce71a58c4947a80adf0234dbe327ae8823659884"},
 ]
 types-pytz = [
     {file = "types-pytz-2021.3.6.tar.gz", hash = "sha256:74547fd90d8d8ab4f1eedf3a344a7d186d97486973895f81221a712e1e2cd993"},
