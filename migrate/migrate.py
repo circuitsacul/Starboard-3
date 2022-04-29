@@ -88,7 +88,7 @@ async def migrate() -> None:
     await _run(app, _migrate_channel_bl)
     await _run(app, _migrate_role_bl)
 
-    bot.close()
+    await bot.close()
 
 
 async def _run(
