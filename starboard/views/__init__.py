@@ -21,6 +21,7 @@
 # SOFTWARE.
 
 from .confirm import Confirm
+from .infinite_scroll import InfiniteScroll
 from .paginate import Paginator
 
-__all__ = ("Confirm", "Paginator")
+__all__ = ("Confirm", "Paginator", "InfiniteScroll")
