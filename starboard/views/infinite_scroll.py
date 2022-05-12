@@ -22,12 +22,12 @@
 
 from __future__ import annotations
 
-from typing import Awaitable, Callable
+from typing import Awaitable, Callable, List, Tuple
 
 import hikari
 import miru
 
-PAGE = tuple[list[hikari.Embed], str]
+PAGE = Tuple[List[hikari.Embed], str]
 
 
 class InfiniteScroll(miru.View):
