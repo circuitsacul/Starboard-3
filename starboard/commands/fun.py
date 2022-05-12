@@ -34,7 +34,7 @@ from starboard.core.emojis import stored_to_emoji
 from starboard.core.leaderboard import get_leaderboard
 from starboard.database import Guild, Member, Message, SBMessage, Starboard
 from starboard.exceptions import StarboardErr, StarboardNotFound
-from starboard.views import Paginator
+from starboard.views import InfiniteScroll, Paginator
 
 from ._checks import guild_only
 
@@ -218,3 +218,106 @@ class Random:
         )
 
         await ctx.respond(content=raw, embeds=[e, *es])
+
+
+@plugin.include
+@crescent.hook(guild_only)
+@crescent.command(
+    name="moststarred", description="Shows the most starred messages"
+)
+class MostStarred:
+    starboard = crescent.option(
+        hikari.TextableGuildChannel, "The starboard to pull from"
+    )
+    channel = crescent.option(
+        hikari.TextableGuildChannel,
+        "Only show messages sent in this channel",
+        default=None,
+    )
+    min_stars = crescent.option(
+        int,
+        "Only show messages with at least this many stars",
+        default=None,
+        min_value=1,
+        name="min-stars",
+    )
+    max_stars = crescent.option(
+        int,
+        "Only show messages with at most this many stars",
+        default=None,
+        min_value=1,
+        name="max-stars",
+    )
+
+    async def callback(self, ctx: crescent.Context) -> None:
+        assert ctx.guild_id is not None
+        bot = cast("Bot", ctx.app)
+
+        s = await Starboard.exists(id=self.starboard.id)
+        if not s:
+            raise StarboardNotFound(self.starboard.id)
+
+        q = SBMessage.fetch_query()
+        q.where(starboard_id=self.starboard.id)
+        q.where(SBMessage.sb_message_id.is_null.not_)
+
+        sbq = Message.fetch_query()
+        sbq.where(id=SBMessage.message_id)
+        sbq.where(trashed=False)
+        if self.channel:
+            sbq.where(channel_id=self.channel.id)
+
+        q.where(sbq.exists())
+
+        if self.min_stars:
+            q.where(SBMessage.last_known_star_count.gteq(self.min_stars))
+        if self.max_stars:
+            q.where(SBMessage.last_known_star_count.lteq(self.max_stars))
+
+        q.order_by(SBMessage.last_known_star_count, True)
+        cursor = q.cursor()
+
+        config = await get_config(s, ctx.guild_id)
+        guild = await Guild.fetch(id=ctx.guild_id)
+
+        async def next_page() -> tuple[list[hikari.Embed], str]:
+            assert s is not None
+
+            sql_msg = await cursor.__anext__()
+            orig = await Message.fetch(id=sql_msg.message_id)
+            obj = await bot.cache.gof_message(orig.channel_id, orig.id)
+            assert obj is not None
+
+            raw, e, es = await embed_message(
+                bot,
+                obj,
+                cast(int, ctx.guild_id),
+                config.color,
+                stored_to_emoji(config.display_emoji, bot)
+                if config.display_emoji
+                else None,
+                config.use_server_profile,
+                config.ping_author,
+                sql_msg.last_known_star_count,
+                orig.frozen,
+                s.id in orig.forced_to,
+                guild.premium_end is not None,
+                config.attachments_list,
+                config.jump_to_message,
+            )
+
+            return [e, *es], raw
+
+        paginator = InfiniteScroll(ctx.user.id, next_page)
+        first_page = await paginator.get_page(0)
+        if not first_page:
+            raise StarboardErr("Nothing to show.")
+        first_embeds, first_content = first_page
+        initial = await ctx.respond(
+            content=first_content,
+            embeds=first_embeds,
+            components=paginator.build(),
+            ensure_message=True,
+        )
+        paginator.start(initial)
+        await paginator.wait()
