@@ -27,6 +27,35 @@ from typing import Sequence
 import hikari
 import miru
 from miru.ext.nav import NavigatorView  # type: ignore
+from miru.ext.nav import buttons  # type: ignore
+
+
+class FirstButton(buttons.FirstButton):
+    def __init__(self, *args, **kwargs) -> None:
+        kwargs["label"] = "<<"
+        kwargs["emoji"] = None
+        super().__init__(*args, **kwargs)
+
+
+class PrevButton(buttons.PrevButton):
+    def __init__(self, *args, **kwargs) -> None:
+        kwargs["label"] = "<"
+        kwargs["emoji"] = None
+        super().__init__(*args, **kwargs)
+
+
+class NextButton(buttons.NextButton):
+    def __init__(self, *args, **kwargs) -> None:
+        kwargs["label"] = ">"
+        kwargs["emoji"] = None
+        super().__init__(*args, **kwargs)
+
+
+class LastButton(buttons.LastButton):
+    def __init__(self, *args, **kwargs) -> None:
+        kwargs["label"] = ">>"
+        kwargs["emoji"] = None
+        super().__init__(*args, **kwargs)
 
 
 class Paginator(NavigatorView):
@@ -34,7 +63,16 @@ class Paginator(NavigatorView):
         self, user_id: int, pages: Sequence[str | hikari.Embed]
     ) -> None:
         self.user_id = user_id
-        super().__init__(pages=pages)
+        super().__init__(
+            pages=pages,
+            buttons=[
+                FirstButton(),
+                PrevButton(),
+                buttons.IndicatorButton(),
+                NextButton(),
+                LastButton(),
+            ],
+        )
 
     async def view_check(self, ctx: miru.Context) -> bool:
         return ctx.user.id == self.user_id
