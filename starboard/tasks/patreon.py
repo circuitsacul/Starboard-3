@@ -33,7 +33,13 @@ import aiohttp
 from starboard.config import CONFIG
 from starboard.core.notifications import notify
 from starboard.core.premium import update_supporter_roles
-from starboard.database import PatreonStatus, User, goc_user
+from starboard.database import (
+    PatreonStatus,
+    Patron,
+    User,
+    goc_patron,
+    goc_user,
+)
 
 if TYPE_CHECKING:
     from starboard.bot import Bot
@@ -43,7 +49,8 @@ SES: aiohttp.ClientSession | None = None
 
 
 @dataclass
-class Patron:
+class PatronData:
+    patreon_id: str
     total_cents: int
     discord_id: int
     status: PatreonStatus
@@ -77,29 +84,55 @@ async def loop_update_patrons(bot: Bot) -> None:
 
 
 async def _update_patrons(bot: Bot) -> None:
+    # sync the database with the list of patrons from Patreon
     all_patrons = await _get_all_patrons()
     for p in all_patrons:
-        if p.discord_id is None:
+        if p.discord_id:
+            user = await goc_user(p.discord_id, False)
+            if user.patreon_status is not p.status:
+                user.patreon_status = p.status
+                await user.save()
+                await _notify_for_status(user, bot)
+        else:
+            user = None
+
+        patron = await goc_patron(p.patreon_id)
+        if patron.discord_id != p.discord_id:
+            patron.discord_id = p.discord_id
+            await patron.save()
+
+        if not user:
             continue
 
-        user = await goc_user(p.discord_id, False)
-        if user.patreon_status is not p.status:
-            user.patreon_status = p.status
+        if patron.last_patreon_total_cents != p.total_cents:
+            difference = p.total_cents - patron.last_patreon_total_cents
+            patron.last_patreon_total_cents = p.total_cents
+            user.credits = floor(user.credits + difference / 100)
             await user.save()
-            await _notify_for_status(user, bot)
-
-        if user.last_patreon_total_cents != p.total_cents:
-            user.last_patreon_total_cents = p.total_cents
-            user.credits = _credits(user)
-            await user.save()
+            await patron.save()
 
         asyncio.create_task(update_supporter_roles(bot, user))
 
+    # find any users who are marked as patrons, but aren't in the list
+    q = User.fetch_query()
+    q.where(User.patreon_status.neq(PatreonStatus.NONE))
+    subq = Patron.fetch_query()
+    subq.where(Patron.discord_id.eq(User.id))
+    q.where(subq.exists().not_)
+    for user in await q.fetchmany():
+        user.patreon_status = PatreonStatus.NONE
+        await user.save()
+        await _notify_for_status(user, bot)
+
 
 async def _notify_for_status(user: User, bot: Bot) -> None:
-    assert user.patreon_status is not PatreonStatus.NONE
-
-    if user.patreon_status is PatreonStatus.FORMER:
+    if user.patreon_status is PatreonStatus.NONE:
+        msg = (
+            "Just letting you know that it looks like you unlinked your "
+            "Patreon account from your discord account, or moved it to "
+            "another."
+        )
+    elif user.patreon_status is PatreonStatus.FORMER:
         msg = (
             "Hey! It looks like you've removed your pledge on Patreon. We're "
             "sorry to see you go, but we're grateful for all the support "
@@ -133,10 +166,6 @@ async def _notify_for_status(user: User, bot: Bot) -> None:
         await notify(obj, msg)
 
 
-def _credits(user: User) -> int:
-    return floor(user.last_patreon_total_cents / 100)
-
-
 async def _get_session() -> aiohttp.ClientSession:
     global SES
     if SES and not SES.closed:
@@ -147,7 +176,7 @@ async def _get_session() -> aiohttp.ClientSession:
     return SES
 
 
-async def _get_all_patrons() -> list[Patron]:
+async def _get_all_patrons() -> list[PatronData]:
     c = await _fetch("https://www.patreon.com/api/oauth2/v2/campaigns")
     assert len(c["data"]) == 1
 
@@ -173,6 +202,7 @@ async def _get_all_patrons() -> list[Patron]:
                 ],
                 "user_id": r["relationships"]["user"]["data"]["id"],
                 "patron_status": r["attributes"]["patron_status"],
+                "id": r["id"],
             }
             for r in _p["data"]
         )
@@ -190,7 +220,7 @@ async def _get_all_patrons() -> list[Patron]:
         except KeyError:
             break
 
-    final: list[Patron] = []
+    final: list[PatronData] = []
     for p in patrons:
         if p["patron_status"] == "active_patron":
             s = PatreonStatus.ACTIVE
@@ -201,7 +231,9 @@ async def _get_all_patrons() -> list[Patron]:
         else:
             s = PatreonStatus.NONE
         final.append(
-            Patron(p["total_cents"], users[p["user_id"]]["discord_id"], s)
+            PatronData(
+                p["id"], p["total_cents"], users[p["user_id"]]["discord_id"], s
+            )
         )
 
     return final

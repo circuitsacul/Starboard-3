@@ -22,7 +22,7 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Callable, cast
+from typing import TYPE_CHECKING, Callable, Iterable, cast
 
 from hikari import UNDEFINED, Message, MessageType
 
@@ -233,3 +233,12 @@ def trunc_list(
         oklist.append(texts.pop(0))
 
     return oklist + [ddd(len(texts))]
+
+
+def paginate(text: str, max: int) -> Iterable[str]:
+    while True:
+        yield (yielded := truncate(text, max, ddd=""))
+        if len(yielded) < len(text):
+            text = text[len(yielded) :]
+        else:
+            break

@@ -34,7 +34,8 @@ from starboard.constants import MESSAGE_LEN
 from starboard.database import goc_user
 from starboard.exceptions import StarboardErr
 from starboard.stats import post_stats
-from starboard.utils import trunc_list, truncate
+from starboard.tasks.patreon import _get_all_patrons
+from starboard.utils import paginate, trunc_list, truncate
 from starboard.views import Paginator
 
 from ._checks import owner_only
@@ -69,6 +70,18 @@ def _parse_response(
         res = truncate(res, MESSAGE_LEN - 4)
         res += "\n```"
     return res
+
+
+@plugin.include
+@owner.child
+@crescent.command(
+    name="patrons", description="List patrons", guild=CONFIG.main_guild
+)
+class ListPatrons:
+    async def callback(self, ctx: crescent.Context) -> None:
+        p = await _get_all_patrons()
+        paginator = Paginator(ctx.user.id, list(paginate(repr(p), 2000)))
+        await paginator.send(ctx.interaction)
 
 
 @plugin.include

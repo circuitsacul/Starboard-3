@@ -66,6 +66,7 @@ class Database(apgorm.Database):
 
     guilds = guild.Guild
     users = user.User
+    patrons = user.Patron
     members = member.Member
 
     starboards = starboard.Starboard
@@ -83,6 +84,8 @@ class Database(apgorm.Database):
     stars = star.Star
 
     indexes = [
+        # patrons
+        Index(patrons, patrons.discord_id, IndexType.HASH),
         # autostar channels
         Index(aschannels, aschannels.guild_id, IndexType.HASH),
         # guild
