@@ -29,7 +29,7 @@ import apgorm
 from apgorm import types
 from asyncpg import UniqueViolationError
 
-from ._converters import DecimalC
+from ._converters import DecimalC, NullDecimalC
 
 
 async def goc_user(user_id: int, is_bot: bool) -> User:
@@ -37,6 +37,13 @@ async def goc_user(user_id: int, is_bot: bool) -> User:
         return await User(id=user_id, is_bot=is_bot).create()
     except UniqueViolationError:
         return await User.fetch(id=user_id)
+
+
+async def goc_patron(patreon_id: str) -> Patron:
+    try:
+        return await Patron(patreon_id=patreon_id).create()
+    except UniqueViolationError:
+        return await Patron.fetch(patreon_id=patreon_id)
 
 
 class PatreonStatus(IntEnum):
@@ -56,7 +63,6 @@ class User(apgorm.Model):
 
     donated_cents = types.BigInt().field(default=0)
     """Total cents donated, excluding Patreon."""
-    last_patreon_total_cents = types.BigInt().field(default=0)
     patreon_status = (
         types.SmallInt()
         .field(default=0)
@@ -64,3 +70,13 @@ class User(apgorm.Model):
     )
 
     primary_key = (id,)
+
+
+class Patron(apgorm.Model):
+    __slots__: Iterable[str] = ()
+
+    patreon_id = types.VarChar(64).field()
+    discord_id = types.Numeric().nullablefield().with_converter(NullDecimalC)
+    last_patreon_total_cents = types.BigInt().field(default=0)
+
+    primary_key = (patreon_id,)
