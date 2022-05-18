@@ -22,9 +22,11 @@
 
 from __future__ import annotations
 
+import contextlib
 from typing import TYPE_CHECKING
 
 import apgorm
+import asyncpg
 import hikari
 from pycooldown import FlexibleCooldown
 
@@ -100,13 +102,10 @@ async def add_stars(
     orig_message_id: int, user_id: int, starboard_ids: list[int]
 ) -> None:
     for sbid in starboard_ids:
-        if await Star.exists(
-            message_id=orig_message_id, user_id=user_id, starboard_id=sbid
-        ):
-            continue
-        await Star(
-            message_id=orig_message_id, user_id=user_id, starboard_id=sbid
-        ).create()
+        with contextlib.suppress(asyncpg.UniqueViolationError):
+            await Star(
+                message_id=orig_message_id, user_id=user_id, starboard_id=sbid
+            ).create()
 
 
 async def remove_stars(
