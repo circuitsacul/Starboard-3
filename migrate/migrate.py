@@ -130,9 +130,8 @@ async def _migrate_users(
                 "id",
                 "is_bot",
                 "credits",
-                "last_patreon_total_cents",
-                "patreon_status",
                 "donated_cents",
+                "patreon_status",
             ],
         )
         args.clear()
@@ -145,7 +144,7 @@ async def _migrate_users(
                 count = 0
                 await do_insert()
             args.append(
-                [olduser["id"], olduser["is_bot"], olduser["credits"], 0, 0, 0]
+                [olduser["id"], olduser["is_bot"], olduser["credits"], 0, 0]
             )
         await do_insert()
         pb.update(count)
