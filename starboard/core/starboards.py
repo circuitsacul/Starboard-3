@@ -330,12 +330,6 @@ async def _send(
             return await webhook.execute(
                 content,
                 embeds=embeds or hikari.UNDEFINED,
-                username=config.webhook_name,
-                avatar_url=(
-                    config.webhook_avatar
-                    or botuser.avatar_url
-                    or botuser.default_avatar_url
-                ),
                 user_mentions=(author_id,),
             )
         except hikari.NotFoundError:
@@ -373,7 +367,8 @@ async def _webhook(
     try:
         wh = await bot.rest.create_webhook(
             config.starboard.id,
-            name="Starboard Webhook",
+            name="Starboard",
+            avatar=bot.me.avatar_url or hikari.UNDEFINED,
             reason="This starboard has use_webhook set to True.",
         )
     except (hikari.ForbiddenError, hikari.NotFoundError):

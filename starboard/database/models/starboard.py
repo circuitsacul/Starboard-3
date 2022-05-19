@@ -98,8 +98,6 @@ class Starboard(apgorm.Model):
     use_server_profile = types.Boolean().field(default=True)
     extra_embeds = types.Boolean().field(default=True)
     use_webhook = types.Boolean().field(default=False)
-    webhook_name = types.Text().field(default="Starboard")
-    webhook_avatar = types.Text().nullablefield()
 
     # Embed Style
     color = types.Int().field(default=CONFIG.color)

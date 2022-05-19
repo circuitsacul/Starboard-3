@@ -38,12 +38,6 @@ class EditStarboardConfig:
         "Whether to use webhooks for starboard messages",
         name="use-webhook",
     )
-    webhook_name = optiond(
-        str, "The name for webhooks, if enabled", name="webhook-name"
-    )
-    webhook_avatar = optiond(
-        str, "The avatar for webhooks, if enabled", name="webhook-avatar"
-    )
 
     # Embed Style
     color = optiond(str, "The color of the starboard embeds")

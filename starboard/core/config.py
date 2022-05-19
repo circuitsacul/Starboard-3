@@ -51,8 +51,6 @@ class StarboardConfig:
     use_server_profile: bool
     extra_embeds: bool
     use_webhook: bool
-    webhook_name: str
-    webhook_avatar: str | None
 
     # Embed Style
     color: int

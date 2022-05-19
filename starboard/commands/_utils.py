@@ -63,17 +63,12 @@ def pretty_sb_config(
     b: set[str] = set(b.replace("_", "-") for b in bold) if bold else set()
 
     de = pretty_emoji_str(config.display_emoji, bot=bot)
-    wha = (
-        f"[view]({config.webhook_avatar})" if config.webhook_avatar else "none"
-    )
     general_style = {
         "display-emoji": de,
         "ping-author": config.ping_author,
         "use-server-profile": config.use_server_profile,
         "extra-embeds": config.extra_embeds,
         "use-webhook": config.use_webhook,
-        "webhook-name": config.webhook_name,
-        "webhook-avatar": wha,
     }
 
     embed_style = {
