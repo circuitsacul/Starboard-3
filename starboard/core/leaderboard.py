@@ -24,19 +24,8 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-from apgorm import raw as r
-from apgorm import sql
-
 from starboard.config import CONFIG
 from starboard.database import Member
-
-
-async def add_xp(user_id: int, guild_id: int, count: int) -> None:
-    q = Member.update_query()
-    q.where(user_id=user_id, guild_id=guild_id)
-    q.where(Member.xp.lt(CONFIG.max_xp))
-    q.set(xp=sql(Member.xp, r("+"), count))
-    await q.execute()
 
 
 async def get_leaderboard(

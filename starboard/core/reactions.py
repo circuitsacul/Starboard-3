@@ -36,7 +36,6 @@ from starboard.database import Guild, Starboard, goc_member, goc_message
 from starboard.database.models.user import User
 
 from .config import get_config
-from .leaderboard import add_xp
 from .messages import get_orig_message
 from .starboards import refresh_message
 from .stars import add_stars, is_star_valid_for, remove_stars
@@ -94,7 +93,6 @@ async def handle_reaction_add(event: hikari.GuildReactionAddEvent) -> None:
     author_obj = await bot.cache.gof_member(event.guild_id, author.id)
     valid_starboard_ids: list[int] = []
     remove_invalid: bool = True
-    allow_xp: bool = False
     for s in starboards:
         c = await get_config(s, orig_msg.channel_id)
         if not c.remove_invalid:
@@ -106,8 +104,6 @@ async def handle_reaction_add(event: hikari.GuildReactionAddEvent) -> None:
             bot, c, orig_msg, author, author_obj, event.member
         ):
             valid_starboard_ids.append(s.id)
-            if not s.disable_xp:
-                allow_xp = True
 
     if len(valid_starboard_ids) == 0 and remove_invalid:
         actual_msg = await bot.cache.gof_message(
@@ -132,8 +128,6 @@ async def handle_reaction_add(event: hikari.GuildReactionAddEvent) -> None:
 
     # create a "star" for each starboard
     await add_stars(orig_msg.id, event.user_id, valid_starboard_ids)
-    if allow_xp and not author.is_bot:
-        await add_xp(orig_msg.author_id, orig_msg.guild_id, 1)
 
     guild = await Guild.fetch(id=event.guild_id)
     ip = guild.premium_end is not None
