@@ -93,9 +93,6 @@ class EditStarboardConfig:
         "Whether to update the starboard message if the original is edited",
         name="link-edits",
     )
-    disable_xp = optiond(
-        bool, "Whether to disable XP for a starboard", name="disable-xp"
-    )
     extra_embeds = optiond(
         bool,
         "Whether to add extra embeds below the main message content",

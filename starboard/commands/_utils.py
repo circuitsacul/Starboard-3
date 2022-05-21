@@ -94,7 +94,6 @@ def pretty_sb_config(
         "remove-invalid": config.remove_invalid,
         "link-deletes": config.link_deletes,
         "link-edits": config.link_edits,
-        "disable-xp": config.disable_xp,
         "private": config.private,
         "enabled": config.enabled,
         "cooldown-enabled": config.cooldown_enabled,

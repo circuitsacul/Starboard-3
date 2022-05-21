@@ -122,7 +122,6 @@ class Starboard(apgorm.Model):
     remove_invalid = types.Boolean().field(default=True)
     link_deletes = types.Boolean().field(default=False)
     link_edits = types.Boolean().field(default=True)
-    disable_xp = types.Boolean().field(default=False)
     private = types.Boolean().field(default=False)
     cooldown_enabled = types.Boolean().field(default=False)
     cooldown_count = types.SmallInt().field(default=5)
