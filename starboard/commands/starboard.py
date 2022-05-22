@@ -249,12 +249,15 @@ class EditStarboard(EditStarboardConfig):
         hikari.TextableGuildChannel, "The starboard to edit"
     )
 
-    # this option cannot be implemented for overrides, so we put it on the
+    # these options cannot be implemented for overrides, so we put it on the
     # starboard edit command instead of the superclass
     private = optiond(
         bool,
         "Whether to prevent `random` and `moststarred` from using this "
         "starboard",
+    )
+    xp_multiplier = optiond(
+        float, "The XP multiplier for this starboard", name="xp-multiplier"
     )
 
     def _options(self) -> dict[str, Any]:
