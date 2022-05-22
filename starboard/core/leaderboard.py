@@ -47,7 +47,7 @@ async def refresh_xp(guild_id: int, user_id: int) -> bool | None:
     )
     xp: float = 0.0
     for sb in starboards:
-        stars = await Star.count(starboard_id=sb.id, target_user_id=user_id)
+        stars = await Star.count(starboard_id=sb.id, target_author_id=user_id)
         xp += stars * sb.xp_multiplier
     member.xp = xp
     await member.save()

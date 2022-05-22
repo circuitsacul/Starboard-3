@@ -110,7 +110,7 @@ async def add_stars(
                 message_id=orig_message_id,
                 user_id=user_id,
                 starboard_id=sbid,
-                target_user_id=target_user_id,
+                target_author_id=target_user_id,
             ).create()
 
 
