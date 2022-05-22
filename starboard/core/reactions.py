@@ -136,7 +136,7 @@ async def handle_reaction_add(event: hikari.GuildReactionAddEvent) -> None:
     await refresh_message(
         cast("Bot", event.app), orig_msg, valid_starboard_ids, premium=ip
     )
-    asyncio.create_task(refresh_xp(event.guild_id, orig_msg.author_id))
+    await refresh_xp(event.guild_id, orig_msg.author_id)
 
     if ip:
         asyncio.create_task(
@@ -176,7 +176,17 @@ async def handle_reaction_remove(
 
     await remove_stars(orig_msg.id, event.user_id, valid_sbids)
 
-    await refresh_message(cast("Bot", event.app), orig_msg, valid_sbids)
+    guild = await Guild.fetch(id=event.guild_id)
+    ip = guild.premium_end is not None
+
+    await refresh_message(
+        cast("Bot", event.app), orig_msg, valid_sbids, premium=ip
+    )
+    await refresh_xp(event.guild_id, orig_msg.author_id)
+
+    if ip:
+        await refresh_xpr(bot, event.guild_id, orig_msg.author_id)
+        await update_posroles(bot, event.guild_id)
 
 
 def _get_emoji_str_from_event(
