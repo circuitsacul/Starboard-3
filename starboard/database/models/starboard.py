@@ -30,7 +30,7 @@ from apgorm import types
 from starboard.config import CONFIG
 
 from ._converters import DecimalC, NonNullArray, NullDecimalC
-from ._validators import num_range, str_len, valid_emoji
+from ._validators import num_range, valid_emoji
 from .guild import Guild
 
 
@@ -42,14 +42,6 @@ def _validate(
 
 
 def validate_sb_changes(**changes: Any) -> None:
-    _validate(
-        "webhook_name", changes, str_len("webhook-name", CONFIG.max_whn_len)
-    )
-    _validate(
-        "webhook_avatar",
-        changes,
-        str_len("webhook-avatar", CONFIG.max_wha_len),
-    )
     _validate(
         "required",
         changes,
