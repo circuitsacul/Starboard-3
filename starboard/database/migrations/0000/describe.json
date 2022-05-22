@@ -47,11 +47,6 @@
                     "not_null": true
                 },
                 {
-                    "name": "last_patreon_total_cents",
-                    "type_": "BIGINT",
-                    "not_null": true
-                },
-                {
                     "name": "patreon_status",
                     "type_": "SMALLINT",
                     "not_null": true
@@ -61,6 +56,34 @@
             "pk_constraint": {
                 "name": "_users_id_primary_key",
                 "raw_sql": "CONSTRAINT _users_id_primary_key PRIMARY KEY ( id )"
+            },
+            "unique_constraints": [],
+            "check_constraints": [],
+            "exclude_constraints": []
+        },
+        {
+            "name": "patrons",
+            "fields": [
+                {
+                    "name": "patreon_id",
+                    "type_": "VARCHAR(64)",
+                    "not_null": true
+                },
+                {
+                    "name": "discord_id",
+                    "type_": "NUMERIC",
+                    "not_null": false
+                },
+                {
+                    "name": "last_patreon_total_cents",
+                    "type_": "BIGINT",
+                    "not_null": true
+                }
+            ],
+            "fk_constraints": [],
+            "pk_constraint": {
+                "name": "_patrons_patreon_id_primary_key",
+                "raw_sql": "CONSTRAINT _patrons_patreon_id_primary_key PRIMARY KEY ( patreon_id )"
             },
             "unique_constraints": [],
             "check_constraints": [],
@@ -81,7 +104,7 @@
                 },
                 {
                     "name": "xp",
-                    "type_": "INTEGER",
+                    "type_": "REAL",
                     "not_null": true
                 },
                 {
@@ -127,8 +150,8 @@
                     "not_null": false
                 },
                 {
-                    "name": "color",
-                    "type_": "INTEGER",
+                    "name": "prem_locked",
+                    "type_": "BOOLEAN",
                     "not_null": true
                 },
                 {
@@ -157,14 +180,19 @@
                     "not_null": true
                 },
                 {
-                    "name": "webhook_name",
-                    "type_": "TEXT",
+                    "name": "color",
+                    "type_": "INTEGER",
                     "not_null": true
                 },
                 {
-                    "name": "webhook_avatar",
-                    "type_": "TEXT",
-                    "not_null": false
+                    "name": "jump_to_message",
+                    "type_": "BOOLEAN",
+                    "not_null": true
+                },
+                {
+                    "name": "attachments_list",
+                    "type_": "BOOLEAN",
+                    "not_null": true
                 },
                 {
                     "name": "required",
@@ -222,13 +250,13 @@
                     "not_null": true
                 },
                 {
-                    "name": "disable_xp",
+                    "name": "private",
                     "type_": "BOOLEAN",
                     "not_null": true
                 },
                 {
-                    "name": "private",
-                    "type_": "BOOLEAN",
+                    "name": "xp_multiplier",
+                    "type_": "REAL",
                     "not_null": true
                 },
                 {
@@ -409,6 +437,11 @@
                 {
                     "name": "guild_id",
                     "type_": "NUMERIC",
+                    "not_null": true
+                },
+                {
+                    "name": "prem_locked",
+                    "type_": "BOOLEAN",
                     "not_null": true
                 },
                 {
@@ -675,6 +708,11 @@
                     "name": "user_id",
                     "type_": "NUMERIC",
                     "not_null": true
+                },
+                {
+                    "name": "target_author_id",
+                    "type_": "NUMERIC",
+                    "not_null": true
                 }
             ],
             "fk_constraints": [
@@ -689,6 +727,10 @@
                 {
                     "name": "user_id_fk",
                     "raw_sql": "CONSTRAINT user_id_fk FOREIGN KEY ( user_id ) REFERENCES users ( id ) MATCH SIMPLE ON DELETE CASCADE ON UPDATE CASCADE"
+                },
+                {
+                    "name": "target_author_id_fk",
+                    "raw_sql": "CONSTRAINT target_author_id_fk FOREIGN KEY ( target_author_id ) REFERENCES users ( id ) MATCH SIMPLE ON DELETE CASCADE ON UPDATE CASCADE"
                 }
             ],
             "pk_constraint": {
@@ -719,6 +761,10 @@
         }
     ],
     "indexes": [
+        {
+            "name": "_hash_index_patrons__discord_id",
+            "raw_sql": "INDEX _hash_index_patrons__discord_id ON patrons USING HASH ( ( discord_id ) )"
+        },
         {
             "name": "_hash_index_aschannels__guild_id",
             "raw_sql": "INDEX _hash_index_aschannels__guild_id ON aschannels USING HASH ( ( guild_id ) )"
@@ -784,8 +830,20 @@
             "raw_sql": "INDEX _hash_index_xproles__guild_id ON xproles USING HASH ( ( guild_id ) )"
         },
         {
-            "name": "_btree_index_stars__message_id_starboard_id",
-            "raw_sql": "INDEX _btree_index_stars__message_id_starboard_id ON stars USING BTREE ( ( message_id ) , ( starboard_id ) )"
+            "name": "_hash_index_stars__starboard_id",
+            "raw_sql": "INDEX _hash_index_stars__starboard_id ON stars USING HASH ( ( starboard_id ) )"
+        },
+        {
+            "name": "_hash_index_stars__user_id",
+            "raw_sql": "INDEX _hash_index_stars__user_id ON stars USING HASH ( ( user_id ) )"
+        },
+        {
+            "name": "_hash_index_stars__message_id",
+            "raw_sql": "INDEX _hash_index_stars__message_id ON stars USING HASH ( ( message_id ) )"
+        },
+        {
+            "name": "_hash_index_stars__target_author_id",
+            "raw_sql": "INDEX _hash_index_stars__target_author_id ON stars USING HASH ( ( target_author_id ) )"
         }
     ]
 }
