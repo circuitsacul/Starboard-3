@@ -264,6 +264,8 @@ class EditStarboard(EditStarboardConfig):
         d = super()._options()
         if self.private is not UNDEF.UNDEF:
             d["private"] = self.private
+        if self.xp_multiplier is not UNDEF.UNDEF:
+            d["xp_multiplier"] = self.xp_multiplier
         return d
 
     async def callback(self, ctx: crescent.Context) -> None:
