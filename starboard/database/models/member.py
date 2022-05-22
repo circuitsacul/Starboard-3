@@ -31,7 +31,7 @@ from asyncpg import UniqueViolationError
 from starboard.config import CONFIG
 
 from ._converters import DecimalC
-from ._validators import int_range
+from ._validators import num_range
 from .guild import Guild, goc_guild
 from .user import User, goc_user
 
@@ -57,7 +57,7 @@ class Member(apgorm.Model):
     user_id = types.Numeric().field().with_converter(DecimalC)
     guild_id = types.Numeric().field().with_converter(DecimalC)
 
-    xp = types.Int().field(default=0)
+    xp = types.Real().field(default=0)
 
     autoredeem_enabled = types.Boolean().field(default=False)
 
@@ -66,4 +66,4 @@ class Member(apgorm.Model):
 
     primary_key = (user_id, guild_id)
 
-    xp.add_validator(int_range("XP", 0, CONFIG.max_xp))
+    xp.add_validator(num_range("XP", 0, CONFIG.max_xp))

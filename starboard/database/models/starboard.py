@@ -30,7 +30,7 @@ from apgorm import types
 from starboard.config import CONFIG
 
 from ._converters import DecimalC, NonNullArray, NullDecimalC
-from ._validators import int_range, str_len, valid_emoji
+from ._validators import num_range, str_len, valid_emoji
 from .guild import Guild
 
 
@@ -53,12 +53,12 @@ def validate_sb_changes(**changes: Any) -> None:
     _validate(
         "required",
         changes,
-        int_range("required", CONFIG.min_required, CONFIG.max_required),
+        num_range("required", CONFIG.min_required, CONFIG.max_required),
     )
     _validate(
         "required_remove",
         changes,
-        int_range(
+        num_range(
             "required-remove",
             CONFIG.min_required_remove,
             CONFIG.max_required_remove,
@@ -67,20 +67,25 @@ def validate_sb_changes(**changes: Any) -> None:
     _validate(
         "cooldown_period",
         changes,
-        int_range(
+        num_range(
             "the cooldown period (seconds)", None, CONFIG.max_cooldown_period
         ),
     )
     _validate(
         "cooldown_count",
         changes,
-        int_range(
+        num_range(
             "the capacity of the cooldown (count)",
             None,
             CONFIG.max_cooldown_cap,
         ),
     )
     _validate("display_emoji", changes, valid_emoji)
+    _validate(
+        "xp_multiplier",
+        changes,
+        num_range("xp-multiplier", CONFIG.min_xp_mul, CONFIG.max_xp_mul),
+    )
 
 
 class Starboard(apgorm.Model):
@@ -122,8 +127,8 @@ class Starboard(apgorm.Model):
     remove_invalid = types.Boolean().field(default=True)
     link_deletes = types.Boolean().field(default=False)
     link_edits = types.Boolean().field(default=True)
-    disable_xp = types.Boolean().field(default=False)
     private = types.Boolean().field(default=False)
+    xp_multiplier = types.Real().field(default=1.0)
     cooldown_enabled = types.Boolean().field(default=False)
     cooldown_count = types.SmallInt().field(default=5)
     cooldown_period = types.SmallInt().field(default=5)

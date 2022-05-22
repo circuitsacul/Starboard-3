@@ -30,7 +30,7 @@ from apgorm import types
 from starboard.config import CONFIG
 
 from ._converters import DecimalC
-from ._validators import int_range
+from ._validators import num_range
 from .guild import Guild
 from .user import User
 
@@ -47,7 +47,7 @@ class PosRole(apgorm.Model):
     primary_key = (id,)
 
     max_members.add_validator(
-        int_range("max-members", CONFIG.min_pr_members, CONFIG.max_pr_members)
+        num_range("max-members", CONFIG.min_pr_members, CONFIG.max_pr_members)
     )
 
 

@@ -24,29 +24,20 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, cast
 
-import apgorm
 import crescent
 import hikari
 from hikari import Permissions
 
-from starboard.config import CONFIG
 from starboard.core.config import get_config
 from starboard.core.messages import get_orig_message
 from starboard.core.starboards import refresh_message
-from starboard.database import (
-    Member,
-    Message,
-    SBMessage,
-    Starboard,
-    goc_member,
-    goc_message,
-)
+from starboard.database import Message, SBMessage, Starboard, goc_message
 from starboard.exceptions import StarboardErr, StarboardNotFound
 from starboard.utils import jump
 from starboard.views import Paginator
 
 from ._checks import has_guild_perms
-from ._converters import disid, msg_ch_id, orig_msg_from_link
+from ._converters import msg_ch_id, orig_msg_from_link
 
 if TYPE_CHECKING:
     from starboard.bot import Bot
@@ -59,85 +50,6 @@ utils = crescent.Group(
     "Utility Commands",
     hooks=[has_guild_perms(Permissions.MANAGE_MESSAGES)],
 )
-
-
-@plugin.include
-@crescent.hook(has_guild_perms(Permissions.MANAGE_GUILD))
-@crescent.command(name="givexp", description="Gives a user XP")
-class GiveXP:
-    user = crescent.option(hikari.User, "The user to give XP to")
-    xp = crescent.option(
-        int, "How much XP to give", min_value=0, max_value=CONFIG.max_xp
-    )
-
-    async def callback(self, ctx: crescent.Context) -> None:
-        assert ctx.guild_id
-
-        member = await goc_member(ctx.guild_id, self.user.id, self.user.is_bot)
-        before = member.xp
-        try:
-            member.xp = before + self.xp
-        except apgorm.exceptions.InvalidFieldValue:
-            raise StarboardErr(
-                f"Doing this would result in {self.user} having "
-                f"{before + self.xp}. The maximum XP is {CONFIG.max_xp} and "
-                "the minimum is 0."
-            )
-        await member.save()
-
-        await ctx.respond(
-            f"Set {self.user}'s XP to {member.xp} (was {before}).",
-            ephemeral=True,
-        )
-
-
-@plugin.include
-@crescent.hook(has_guild_perms(Permissions.MANAGE_GUILD))
-@crescent.command(name="setxp", description="Sets a user's XP")
-class SetXP:
-    user = crescent.option(hikari.User, "The user to set the XP for")
-    xp = crescent.option(
-        int,
-        "How much XP this user should have",
-        min_value=0,
-        max_value=CONFIG.max_xp,
-    )
-
-    async def callback(self, ctx: crescent.Context) -> None:
-        assert ctx.guild_id
-
-        member = await goc_member(ctx.guild_id, self.user.id, self.user.is_bot)
-        before = member.xp
-        member.xp = self.xp
-        await member.save()
-
-        await ctx.respond(
-            f"Set {self.user}'s XP to {member.xp} (was {before}).",
-            ephemeral=True,
-        )
-
-
-@plugin.include
-@crescent.hook(has_guild_perms(Permissions.MANAGE_GUILD))
-@crescent.command(
-    name="resetxp",
-    description="Resets a user's XP (removing them from the leaderboard).",
-)
-class ResetXP:
-    user_id = crescent.option(str, "The ID of the user to reset XP for")
-
-    async def callback(self, ctx: crescent.Context) -> None:
-        assert ctx.guild_id
-
-        uid = disid(self.user_id)
-        member = await Member.exists(guild_id=ctx.guild_id, user_id=uid)
-        if not member or member.xp == 0:
-            raise StarboardErr(f"<@{uid}> does not have any XP.")
-
-        before = member.xp
-        member.xp = 0
-        await member.save()
-        await ctx.respond(f"Reset <@{uid}> XP (was {before}).", ephemeral=True)
 
 
 # FREEZING

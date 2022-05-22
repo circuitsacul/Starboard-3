@@ -42,6 +42,8 @@ class Config:
     # starboard settings restrictions
     max_whn_len: int = 32
     max_wha_len: int = 512
+    max_xp_mul: float = 10.0
+    min_xp_mul: float = -10.0
     min_required: int = 1
     max_required: int = 512
     min_required_remove: int = -1
@@ -90,6 +92,8 @@ class Config:
     xpr_cooldown_period: int = 60
     pr_cooldown_cap: int = 1
     pr_cooldown_period: int = 60 * 5
+    refresh_xp_cap: int = 1
+    refresh_xp_period: int = 60
     edit_cooldown_cap: int = 3
     edit_cooldown_period: int = 20
     guild_star_cooldown_cap: int = 500
