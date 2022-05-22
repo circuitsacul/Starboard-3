@@ -40,8 +40,11 @@ class Star(apgorm.Model):
     starboard_id = types.Numeric().field().with_converter(DecimalC)
     user_id = types.Numeric().field().with_converter(DecimalC)
 
+    target_author_id = types.Numeric().field().with_converter(DecimalC)
+
     message_id_fk = apgorm.ForeignKey(message_id, Message.id)
     starboard_id_fk = apgorm.ForeignKey(starboard_id, Starboard.id)
     user_id_fk = apgorm.ForeignKey(user_id, User.id)
+    target_author_id_fk = apgorm.ForeignKey(target_author_id, User.id)
 
     primary_key = (message_id, starboard_id, user_id)

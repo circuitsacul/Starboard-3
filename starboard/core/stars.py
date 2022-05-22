@@ -99,12 +99,18 @@ async def is_star_valid_for(
 
 
 async def add_stars(
-    orig_message_id: int, user_id: int, starboard_ids: list[int]
+    orig_message_id: int,
+    user_id: int,
+    starboard_ids: list[int],
+    target_user_id: int,
 ) -> None:
     for sbid in starboard_ids:
         with contextlib.suppress(asyncpg.UniqueViolationError):
             await Star(
-                message_id=orig_message_id, user_id=user_id, starboard_id=sbid
+                message_id=orig_message_id,
+                user_id=user_id,
+                starboard_id=sbid,
+                target_user_id=target_user_id,
             ).create()
 
 

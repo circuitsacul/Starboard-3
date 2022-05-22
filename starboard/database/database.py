@@ -117,4 +117,5 @@ class Database(apgorm.Database):
         Index(stars, stars.starboard_id, IndexType.HASH),
         Index(stars, stars.user_id, IndexType.HASH),
         Index(stars, stars.message_id, IndexType.HASH),
+        Index(stars, stars.target_author_id, IndexType.HASH),
     ]

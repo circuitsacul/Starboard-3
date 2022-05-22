@@ -128,7 +128,9 @@ async def handle_reaction_add(event: hikari.GuildReactionAddEvent) -> None:
         return
 
     # create a "star" for each starboard
-    await add_stars(orig_msg.id, event.user_id, valid_starboard_ids)
+    await add_stars(
+        orig_msg.id, event.user_id, valid_starboard_ids, orig_msg.author_id
+    )
 
     guild = await Guild.fetch(id=event.guild_id)
     ip = guild.premium_end is not None
