@@ -30,7 +30,7 @@ from apgorm import types
 from starboard.config import CONFIG
 
 from ._converters import DecimalC, NonNullArray
-from ._validators import int_range
+from ._validators import num_range
 from .guild import Guild
 
 
@@ -57,5 +57,5 @@ class AutoStarChannel(apgorm.Model):
     primary_key = (id,)
 
     # validators:
-    min_chars.add_validator(int_range("min-chars", 0, CONFIG.max_minchars))
-    max_chars.add_validator(int_range("max-chars", 0, CONFIG.max_maxchars))
+    min_chars.add_validator(num_range("min-chars", 0, CONFIG.max_minchars))
+    max_chars.add_validator(num_range("max-chars", 0, CONFIG.max_maxchars))

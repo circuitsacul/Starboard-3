@@ -95,6 +95,7 @@ def pretty_sb_config(
         "link-deletes": config.link_deletes,
         "link-edits": config.link_edits,
         "private": config.private,
+        "xp-multiplier": config.xp_multiplier,
         "enabled": config.enabled,
         "cooldown-enabled": config.cooldown_enabled,
         "cooldown": f"{stars} stars per {secs} seconds",

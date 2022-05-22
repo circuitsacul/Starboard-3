@@ -98,6 +98,9 @@ class EditStarboardConfig:
         "Whether to add extra embeds below the main message content",
         name="extra-embeds",
     )
+    xp_multiplier = optiond(
+        float, "The XP multiplier for this starboard", name="xp-multiplier"
+    )
     cooldown_enabled = optiond(
         bool, "Whether to enable the cooldown", name="cooldown-enabled"
     )

@@ -72,6 +72,7 @@ class StarboardConfig:
     link_deletes: bool
     link_edits: bool
     private: bool
+    xp_multiplier: float
     cooldown_enabled: bool
     cooldown_count: int
     cooldown_period: int
