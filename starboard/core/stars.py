@@ -102,7 +102,7 @@ async def add_stars(
     orig_message_id: int,
     user_id: int,
     starboard_ids: list[int],
-    target_user_id: int,
+    target_author_id: int,
 ) -> None:
     for sbid in starboard_ids:
         with contextlib.suppress(asyncpg.UniqueViolationError):
@@ -110,7 +110,7 @@ async def add_stars(
                 message_id=orig_message_id,
                 user_id=user_id,
                 starboard_id=sbid,
-                target_author_id=target_user_id,
+                target_author_id=target_author_id,
             ).create()
 
 
