@@ -104,7 +104,7 @@
                 },
                 {
                     "name": "xp",
-                    "type_": "INTEGER",
+                    "type_": "REAL",
                     "not_null": true
                 },
                 {
@@ -821,8 +821,16 @@
             "raw_sql": "INDEX _hash_index_xproles__guild_id ON xproles USING HASH ( ( guild_id ) )"
         },
         {
-            "name": "_btree_index_stars__message_id_starboard_id",
-            "raw_sql": "INDEX _btree_index_stars__message_id_starboard_id ON stars USING BTREE ( ( message_id ) , ( starboard_id ) )"
+            "name": "_hash_index_stars__starboard_id",
+            "raw_sql": "INDEX _hash_index_stars__starboard_id ON stars USING HASH ( ( starboard_id ) )"
+        },
+        {
+            "name": "_hash_index_stars__user_id",
+            "raw_sql": "INDEX _hash_index_stars__user_id ON stars USING HASH ( ( user_id ) )"
+        },
+        {
+            "name": "_hash_index_stars__message_id",
+            "raw_sql": "INDEX _hash_index_stars__message_id ON stars USING HASH ( ( message_id ) )"
         }
     ]
 }

@@ -114,5 +114,7 @@ class Database(apgorm.Database):
         # xproles
         Index(xproles, xproles.guild_id, IndexType.HASH),
         # stars
-        Index(stars, (stars.message_id, stars.starboard_id)),
+        Index(stars, stars.starboard_id, IndexType.HASH),
+        Index(stars, stars.user_id, IndexType.HASH),
+        Index(stars, stars.message_id, IndexType.HASH),
     ]
