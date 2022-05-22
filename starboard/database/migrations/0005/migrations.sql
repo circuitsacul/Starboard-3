@@ -1,5 +1,6 @@
 ALTER TABLE starboards ADD COLUMN xp_multiplier REAL;
 ALTER TABLE starboards DROP COLUMN disable_xp;
+UPDATE starboards SET xp_multiplier = 1.0;
 ALTER TABLE starboards ALTER COLUMN xp_multiplier SET NOT NULL;
 ALTER TABLE members ALTER COLUMN xp TYPE REAL USING xp::real;
 DROP INDEX _btree_index_stars__message_id_starboard_id;
