@@ -31,7 +31,7 @@ from apgorm import raw as r
 from starboard.core.config import get_config
 from starboard.core.embed_message import embed_message
 from starboard.core.emojis import stored_to_emoji
-from starboard.core.leaderboard import get_leaderboard
+from starboard.core.leaderboard import get_leaderboard, refresh_xp
 from starboard.database import Guild, Member, Message, SBMessage, Starboard
 from starboard.exceptions import StarboardErr, StarboardNotFound
 from starboard.views import InfiniteScroll, Paginator
@@ -43,6 +43,23 @@ if TYPE_CHECKING:
 
 
 plugin = crescent.Plugin("fun")
+
+
+@plugin.include
+@crescent.hook(guild_only)
+@crescent.command(name="refresh-xp", description="Refresh your XP")
+async def refresh_my_xp(ctx: crescent.Context) -> None:
+    assert ctx.guild_id
+    ret = await refresh_xp(ctx.guild_id, ctx.user.id)
+    if ret:
+        await ctx.respond("Your XP has been refreshed.", ephemeral=True)
+    elif ret is None:
+        await ctx.respond("You don't have any XP.", ephemeral=True)
+    else:
+        await ctx.respond(
+            "You can't refresh your XP right now. Please try again later.",
+            ephemeral=True,
+        )
 
 
 @plugin.include
@@ -97,7 +114,7 @@ class Rank:
         lb = await get_leaderboard(ctx.guild_id)
         stats = lb.get(user.id)
 
-        xp: int
+        xp: float
         rank: int | None
         if stats:
             xp = stats.xp

@@ -53,8 +53,8 @@ def str_len(name: str, max: int) -> Callable[[str], bool]:
 
 def num_range(
     name: str, min: int | float | None, max: int | float | None
-) -> Callable[[Optional[int]], bool]:
-    def validator(value: int | None) -> bool:
+) -> Callable[[Optional[int | float]], bool]:
+    def validator(value: int | float | None) -> bool:
         if value is None:
             return True
         if max is not None and value > max:

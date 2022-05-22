@@ -24,8 +24,35 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
+from pycooldown import FixedCooldown
+
 from starboard.config import CONFIG
-from starboard.database import Member
+from starboard.database import Member, Starboard, Star
+
+
+REFRESH_XP_COOLDOWN: FixedCooldown[tuple[int, int]] = FixedCooldown(
+    CONFIG.refresh_xp_period, CONFIG.refresh_xp_cap
+)
+
+
+async def refresh_xp(guild_id: int, user_id: int) -> bool | None:
+    if REFRESH_XP_COOLDOWN.update_rate_limit((guild_id, user_id)) is not None:
+        return False
+
+    member = await Member.exists(guild_id=guild_id, user_id=user_id)
+    if not member:
+        return None
+
+    starboards = (
+        await Starboard.fetch_query().where(guild_id=guild_id).fetchmany()
+    )
+    xp: float = 0.0
+    for sb in starboards:
+        stars = await Star.count(starboard_id=sb.id, user_id=user_id)
+        xp += stars * sb.xp_multiplier
+    member.xp = xp
+    await member.save()
+    return True
 
 
 async def get_leaderboard(
@@ -42,5 +69,5 @@ async def get_leaderboard(
 
 @dataclass
 class MemberStats:
-    xp: int
+    xp: float
     rank: int

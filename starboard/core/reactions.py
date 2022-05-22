@@ -30,6 +30,7 @@ import hikari
 from pycooldown import FixedCooldown
 
 from starboard.config import CONFIG
+from starboard.core.leaderboard import refresh_xp
 from starboard.core.posrole import update_posroles
 from starboard.core.xprole import refresh_xpr
 from starboard.database import Guild, Starboard, goc_member, goc_message
@@ -135,6 +136,7 @@ async def handle_reaction_add(event: hikari.GuildReactionAddEvent) -> None:
     await refresh_message(
         cast("Bot", event.app), orig_msg, valid_starboard_ids, premium=ip
     )
+    asyncio.create_task(refresh_xp(event.guild_id, orig_msg.author_id))
 
     if ip:
         asyncio.create_task(
