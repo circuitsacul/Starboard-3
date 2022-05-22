@@ -27,8 +27,7 @@ from dataclasses import dataclass
 from pycooldown import FixedCooldown
 
 from starboard.config import CONFIG
-from starboard.database import Member, Starboard, Star
-
+from starboard.database import Member, Star, Starboard
 
 REFRESH_XP_COOLDOWN: FixedCooldown[tuple[int, int]] = FixedCooldown(
     CONFIG.refresh_xp_period, CONFIG.refresh_xp_cap

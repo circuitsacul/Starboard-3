@@ -31,12 +31,7 @@ from hikari import Permissions
 from starboard.core.config import get_config
 from starboard.core.messages import get_orig_message
 from starboard.core.starboards import refresh_message
-from starboard.database import (
-    Message,
-    SBMessage,
-    Starboard,
-    goc_message,
-)
+from starboard.database import Message, SBMessage, Starboard, goc_message
 from starboard.exceptions import StarboardErr, StarboardNotFound
 from starboard.utils import jump
 from starboard.views import Paginator
