@@ -47,7 +47,7 @@ from starboard.database import Database as NewDB
 from .old_db import Database as OldDB
 from .old_reaction_valid import is_user_blacklisted
 
-CHUNK = 100_000
+CHUNK = 10_000
 
 
 @dataclass
@@ -75,13 +75,13 @@ async def migrate() -> None:
 
     app = App(newdb, olddb, bot)
 
-    await _run(app, _migrate_guilds)
-    await _run(app, _migrate_users)
-    await _run(app, _migrate_members)
-    await _run(app, _migrate_autostars)
-    await _run(app, _migrate_starboards)
-    await _run(app, _migrate_orig_messages)
-    await _run(app, _migrate_starboard_messages)
+    # await _run(app, _migrate_guilds)
+    # await _run(app, _migrate_users)
+    # await _run(app, _migrate_members)
+    # await _run(app, _migrate_autostars)
+    # await _run(app, _migrate_starboards)
+    # await _run(app, _migrate_orig_messages)
+    # await _run(app, _migrate_starboard_messages)
     await _run(app, _migrate_reactions)
     await _run(app, _migrate_xproles)
     await _run(app, _migrate_posroles)
@@ -210,8 +210,8 @@ async def _migrate_autostars(
 
         await new.execute(
             "INSERT INTO aschannels (id, guild_id, emojis, min_chars, "
-            "require_image, delete_invalid) VALUES ($1, $2, $3, "
-            "$4, $5, $6)",
+            "require_image, delete_invalid, prem_locked) VALUES ($1, $2, $3, "
+            "$4, $5, $6, false)",
             [
                 oldasc["id"],
                 oldasc["guild_id"],
@@ -413,7 +413,8 @@ async def _migrate_reactions(
     current_guild_role_wl: dict[int, set[int]] = {}
     current_guild_role_bl: dict[int, set[int]] = {}
     current_guild_check_rbl: bool = True
-    unique: set[tuple[int, int, int]] = set()
+    current_guild_message_authors: dict[int, int] = {}
+    unique: set[tuple[int, int, int, int]] = set()
 
     for s in await newdb.Starboard.fetch_query(new).fetchmany():
         sb_emoji_map.setdefault(s.guild_id, dict()).setdefault(
@@ -444,14 +445,18 @@ async def _migrate_reactions(
         await new.con.copy_records_to_table(
             "stars",
             records=args,
-            columns=["message_id", "starboard_id", "user_id"],
+            columns=[
+                "message_id",
+                "starboard_id",
+                "user_id",
+                "target_author_id",
+            ],
         )
         args.clear()
 
     with tqdm(desc="Reactions", total=total) as pb:
         async for oldreact in old.cursor(
-            "SELECT * FROM reactions WHERE guild_id=962027951484977192",
-            prefetch=CHUNK,
+            "SELECT * FROM reactions ORDER BY guild_id", prefetch=CHUNK
         ):
             count += 1
             if not (count % CHUNK):
@@ -504,6 +509,15 @@ async def _migrate_reactions(
                     else:
                         current_guild_check_rbl = True
 
+                current_guild_message_authors = {
+                    m["id"]: m["user_id"]
+                    for m in await old.fetch(
+                        "SELECT * FROM messages WHERE is_orig=True AND "
+                        "guild_id=$1",
+                        current_guild,
+                    )
+                }
+
             for id in sbids:
                 # check if the user is blacklisted, if so, skip the reaction
                 if current_guild_check_rbl:
@@ -517,7 +531,12 @@ async def _migrate_reactions(
                         role_blacklisted += 1
                         continue
 
-                key = (oldreact["message_id"], id, oldreact["user_id"])
+                key = (
+                    oldreact["message_id"],
+                    id,
+                    oldreact["user_id"],
+                    current_guild_message_authors[oldreact["message_id"]],
+                )
                 if key in unique:
                     duplicate += 1
                     continue
