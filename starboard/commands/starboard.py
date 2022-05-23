@@ -42,7 +42,12 @@ from starboard.views import Confirm
 
 from ._checks import has_guild_perms
 from ._converters import any_emoji_list, any_emoji_str, disid
-from ._sb_config import EditStarboardConfig
+from ._sb_config import (
+    BaseEditStarboardBehaviour,
+    BaseEditStarboardEmbedStyle,
+    BaseEditStarboardRequirements,
+    BaseEditStarboardStyle,
+)
 from ._utils import optiond, pretty_emoji_str, pretty_sb_config
 
 if TYPE_CHECKING:
@@ -241,10 +246,28 @@ class DeleteStarboard:
         await msg.edit(f"Deleted starboard <#{chid}>.", components=[])
 
 
+async def _update_starboard(
+    starboard: hikari.InteractionChannel, params: dict[str, Any]
+) -> None:
+    validate_sb_changes(**params)
+
+    s = await Starboard.exists(id=starboard.id)
+    if not s:
+        raise StarboardNotFound(starboard.id)
+
+    for k, v in params.items():
+        setattr(s, k, v)
+
+    await s.save()
+
+
+edit = starboards.sub_group("edit", description="Edit a starboard")
+
+
 @plugin.include
-@starboards.child
-@crescent.command(name="edit", description="Modify a starboard")
-class EditStarboard(EditStarboardConfig):
+@edit.child
+@crescent.command(name="behaviour", description="Edit a starboard's behaviour")
+class EditStarboardBehaviour(BaseEditStarboardBehaviour):
     starboard = crescent.option(
         hikari.TextableGuildChannel, "The starboard to edit"
     )
@@ -269,18 +292,49 @@ class EditStarboard(EditStarboardConfig):
         return d
 
     async def callback(self, ctx: crescent.Context) -> None:
-        params = self._options()
-        validate_sb_changes(**params)
+        await _update_starboard(self.starboard, self._options())
+        await ctx.respond(f"Settings for <#{self.starboard.id}> updated.")
 
-        s = await Starboard.exists(id=self.starboard.id)
-        if not s:
-            raise StarboardNotFound(self.starboard.id)
 
-        for k, v in params.items():
-            setattr(s, k, v)
+@plugin.include
+@edit.child
+@crescent.command(name="embed", description="Edit a starboard's embed style")
+class EditStarboardEmbedStyle(BaseEditStarboardEmbedStyle):
+    starboard = crescent.option(
+        hikari.TextableGuildChannel, "The starboard to edit"
+    )
 
-        await s.save()
-        await ctx.respond(f"Settings for <#{s.id}> updated.")
+    async def callback(self, ctx: crescent.Context) -> None:
+        await _update_starboard(self.starboard, self._options())
+        await ctx.respond(f"Settings for <#{self.starboard.id}> updated.")
+
+
+@plugin.include
+@edit.child
+@crescent.command(
+    name="requirements", description="Edit a starboard's requirements"
+)
+class EditStarboardRequirements(BaseEditStarboardRequirements):
+    starboard = crescent.option(
+        hikari.TextableGuildChannel, "The starboard to edit"
+    )
+
+    async def callback(self, ctx: crescent.Context) -> None:
+        await _update_starboard(self.starboard, self._options())
+        await ctx.respond(f"Settings for <#{self.starboard.id}> updated.")
+
+
+@plugin.include
+@edit.child
+@crescent.command(name="style", description="Edit a starboard's style")
+class EditStarboardStyle(BaseEditStarboardStyle):
+    starboard = crescent.option(
+        hikari.TextableGuildChannel, "The starboard to edit"
+    )
+
+    async def callback(self, ctx: crescent.Context) -> None:
+        await _update_starboard(self.starboard, self._options())
+        await ctx.respond(f"Settings for <#{self.starboard.id}> updated.")
 
 
 upvote_emojis = starboards.sub_group(

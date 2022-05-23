@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, cast
+from typing import TYPE_CHECKING, Any, cast
 
 import asyncpg
 import crescent
@@ -17,7 +17,12 @@ from starboard.exceptions import (
 
 from ._checks import has_guild_perms
 from ._converters import channel_list
-from ._sb_config import EditStarboardConfig
+from ._sb_config import (
+    BaseEditStarboardBehaviour,
+    BaseEditStarboardEmbedStyle,
+    BaseEditStarboardRequirements,
+    BaseEditStarboardStyle,
+)
 from ._utils import pretty_channel_str, pretty_sb_config
 
 if TYPE_CHECKING:
@@ -175,27 +180,74 @@ class DeleteOverride:
             raise OverrideNotFound(self.name)
 
 
+async def _update_override(
+    name: str, guild_id: int, params: dict[str, Any]
+) -> None:
+    ov = await Override.exists(guild_id=guild_id, name=name)
+    if not ov:
+        raise OverrideNotFound(name)
+
+    validate_sb_changes(**params)
+
+    opt = ov.overrides
+    for k, v in params.items():
+        opt[k] = v
+        ov.overrides = opt
+
+    await ov.save()
+
+
+edit = overrides.sub_group("edit", description="Edit a starboard")
+
+
 @plugin.include
-@overrides.child
-@crescent.command(name="edit", description="Modify a setting override")
-class EditOverride(EditStarboardConfig):
-    name = crescent.option(str, "The name of the override")
+@edit.child
+@crescent.command(name="behaviour", description="Edit a starboard's behaviour")
+class EditStarboardBehaviour(BaseEditStarboardBehaviour):
+    name = crescent.option(str, "The override to edit")
 
     async def callback(self, ctx: crescent.Context) -> None:
-        ov = await Override.exists(guild_id=ctx.guild_id, name=self.name)
-        if not ov:
-            raise OverrideNotFound(self.name)
+        assert ctx.guild_id
+        await _update_override(self.name, ctx.guild_id, self._options())
+        await ctx.respond(f"Settings for override '{self.name}' updated.")
 
-        options = self._options()
-        validate_sb_changes(**options)
 
-        opt = ov.overrides
-        for k, v in options.items():
-            opt[k] = v
-            ov.overrides = opt
+@plugin.include
+@edit.child
+@crescent.command(name="embed", description="Edit a starboard's embed style")
+class EditStarboardEmbedStyle(BaseEditStarboardEmbedStyle):
+    name = crescent.option(str, "The override to edit")
 
-        await ov.save()
-        await ctx.respond(f"Updated settings for override '{self.name}'.")
+    async def callback(self, ctx: crescent.Context) -> None:
+        assert ctx.guild_id
+        await _update_override(self.name, ctx.guild_id, self._options())
+        await ctx.respond(f"Settings for override '{self.name}' updated.")
+
+
+@plugin.include
+@edit.child
+@crescent.command(
+    name="requirements", description="Edit a starboard's requirements"
+)
+class EditStarboardRequirements(BaseEditStarboardRequirements):
+    name = crescent.option(str, "The override to edit")
+
+    async def callback(self, ctx: crescent.Context) -> None:
+        assert ctx.guild_id
+        await _update_override(self.name, ctx.guild_id, self._options())
+        await ctx.respond(f"Settings for override '{self.name}' updated.")
+
+
+@plugin.include
+@edit.child
+@crescent.command(name="style", description="Edit a starboard's style")
+class EditStarboardStyle(BaseEditStarboardStyle):
+    name = crescent.option(str, "The override to edit")
+
+    async def callback(self, ctx: crescent.Context) -> None:
+        assert ctx.guild_id
+        await _update_override(self.name, ctx.guild_id, self._options())
+        await ctx.respond(f"Settings for override '{self.name}' updated.")
 
 
 @plugin.include
