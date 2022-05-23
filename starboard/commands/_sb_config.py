@@ -39,7 +39,7 @@ class BaseEditStarboardStyle:
     )
 
     def _options(self) -> dict[str, Any]:
-        pk = BaseEditStarboardBehaviour.__dict__.copy().keys()
+        pk = BaseEditStarboardStyle.__dict__.copy().keys()
         params = self.__dict__.copy()
 
         for k, v in list(params.items()):
@@ -70,7 +70,7 @@ class BaseEditStarboardEmbedStyle:
     )
 
     def _options(self) -> dict[str, Any]:
-        pk = BaseEditStarboardBehaviour.__dict__.copy().keys()
+        pk = BaseEditStarboardEmbedStyle.__dict__.copy().keys()
         params = self.__dict__.copy()
 
         for k, v in list(params.items()):
@@ -115,7 +115,7 @@ class BaseEditStarboardRequirements:
     )
 
     def _options(self) -> dict[str, Any]:
-        pk = BaseEditStarboardBehaviour.__dict__.copy().keys()
+        pk = BaseEditStarboardRequirements.__dict__.copy().keys()
         params = self.__dict__.copy()
 
         for k, v in list(params.items()):
