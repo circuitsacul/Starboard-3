@@ -470,7 +470,7 @@ class MessageInfo:
             sbm = await SBMessage.exists(message_id=msg.id, starboard_id=sb.id)
             config = await get_config(sb, msg.channel_id)
 
-            points = sbm.last_known_star_count if sbm else 0
+            points = sbm.last_known_point_count if sbm else 0
 
             embed.add_field(
                 name=cast(str, ch.name if ch else f"Deleted Channel {sb.id}"),

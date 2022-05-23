@@ -74,14 +74,14 @@ async def view_permroles(ctx: crescent.Context) -> None:
             name=name,
             inline=True,
             value=(
-                f"give-stars: {r.permrole.give_stars}\n"
-                f"receive-stars: {r.permrole.recv_stars}\n"
+                f"vote: {r.permrole.vote}\n"
+                f"receive-votes: {r.permrole.recv_votes}\n"
                 f"gain-xproles: {r.permrole.xproles}\n"
                 + (
                     "\n".join(
                         f"\nPermissions for <#{sid}>\n"
-                        f"give-stars: {conf.give_stars}\n"
-                        f"receive-stars: {conf.recv_stars}\n"
+                        f"vote: {conf.vote}\n"
+                        f"receive-votes: {conf.recv_votes}\n"
                         for sid, conf in r.starboards.items()
                     )
                 )
@@ -168,17 +168,12 @@ class DeletePermRole:
 class EditPermRoleGlobal:
     permrole = crescent.option(hikari.Role, "The PermRole to edit")
 
-    give_stars = optiond(
+    vote = optiond(str, "Whether to allow voting", choices=TRIBOOL_CHOICES)
+    recv_votes = optiond(
         str,
-        "Whether to allow giving stars",
+        "Whether to allow receiving votes",
         choices=TRIBOOL_CHOICES,
-        name="give-stars",
-    )
-    recv_stars = optiond(
-        str,
-        "Whether to allow receiving stars",
-        choices=TRIBOOL_CHOICES,
-        name="receive-stars",
+        name="receive-votes",
     )
     xproles = optiond(
         str,
@@ -217,17 +212,12 @@ class EditPermRoleStarboard:
         hikari.TextableGuildChannel, "The starboard to edit the PermRole for"
     )
 
-    give_stars = optiond(
+    vote = optiond(str, "Whether to allow voting", choices=TRIBOOL_CHOICES)
+    recv_votes = optiond(
         str,
-        "Whether to allow giving stars",
+        "Whether to allow receiving votes",
         choices=TRIBOOL_CHOICES,
-        name="give-stars",
-    )
-    recv_stars = optiond(
-        str,
-        "Whether to allow receiving stars",
-        choices=TRIBOOL_CHOICES,
-        name="receive-stars",
+        name="receive-votes",
     )
 
     async def callback(self, ctx: crescent.Context) -> None:
@@ -246,10 +236,10 @@ class EditPermRoleStarboard:
                 permrole_id=self.permrole.id, starboard_id=sb.id
             )
 
-        if self.give_stars is not UNDEF.UNDEF:
-            pr.give_stars = TRIBOOL[self.give_stars]
-        if self.recv_stars is not UNDEF.UNDEF:
-            pr.recv_stars = TRIBOOL[self.recv_stars]
+        if self.vote is not UNDEF.UNDEF:
+            pr.vote = TRIBOOL[self.vote]
+        if self.recv_votes is not UNDEF.UNDEF:
+            pr.recv_votes = TRIBOOL[self.recv_votes]
 
         await pr.save()
         await ctx.respond(

@@ -31,7 +31,7 @@ from apgorm import sql
 from pycooldown import FixedCooldown
 
 from starboard.config import CONFIG
-from starboard.database import Guild, Message, SBMessage, Star, Starboard
+from starboard.database import Guild, Message, SBMessage, Starboard, UpVote
 
 from .config import StarboardConfig, get_config
 from .has_image import has_image
@@ -160,9 +160,9 @@ async def _refresh_message_for_starboard(
         orig_msg.channel_id, orig_msg.id
     )
 
-    starcount = await _get_star_count(orig_msg.id, config.starboard.id)
+    points = await _get_points(orig_msg.id, config.starboard.id)
     action = _get_action(
-        orig_msg, orig_msg_obj, config, starcount, orig_msg_obj is None
+        orig_msg, orig_msg_obj, config, points, orig_msg_obj is None
     )
 
     sbmsg = await SBMessage.exists(
@@ -170,7 +170,7 @@ async def _refresh_message_for_starboard(
     )
     if (
         sbmsg is not None
-        and sbmsg.last_known_star_count == starcount
+        and sbmsg.last_known_point_count == points
         and not action.remove
         and not force
     ):
@@ -189,7 +189,7 @@ async def _refresh_message_for_starboard(
     if action.add and sbmsg_obj is None:
         if orig_msg_obj:
             content, embed, embeds = await get_sbmsg_content(
-                bot, config, orig_msg_obj, orig_msg, starcount, premium
+                bot, config, orig_msg_obj, orig_msg, points, premium
             )
             assert embed
             sbmsg_obj = await _send(
@@ -199,7 +199,7 @@ async def _refresh_message_for_starboard(
                 sbmsg.sb_message_id = sbmsg_obj.id
                 await sbmsg.save()
                 if config.autoreact:
-                    for emoji in config.star_emojis:
+                    for emoji in config.upvote_emojis:
                         assert emoji
                         _emoji: hikari.UnicodeEmoji | hikari.CustomEmoji
                         try:
@@ -228,7 +228,7 @@ async def _refresh_message_for_starboard(
 
         if orig_msg_obj:
             content, embed, embeds = await get_sbmsg_content(
-                bot, config, orig_msg_obj, orig_msg, starcount, premium
+                bot, config, orig_msg_obj, orig_msg, points, premium
             )
             assert embed
             if config.link_edits:
@@ -246,7 +246,7 @@ async def _refresh_message_for_starboard(
                 )
         else:
             content, _, _ = await get_sbmsg_content(
-                bot, config, None, orig_msg, starcount, premium
+                bot, config, None, orig_msg, points, premium
             )
             await _edit(
                 bot, config, sbmsg_obj, content, None, orig_msg.author_id
@@ -255,7 +255,7 @@ async def _refresh_message_for_starboard(
     else:
         sbmsg.sb_message_id = None
 
-    sbmsg.last_known_star_count = starcount
+    sbmsg.last_known_point_count = points
     await sbmsg.save()
 
 
@@ -380,9 +380,9 @@ async def _webhook(
     return wh
 
 
-def _get_star_count(orig_msg_id: int, starboard_id: int) -> Awaitable[int]:
+def _get_points(orig_msg_id: int, starboard_id: int) -> Awaitable[int]:
     return (
-        Star.fetch_query()
+        UpVote.fetch_query()
         .where(message_id=orig_msg_id, starboard_id=starboard_id)
         .count()
     )

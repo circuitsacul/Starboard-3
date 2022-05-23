@@ -158,19 +158,19 @@ class Random:
         "Only show messages sent in this channel",
         default=None,
     )
-    min_stars = crescent.option(
+    min_points = crescent.option(
         int,
-        "Only show messages with at least this many stars",
+        "Only show messages with at least this many points",
         default=None,
         min_value=1,
-        name="min-stars",
+        name="min-points",
     )
-    max_stars = crescent.option(
+    max_points = crescent.option(
         int,
-        "Only show messages with at most this many stars",
+        "Only show messages with at most this many points",
         default=None,
         min_value=1,
-        name="max-stars",
+        name="max-points",
     )
 
     async def callback(self, ctx: crescent.Context) -> None:
@@ -195,10 +195,10 @@ class Random:
 
         q.where(sbq.exists())
 
-        if self.min_stars:
-            q.where(SBMessage.last_known_star_count.gteq(self.min_stars))
-        if self.max_stars:
-            q.where(SBMessage.last_known_star_count.lteq(self.max_stars))
+        if self.min_points:
+            q.where(SBMessage.last_known_point_count.gteq(self.min_points))
+        if self.max_points:
+            q.where(SBMessage.last_known_point_count.lteq(self.max_points))
 
         q.order_by(r("random()"))
 
@@ -226,7 +226,7 @@ class Random:
             else None,
             config.use_server_profile,
             config.ping_author,
-            ret.last_known_star_count,
+            ret.last_known_point_count,
             orig.frozen,
             s.id in orig.forced_to,
             guild.premium_end is not None,
@@ -251,19 +251,19 @@ class MostStarred:
         "Only show messages sent in this channel",
         default=None,
     )
-    min_stars = crescent.option(
+    min_points = crescent.option(
         int,
-        "Only show messages with at least this many stars",
+        "Only show messages with at least this many points",
         default=None,
         min_value=1,
-        name="min-stars",
+        name="min-points",
     )
-    max_stars = crescent.option(
+    max_points = crescent.option(
         int,
-        "Only show messages with at most this many stars",
+        "Only show messages with at most this many points",
         default=None,
         min_value=1,
-        name="max-stars",
+        name="max-points",
     )
 
     async def callback(self, ctx: crescent.Context) -> None:
@@ -286,12 +286,12 @@ class MostStarred:
 
         q.where(sbq.exists())
 
-        if self.min_stars:
-            q.where(SBMessage.last_known_star_count.gteq(self.min_stars))
-        if self.max_stars:
-            q.where(SBMessage.last_known_star_count.lteq(self.max_stars))
+        if self.min_points:
+            q.where(SBMessage.last_known_point_count.gteq(self.min_points))
+        if self.max_points:
+            q.where(SBMessage.last_known_point_count.lteq(self.max_points))
 
-        q.order_by(SBMessage.last_known_star_count, True)
+        q.order_by(SBMessage.last_known_point_count, True)
         cursor = q.cursor()
 
         config = await get_config(s, ctx.guild_id)
@@ -315,7 +315,7 @@ class MostStarred:
                 else None,
                 config.use_server_profile,
                 config.ping_author,
-                sql_msg.last_known_star_count,
+                sql_msg.last_known_point_count,
                 orig.frozen,
                 s.id in orig.forced_to,
                 guild.premium_end is not None,

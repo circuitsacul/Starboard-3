@@ -77,17 +77,17 @@ def pretty_sb_config(
         "attachments-list": config.attachments_list,
     }
 
-    se = pretty_emoji_str(*config.star_emojis, bot=bot)
+    se = pretty_emoji_str(*config.upvote_emojis, bot=bot)
     requirements = {
         "required": config.required,
         "required-remove": config.required_remove,
-        "star-emojis": se,
-        "self-star": config.self_star,
+        "upvote-emojis": se,
+        "self-vote": config.self_vote,
         "allow-bots": config.allow_bots,
         "require-image": config.require_image,
     }
 
-    stars = config.cooldown_count
+    votes = config.cooldown_count
     secs = config.cooldown_period
     behaviour = {
         "autoreact": config.autoreact,
@@ -98,10 +98,10 @@ def pretty_sb_config(
         "xp-multiplier": config.xp_multiplier,
         "enabled": config.enabled,
         "cooldown-enabled": config.cooldown_enabled,
-        "cooldown": f"{stars} stars per {secs} seconds",
+        "cooldown": f"{votes} votes per {secs} seconds",
     }
 
-    if "cooldown-seconds" in b or "cooldown-stars" in b:
+    if "cooldown-seconds" in b or "cooldown-votes" in b:
         b.add("cooldown")
 
     def gen(dct: dict[str, Any]) -> str:

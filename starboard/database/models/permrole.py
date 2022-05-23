@@ -38,8 +38,8 @@ class PermRole(Model):
     guild_id = types.Numeric().field().with_converter(DecimalC)
 
     xproles = types.Boolean().nullablefield()
-    give_stars = types.Boolean().nullablefield()
-    recv_stars = types.Boolean().nullablefield()
+    vote = types.Boolean().nullablefield()
+    recv_votes = types.Boolean().nullablefield()
 
     primary_key = (id,)
 
@@ -52,8 +52,8 @@ class PermRoleStarboard(Model):
     permrole_id = types.Numeric().field().with_converter(DecimalC)
     starboard_id = types.Numeric().field().with_converter(DecimalC)
 
-    give_stars = types.Boolean().nullablefield()
-    recv_stars = types.Boolean().nullablefield()
+    vote = types.Boolean().nullablefield()
+    recv_votes = types.Boolean().nullablefield()
 
     primary_key = (permrole_id, starboard_id)
 

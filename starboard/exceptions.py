@@ -52,6 +52,6 @@ class MessageNotFound(StarboardErr):
         self.mid = mid
         super().__init__(
             f"No message with the id `{mid}` was found in the database. "
-            "Either the id is invalid, or this message just hasn't received "
-            "any stars yet."
+            "Either the ID is invalid, or this message just hasn't received "
+            "any votes yet."
         )

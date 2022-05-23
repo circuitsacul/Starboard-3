@@ -68,8 +68,8 @@ class Cache(CacheImpl):
         )
 
         # db side
-        self.__star_emojis: LFUCache[int, set[str]] = LFUCache(
-            CONFIG.staremoji_cache_size
+        self.__vote_emojis: LFUCache[int, set[str]] = LFUCache(
+            CONFIG.vote_emoji_cache_size
         )
 
         if TYPE_CHECKING:
@@ -80,31 +80,31 @@ class Cache(CacheImpl):
         self.__null_users.clear()
         self.__members.clear()
         self.__webhooks.clear()
-        self.__star_emojis.clear()
+        self.__vote_emojis.clear()
         self.clear_messages()
 
     def clear(self) -> None:
         self.clear_safe()
         super().clear()
 
-    def invalidate_star_emojis(
+    def invalidate_vote_emojis(
         self, guild: hikari.SnowflakeishOr[hikari.PartialGuild]
     ) -> None:
-        self.__star_emojis.pop(int(guild), None)
+        self.__vote_emojis.pop(int(guild), None)
 
-    async def guild_star_emojis(
+    async def guild_vote_emojis(
         self, guild: hikari.SnowflakeishOr[hikari.PartialGuild]
     ) -> set[str]:
         gid = int(guild)
         ge: set[str]
-        _ge = self.__star_emojis.get(gid, None)
+        _ge = self.__vote_emojis.get(gid, None)
         if _ge is None:
             sbs = await Starboard.fetch_query().where(guild_id=gid).fetchmany()
             ge = set()
             for s in sbs:
-                ge = ge.union(s.star_emojis)
+                ge = ge.union(s.upvote_emojis)
 
-            self.__star_emojis[gid] = ge
+            self.__vote_emojis[gid] = ge
             return ge
         return _ge
 

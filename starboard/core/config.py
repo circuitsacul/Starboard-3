@@ -60,8 +60,8 @@ class StarboardConfig:
     # Requirements
     required: int
     required_remove: int
-    star_emojis: list[str]
-    self_star: bool
+    upvote_emojis: list[str]
+    self_vote: bool
     allow_bots: bool
     require_image: bool
 

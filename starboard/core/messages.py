@@ -51,7 +51,7 @@ async def get_sbmsg_content(
     config: StarboardConfig,
     dis_orig_msg: hikari.Message | None,
     sql_orig_msg: Message,
-    starcount: int,
+    points: int,
     premium: bool,
 ) -> tuple[str, hikari.Embed | None, list[hikari.Embed]]:
     def _display_emoji() -> hikari.UnicodeEmoji | hikari.CustomEmoji | None:
@@ -73,7 +73,7 @@ async def get_sbmsg_content(
             _display_emoji(),
             config.use_server_profile,
             config.ping_author,
-            starcount,
+            points,
             frozen,
             forced,
             premium,
@@ -90,7 +90,7 @@ async def get_sbmsg_content(
             sql_orig_msg.author_id,
             _display_emoji(),
             config.ping_author,
-            starcount,
+            points,
             frozen,
             forced,
         ),

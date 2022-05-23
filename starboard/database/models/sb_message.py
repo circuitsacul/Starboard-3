@@ -41,7 +41,7 @@ class SBMessage(apgorm.Model):
         types.Numeric().nullablefield().with_converter(NullDecimalC)
     )
 
-    last_known_star_count = types.SmallInt().field(default=0)
+    last_known_point_count = types.SmallInt().field(default=0)
 
     message_id_fk = apgorm.ForeignKey(message_id, Message.id)
     starboard_id_fk = apgorm.ForeignKey(starboard_id, Starboard.id)

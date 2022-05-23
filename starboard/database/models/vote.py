@@ -33,7 +33,7 @@ from .starboard import Starboard
 from .user import User
 
 
-class Star(apgorm.Model):
+class UpVote(apgorm.Model):
     __slots__: Iterable[str] = tuple()
 
     message_id = types.Numeric().field().with_converter(DecimalC)

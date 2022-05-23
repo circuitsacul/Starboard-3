@@ -29,9 +29,9 @@ from .models.override import Override
 from .models.permrole import PermRole, PermRoleStarboard
 from .models.posrole import PosRole, PosRoleMember
 from .models.sb_message import SBMessage
-from .models.star import Star
 from .models.starboard import Starboard, validate_sb_changes
 from .models.user import PatreonStatus, Patron, User, goc_patron, goc_user
+from .models.vote import UpVote
 from .models.xprole import XPRole
 
 __all__ = (
@@ -46,7 +46,7 @@ __all__ = (
     "PosRole",
     "PosRoleMember",
     "SBMessage",
-    "Star",
+    "UpVote",
     "Starboard",
     "User",
     "Patron",

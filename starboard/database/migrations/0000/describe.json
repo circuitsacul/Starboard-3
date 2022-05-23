@@ -205,12 +205,12 @@
                     "not_null": true
                 },
                 {
-                    "name": "star_emojis",
+                    "name": "upvote_emojis",
                     "type_": "TEXT[]",
                     "not_null": true
                 },
                 {
-                    "name": "self_star",
+                    "name": "self_vote",
                     "type_": "BOOLEAN",
                     "not_null": true
                 },
@@ -360,12 +360,12 @@
                     "not_null": false
                 },
                 {
-                    "name": "give_stars",
+                    "name": "vote",
                     "type_": "BOOLEAN",
                     "not_null": false
                 },
                 {
-                    "name": "recv_stars",
+                    "name": "recv_votes",
                     "type_": "BOOLEAN",
                     "not_null": false
                 }
@@ -398,12 +398,12 @@
                     "not_null": true
                 },
                 {
-                    "name": "give_stars",
+                    "name": "vote",
                     "type_": "BOOLEAN",
                     "not_null": false
                 },
                 {
-                    "name": "recv_stars",
+                    "name": "recv_votes",
                     "type_": "BOOLEAN",
                     "not_null": false
                 }
@@ -668,7 +668,7 @@
                     "not_null": false
                 },
                 {
-                    "name": "last_known_star_count",
+                    "name": "last_known_point_count",
                     "type_": "SMALLINT",
                     "not_null": true
                 }
@@ -692,7 +692,7 @@
             "exclude_constraints": []
         },
         {
-            "name": "stars",
+            "name": "upvotes",
             "fields": [
                 {
                     "name": "message_id",
@@ -734,8 +734,8 @@
                 }
             ],
             "pk_constraint": {
-                "name": "_stars_message_id_starboard_id_user_id_primary_key",
-                "raw_sql": "CONSTRAINT _stars_message_id_starboard_id_user_id_primary_key PRIMARY KEY ( message_id , starboard_id , user_id )"
+                "name": "_upvotes_message_id_starboard_id_user_id_primary_key",
+                "raw_sql": "CONSTRAINT _upvotes_message_id_starboard_id_user_id_primary_key PRIMARY KEY ( message_id , starboard_id , user_id )"
             },
             "unique_constraints": [],
             "check_constraints": [],
@@ -802,8 +802,8 @@
             "raw_sql": "UNIQUE INDEX _btree_index_sb_messages__sb_message_id ON sb_messages USING BTREE ( ( sb_message_id ) )"
         },
         {
-            "name": "_btree_index_sb_messages__last_known_star_count",
-            "raw_sql": "INDEX _btree_index_sb_messages__last_known_star_count ON sb_messages USING BTREE ( ( last_known_star_count ) )"
+            "name": "_btree_index_sb_messages__last_known_point_count",
+            "raw_sql": "INDEX _btree_index_sb_messages__last_known_point_count ON sb_messages USING BTREE ( ( last_known_point_count ) )"
         },
         {
             "name": "_hash_index_sb_messages__starboard_id",
@@ -822,28 +822,28 @@
             "raw_sql": "INDEX _hash_index_starboards__guild_id ON starboards USING HASH ( ( guild_id ) )"
         },
         {
-            "name": "_gin_index_starboards__star_emojis",
-            "raw_sql": "INDEX _gin_index_starboards__star_emojis ON starboards USING GIN ( ( star_emojis ) )"
+            "name": "_gin_index_starboards__upvote_emojis",
+            "raw_sql": "INDEX _gin_index_starboards__upvote_emojis ON starboards USING GIN ( ( upvote_emojis ) )"
         },
         {
             "name": "_hash_index_xproles__guild_id",
             "raw_sql": "INDEX _hash_index_xproles__guild_id ON xproles USING HASH ( ( guild_id ) )"
         },
         {
-            "name": "_hash_index_stars__starboard_id",
-            "raw_sql": "INDEX _hash_index_stars__starboard_id ON stars USING HASH ( ( starboard_id ) )"
+            "name": "_hash_index_upvotes__starboard_id",
+            "raw_sql": "INDEX _hash_index_upvotes__starboard_id ON upvotes USING HASH ( ( starboard_id ) )"
         },
         {
-            "name": "_hash_index_stars__user_id",
-            "raw_sql": "INDEX _hash_index_stars__user_id ON stars USING HASH ( ( user_id ) )"
+            "name": "_hash_index_upvotes__user_id",
+            "raw_sql": "INDEX _hash_index_upvotes__user_id ON upvotes USING HASH ( ( user_id ) )"
         },
         {
-            "name": "_hash_index_stars__message_id",
-            "raw_sql": "INDEX _hash_index_stars__message_id ON stars USING HASH ( ( message_id ) )"
+            "name": "_hash_index_upvotes__message_id",
+            "raw_sql": "INDEX _hash_index_upvotes__message_id ON upvotes USING HASH ( ( message_id ) )"
         },
         {
-            "name": "_hash_index_stars__target_author_id",
-            "raw_sql": "INDEX _hash_index_stars__target_author_id ON stars USING HASH ( ( target_author_id ) )"
+            "name": "_hash_index_upvotes__target_author_id",
+            "raw_sql": "INDEX _hash_index_upvotes__target_author_id ON upvotes USING HASH ( ( target_author_id ) )"
         }
     ]
 }
