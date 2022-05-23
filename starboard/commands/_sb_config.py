@@ -12,14 +12,13 @@ from ._converters import any_emoji_str, convert, hex_color, none_or
 from ._utils import optiond
 
 
-class EditStarboardConfig:
+class BaseEditStarboardStyle:
     def __init_subclass__(cls) -> None:
-        for k, v in EditStarboardConfig.__dict__.items():
+        for k, v in BaseEditStarboardStyle.__dict__.items():
             if not isinstance(v, crescent.ClassCommandOption):
                 continue
             setattr(cls, k, v)
 
-    # General Style
     display_emoji = optiond(
         str, "The emoji next to the point count", name="display-emoji"
     )
@@ -39,7 +38,27 @@ class EditStarboardConfig:
         name="use-webhook",
     )
 
-    # Embed Style
+    def _options(self) -> dict[str, Any]:
+        pk = BaseEditStarboardBehaviour.__dict__.copy().keys()
+        params = self.__dict__.copy()
+
+        for k, v in list(params.items()):
+            if k not in pk or v is UNDEF.UNDEF:
+                del params[k]
+
+        # conversion
+        convert("display_emoji", params, none_or(any_emoji_str))
+
+        return params
+
+
+class BaseEditStarboardEmbedStyle:
+    def __init_subclass__(cls) -> None:
+        for k, v in BaseEditStarboardEmbedStyle.__dict__.items():
+            if not isinstance(v, crescent.ClassCommandOption):
+                continue
+            setattr(cls, k, v)
+
     color = optiond(str, "The color of the starboard embeds")
     jump_to_message = optiond(
         bool, "Whether to include the message link", name="jump-to-message"
@@ -50,7 +69,27 @@ class EditStarboardConfig:
         name="attachments-list",
     )
 
-    # Requirements
+    def _options(self) -> dict[str, Any]:
+        pk = BaseEditStarboardBehaviour.__dict__.copy().keys()
+        params = self.__dict__.copy()
+
+        for k, v in list(params.items()):
+            if k not in pk or v is UNDEF.UNDEF:
+                del params[k]
+
+        # conversion
+        convert("color", params, hex_color)
+
+        return params
+
+
+class BaseEditStarboardRequirements:
+    def __init_subclass__(cls) -> None:
+        for k, v in BaseEditStarboardRequirements.__dict__.items():
+            if not isinstance(v, crescent.ClassCommandOption):
+                continue
+            setattr(cls, k, v)
+
     required = optiond(
         int, "The number of points required for a message to be starboarded"
     )
@@ -75,7 +114,24 @@ class EditStarboardConfig:
         name="require-image",
     )
 
-    # Behaviour
+    def _options(self) -> dict[str, Any]:
+        pk = BaseEditStarboardBehaviour.__dict__.copy().keys()
+        params = self.__dict__.copy()
+
+        for k, v in list(params.items()):
+            if k not in pk or v is UNDEF.UNDEF:
+                del params[k]
+
+        return params
+
+
+class BaseEditStarboardBehaviour:
+    def __init_subclass__(cls) -> None:
+        for k, v in BaseEditStarboardBehaviour.__dict__.items():
+            if not isinstance(v, crescent.ClassCommandOption):
+                continue
+            setattr(cls, k, v)
+
     autoreact = optiond(
         bool,
         "Whether to automatically react to messages sent to the starboard",
@@ -109,7 +165,7 @@ class EditStarboardConfig:
     enabled = optiond(bool, "Whether the starboard is enabled")
 
     def _options(self) -> dict[str, Any]:
-        pk = EditStarboardConfig.__dict__.copy().keys()
+        pk = BaseEditStarboardBehaviour.__dict__.copy().keys()
         params = self.__dict__.copy()
 
         for k, v in list(params.items()):
@@ -117,9 +173,6 @@ class EditStarboardConfig:
                 del params[k]
 
         # conversion
-        convert("color", params, hex_color)
-        convert("display_emoji", params, none_or(any_emoji_str))
-
         if c := params.pop("cooldown", None):
             count, secs = _parse_cooldown(c)
             params["cooldown_count"] = count
