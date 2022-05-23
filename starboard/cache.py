@@ -48,6 +48,7 @@ class Cache(CacheImpl):
                 | CacheComponents.EMOJIS
                 | CacheComponents.MESSAGES
                 | CacheComponents.ME
+                | CacheComponents.MEMBERS
             ),
             max_messages=CONFIG.message_cache_size,
         )
@@ -144,6 +145,14 @@ class Cache(CacheImpl):
 
         self._set_user(obj)
         return obj
+
+    def get_member(
+        self,
+        guild: hikari.SnowflakeishOr[hikari.PartialGuild],
+        user: hikari.SnowflakeishOr[hikari.PartialUser],
+        /,
+    ) -> hikari.Member | None:
+        return self.__members.get((int(guild), int(user)))
 
     async def gof_member(
         self,
