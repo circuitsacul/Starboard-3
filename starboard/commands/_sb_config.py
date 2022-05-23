@@ -52,17 +52,17 @@ class EditStarboardConfig:
 
     # Requirements
     required = optiond(
-        int, "The number of reactions required for a message to be starboarded"
+        int, "The number of points required for a message to be starboarded"
     )
     required_remove = optiond(
         int,
-        "The fewest number of stars a message can have before it is removed",
+        "The fewest number of points a message can have before it is removed",
         name="required-remove",
     )
-    self_star = optiond(
+    self_vote = optiond(
         bool,
-        "Whether to allow users to star their own messages",
-        name="self-star",
+        "Whether to allow users to vote on their own messages",
+        name="self-vote",
     )
     allow_bots = optiond(
         bool,
@@ -103,7 +103,7 @@ class EditStarboardConfig:
     )
     cooldown = optiond(
         str,
-        "Set the capacity and period of the cooldown (e.g. 5/6 means 5 stars "
+        "Set the capacity and period of the cooldown (e.g. 5/6 means 5 votes "
         "per 6 seconds)",
     )
     enabled = optiond(bool, "Whether the starboard is enabled")
@@ -136,7 +136,7 @@ def _parse_cooldown(text: str) -> tuple[int, float]:
     if not m:
         raise StarboardErr(
             f"'{text}' is not a valid cooldown. You need to pass both the "
-            "capacity and the period. For example, '5 6' means 5 stars per 6 "
+            "capacity and the period. For example, '5 6' means 5 votes per 6 "
             "seconds."
         )
     gd = m.groupdict()

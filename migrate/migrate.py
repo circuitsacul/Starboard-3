@@ -255,11 +255,11 @@ async def _migrate_starboards(
             guild_id=oldsb["guild_id"],
             required=oldsb["required"],
             required_remove=max(-1, oldsb["rtl"]),
-            self_star=oldsb["self_star"],
+            self_vote=oldsb["self_star"],
             allow_bots=oldsb["bots_on_sb"],
             link_edits=oldsb["link_edits"],
             link_deletes=oldsb["link_deletes"],
-            star_emojis=newemojis,
+            upvote_emojis=newemojis,
             require_image=oldsb["require_image"],
         ).create(con=new)
 
@@ -358,7 +358,7 @@ async def _migrate_starboard_messages(
                 "message_id",
                 "starboard_id",
                 "sb_message_id",
-                "last_known_star_count",
+                "last_known_point_count",
             ],
         )
         args.clear()
@@ -419,7 +419,7 @@ async def _migrate_reactions(
     for s in await newdb.Starboard.fetch_query(new).fetchmany():
         sb_emoji_map.setdefault(s.guild_id, dict()).setdefault(
             s.id, set()
-        ).update(s.star_emojis)
+        ).update(s.upvote_emojis)
 
     def get_sb(guild: int, reaction: str) -> set[int] | None:
         sbids: set[int] = set()

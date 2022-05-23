@@ -34,9 +34,9 @@ from .models import (
     permrole,
     posrole,
     sb_message,
-    star,
     starboard,
     user,
+    vote,
     xprole,
 )
 
@@ -81,7 +81,7 @@ class Database(apgorm.Database):
 
     messages = message.Message
     sb_messages = sb_message.SBMessage
-    stars = star.Star
+    votes = vote.Vote
 
     indexes = [
         # patrons
@@ -100,7 +100,7 @@ class Database(apgorm.Database):
         Index(overrides, overrides.channel_ids, IndexType.GIN),
         # sbmessages
         Index(sb_messages, sb_messages.sb_message_id, unique=True),
-        Index(sb_messages, sb_messages.last_known_star_count),
+        Index(sb_messages, sb_messages.last_known_point_count),
         Index(sb_messages, sb_messages.starboard_id, IndexType.HASH),
         # permroles
         Index(permroles, permroles.guild_id, IndexType.HASH),
@@ -110,12 +110,14 @@ class Database(apgorm.Database):
         ),
         # starboards
         Index(starboards, starboards.guild_id, IndexType.HASH),
-        Index(starboards, starboards.star_emojis, IndexType.GIN),
+        Index(starboards, starboards.upvote_emojis, IndexType.GIN),
+        Index(starboards, starboards.downvote_emojis, IndexType.GIN),
         # xproles
         Index(xproles, xproles.guild_id, IndexType.HASH),
-        # stars
-        Index(stars, stars.starboard_id, IndexType.HASH),
-        Index(stars, stars.user_id, IndexType.HASH),
-        Index(stars, stars.message_id, IndexType.HASH),
-        Index(stars, stars.target_author_id, IndexType.HASH),
+        # votes
+        Index(votes, votes.starboard_id, IndexType.HASH),
+        Index(votes, votes.user_id, IndexType.HASH),
+        Index(votes, votes.message_id, IndexType.HASH),
+        Index(votes, votes.target_author_id, IndexType.HASH),
+        Index(votes, votes.is_downvote, IndexType.HASH),
     ]

@@ -48,7 +48,7 @@ class Config:
     max_required_remove: int = 500
     max_cooldown_period: int = 60
     max_cooldown_cap: int = 60
-    max_star_emojis: int = 5
+    max_vote_emojis: int = 5
     max_starboards: int = 10
 
     # autostar settings restrictions
@@ -79,10 +79,11 @@ class Config:
     np_max_starboards: int = 3
     np_max_autostar: int = 1
     np_max_asc_emojis: int = 3
-    np_max_star_emojis: int = 3
+    np_max_vote_emojis: int = 3
 
     # functionality
     max_xp: int = 999_999_999
+    min_xp: int = -999_999_999
     leaderboard_length: int = 50
     asc_cooldown_cap: int = 5
     asc_cooldown_period: int = 10
@@ -94,8 +95,8 @@ class Config:
     refresh_xp_period: int = 60
     edit_cooldown_cap: int = 3
     edit_cooldown_period: int = 20
-    guild_star_cooldown_cap: int = 500
-    guild_star_cooldown_period: int = 30
+    guild_vote_cooldown_cap: int = 500
+    guild_vote_cooldown_period: int = 30
     credits_per_month: int = 3
     days_per_month: int = 32  # just be safe
 
@@ -110,7 +111,7 @@ class Config:
     message_cache_size: int = 1_000
     message_null_cache_size: int = 1_000
     webhook_cache_size: int = 1_000
-    staremoji_cache_size: int = 1_000
+    vote_emoji_cache_size: int = 1_000
 
     # botlists & stats
     api_keys: Dict[str, str] = field(default_factory=dict)

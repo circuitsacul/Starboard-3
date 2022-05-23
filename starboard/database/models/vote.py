@@ -33,7 +33,7 @@ from .starboard import Starboard
 from .user import User
 
 
-class Star(apgorm.Model):
+class Vote(apgorm.Model):
     __slots__: Iterable[str] = tuple()
 
     message_id = types.Numeric().field().with_converter(DecimalC)
@@ -41,6 +41,7 @@ class Star(apgorm.Model):
     user_id = types.Numeric().field().with_converter(DecimalC)
 
     target_author_id = types.Numeric().field().with_converter(DecimalC)
+    is_downvote = types.Boolean().field(default=False)
 
     message_id_fk = apgorm.ForeignKey(message_id, Message.id)
     starboard_id_fk = apgorm.ForeignKey(starboard_id, Starboard.id)
