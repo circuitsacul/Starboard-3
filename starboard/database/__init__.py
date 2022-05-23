@@ -31,7 +31,7 @@ from .models.posrole import PosRole, PosRoleMember
 from .models.sb_message import SBMessage
 from .models.starboard import Starboard, validate_sb_changes
 from .models.user import PatreonStatus, Patron, User, goc_patron, goc_user
-from .models.vote import UpVote
+from .models.vote import Vote
 from .models.xprole import XPRole
 
 __all__ = (
@@ -46,7 +46,7 @@ __all__ = (
     "PosRole",
     "PosRoleMember",
     "SBMessage",
-    "UpVote",
+    "Vote",
     "Starboard",
     "User",
     "Patron",

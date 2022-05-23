@@ -22,8 +22,7 @@
 
 from __future__ import annotations
 
-import contextlib
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Iterable
 
 import apgorm
 import asyncpg
@@ -31,7 +30,7 @@ import hikari
 from pycooldown import FlexibleCooldown
 
 from starboard.config import CONFIG
-from starboard.database import Message, UpVote, User
+from starboard.database import Message, User, Vote
 
 from .config import StarboardConfig
 from .permrole import get_permissions
@@ -101,23 +100,29 @@ async def is_vote_valid_for(
 async def add_votes(
     orig_message_id: int,
     user_id: int,
-    starboard_ids: list[int],
+    starboard_ids: Iterable[int],
     target_author_id: int,
+    is_downvote: bool,
 ) -> None:
     for sbid in starboard_ids:
-        with contextlib.suppress(asyncpg.UniqueViolationError):
-            await UpVote(
+        try:
+            await Vote(
                 message_id=orig_message_id,
                 user_id=user_id,
                 starboard_id=sbid,
                 target_author_id=target_author_id,
+                is_downvote=is_downvote,
             ).create()
+        except asyncpg.UniqueViolationError:
+            await Vote.update_query().where(
+                message_id=orig_message_id, user_id=user_id, starboard_id=sbid
+            ).set(is_downvote=is_downvote).execute()
 
 
 async def remove_votes(
     orig_message_id: int, user_id: int, starboard_ids: list[int]
 ) -> None:
-    await UpVote.delete_query().where(
+    await Vote.delete_query().where(
         message_id=orig_message_id,
         user_id=user_id,
         starboard_id=apgorm.sql(starboard_ids).any,

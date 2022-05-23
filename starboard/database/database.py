@@ -81,7 +81,7 @@ class Database(apgorm.Database):
 
     messages = message.Message
     sb_messages = sb_message.SBMessage
-    upvotes = vote.UpVote
+    votes = vote.Vote
 
     indexes = [
         # patrons
@@ -111,11 +111,13 @@ class Database(apgorm.Database):
         # starboards
         Index(starboards, starboards.guild_id, IndexType.HASH),
         Index(starboards, starboards.upvote_emojis, IndexType.GIN),
+        Index(starboards, starboards.downvote_emojis, IndexType.GIN),
         # xproles
         Index(xproles, xproles.guild_id, IndexType.HASH),
-        # upvotes
-        Index(upvotes, upvotes.starboard_id, IndexType.HASH),
-        Index(upvotes, upvotes.user_id, IndexType.HASH),
-        Index(upvotes, upvotes.message_id, IndexType.HASH),
-        Index(upvotes, upvotes.target_author_id, IndexType.HASH),
+        # votes
+        Index(votes, votes.starboard_id, IndexType.HASH),
+        Index(votes, votes.user_id, IndexType.HASH),
+        Index(votes, votes.message_id, IndexType.HASH),
+        Index(votes, votes.target_author_id, IndexType.HASH),
+        Index(votes, votes.is_downvote, IndexType.HASH),
     ]

@@ -61,6 +61,7 @@ class StarboardConfig:
     required: int
     required_remove: int
     upvote_emojis: list[str]
+    downvote_emojis: list[str]
     self_vote: bool
     allow_bots: bool
     require_image: bool

@@ -210,6 +210,11 @@
                     "not_null": true
                 },
                 {
+                    "name": "downvote_emojis",
+                    "type_": "TEXT[]",
+                    "not_null": true
+                },
+                {
                     "name": "self_vote",
                     "type_": "BOOLEAN",
                     "not_null": true
@@ -692,7 +697,7 @@
             "exclude_constraints": []
         },
         {
-            "name": "upvotes",
+            "name": "votes",
             "fields": [
                 {
                     "name": "message_id",
@@ -712,6 +717,11 @@
                 {
                     "name": "target_author_id",
                     "type_": "NUMERIC",
+                    "not_null": true
+                },
+                {
+                    "name": "is_downvote",
+                    "type_": "BOOLEAN",
                     "not_null": true
                 }
             ],
@@ -734,8 +744,8 @@
                 }
             ],
             "pk_constraint": {
-                "name": "_upvotes_message_id_starboard_id_user_id_primary_key",
-                "raw_sql": "CONSTRAINT _upvotes_message_id_starboard_id_user_id_primary_key PRIMARY KEY ( message_id , starboard_id , user_id )"
+                "name": "_votes_message_id_starboard_id_user_id_primary_key",
+                "raw_sql": "CONSTRAINT _votes_message_id_starboard_id_user_id_primary_key PRIMARY KEY ( message_id , starboard_id , user_id )"
             },
             "unique_constraints": [],
             "check_constraints": [],
@@ -826,24 +836,32 @@
             "raw_sql": "INDEX _gin_index_starboards__upvote_emojis ON starboards USING GIN ( ( upvote_emojis ) )"
         },
         {
+            "name": "_gin_index_starboards__downvote_emojis",
+            "raw_sql": "INDEX _gin_index_starboards__downvote_emojis ON starboards USING GIN ( ( downvote_emojis ) )"
+        },
+        {
             "name": "_hash_index_xproles__guild_id",
             "raw_sql": "INDEX _hash_index_xproles__guild_id ON xproles USING HASH ( ( guild_id ) )"
         },
         {
-            "name": "_hash_index_upvotes__starboard_id",
-            "raw_sql": "INDEX _hash_index_upvotes__starboard_id ON upvotes USING HASH ( ( starboard_id ) )"
+            "name": "_hash_index_votes__starboard_id",
+            "raw_sql": "INDEX _hash_index_votes__starboard_id ON votes USING HASH ( ( starboard_id ) )"
         },
         {
-            "name": "_hash_index_upvotes__user_id",
-            "raw_sql": "INDEX _hash_index_upvotes__user_id ON upvotes USING HASH ( ( user_id ) )"
+            "name": "_hash_index_votes__user_id",
+            "raw_sql": "INDEX _hash_index_votes__user_id ON votes USING HASH ( ( user_id ) )"
         },
         {
-            "name": "_hash_index_upvotes__message_id",
-            "raw_sql": "INDEX _hash_index_upvotes__message_id ON upvotes USING HASH ( ( message_id ) )"
+            "name": "_hash_index_votes__message_id",
+            "raw_sql": "INDEX _hash_index_votes__message_id ON votes USING HASH ( ( message_id ) )"
         },
         {
-            "name": "_hash_index_upvotes__target_author_id",
-            "raw_sql": "INDEX _hash_index_upvotes__target_author_id ON upvotes USING HASH ( ( target_author_id ) )"
+            "name": "_hash_index_votes__target_author_id",
+            "raw_sql": "INDEX _hash_index_votes__target_author_id ON votes USING HASH ( ( target_author_id ) )"
+        },
+        {
+            "name": "_hash_index_votes__is_downvote",
+            "raw_sql": "INDEX _hash_index_votes__is_downvote ON votes USING HASH ( ( is_downvote ) )"
         }
     ]
 }

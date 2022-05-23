@@ -103,7 +103,7 @@ class Cache(CacheImpl):
             sbs = await Starboard.fetch_query().where(guild_id=gid).fetchmany()
             ge = set()
             for s in sbs:
-                ge = ge.union(s.upvote_emojis)
+                ge = ge.union(s.upvote_emojis).union(s.downvote_emojis)
 
             self.__vote_emojis[gid] = ge
             return ge

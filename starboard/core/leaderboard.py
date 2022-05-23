@@ -27,7 +27,7 @@ from dataclasses import dataclass
 from pycooldown import FixedCooldown
 
 from starboard.config import CONFIG
-from starboard.database import Member, Starboard, UpVote
+from starboard.database import Member, Starboard, Vote
 
 REFRESH_XP_COOLDOWN: FixedCooldown[tuple[int, int]] = FixedCooldown(
     CONFIG.refresh_xp_period, CONFIG.refresh_xp_cap
@@ -47,8 +47,10 @@ async def refresh_xp(guild_id: int, user_id: int) -> bool | None:
     )
     xp: float = 0.0
     for sb in starboards:
-        points = await UpVote.count(
-            starboard_id=sb.id, target_author_id=user_id
+        points = await Vote.count(
+            starboard_id=sb.id, target_author_id=user_id, is_downvote=False
+        ) - await Vote.count(
+            starboard_id=sb.id, target_author_id=user_id, is_downvote=True
         )
         xp += points * sb.xp_multiplier
     member.xp = xp

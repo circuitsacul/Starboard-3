@@ -23,6 +23,7 @@
 from __future__ import annotations
 
 import asyncio
+import itertools
 from typing import TYPE_CHECKING, cast
 
 import apgorm
@@ -64,8 +65,10 @@ async def handle_reaction_add(event: hikari.GuildReactionAddEvent) -> None:
     if COOLDOWN.update_rate_limit(event.guild_id):
         return
 
-    starboards = await _get_starboards_for_emoji(emoji_str, event.guild_id)
-    if len(starboards) == 0:
+    up_starboards, down_starboards = await _get_starboards_for_emoji(
+        emoji_str, event.guild_id
+    )
+    if not up_starboards and not down_starboards:
         return
 
     orig_msg = await get_orig_message(event.message_id)
@@ -92,9 +95,10 @@ async def handle_reaction_add(event: hikari.GuildReactionAddEvent) -> None:
 
     author = await User.fetch(id=orig_msg.author_id)
     author_obj = await bot.cache.gof_member(event.guild_id, author.id)
-    valid_starboard_ids: list[int] = []
+    valid_upvote_starboard_ids: set[int] = set()
+    valid_downvote_starboard_ids: set[int] = set()
     remove_invalid: bool = True
-    for s in starboards:
+    for s in up_starboards:
         c = await get_config(s, orig_msg.channel_id)
         if not c.remove_invalid:
             remove_invalid = False
@@ -104,9 +108,24 @@ async def handle_reaction_add(event: hikari.GuildReactionAddEvent) -> None:
         if await is_vote_valid_for(
             bot, c, orig_msg, author, author_obj, event.member
         ):
-            valid_starboard_ids.append(s.id)
+            valid_upvote_starboard_ids.add(s.id)
+    for s in down_starboards:
+        c = await get_config(s, orig_msg.channel_id)
+        if not c.remove_invalid:
+            remove_invalid = False
+        if not c.enabled:
+            remove_invalid = False
+            continue
+        if await is_vote_valid_for(
+            bot, c, orig_msg, author, author_obj, event.member
+        ):
+            valid_downvote_starboard_ids.add(s.id)
 
-    if len(valid_starboard_ids) == 0 and remove_invalid:
+    if (
+        not valid_upvote_starboard_ids
+        and not valid_downvote_starboard_ids
+        and remove_invalid
+    ):
         actual_msg = await bot.cache.gof_message(
             event.channel_id, event.message_id
         )
@@ -129,14 +148,28 @@ async def handle_reaction_add(event: hikari.GuildReactionAddEvent) -> None:
 
     # create a "star" for each starboard
     await add_votes(
-        orig_msg.id, event.user_id, valid_starboard_ids, orig_msg.author_id
+        orig_msg.id,
+        event.user_id,
+        valid_upvote_starboard_ids,
+        orig_msg.author_id,
+        is_downvote=False,
+    )
+    await add_votes(
+        orig_msg.id,
+        event.user_id,
+        valid_downvote_starboard_ids,
+        orig_msg.author_id,
+        is_downvote=True,
     )
 
     guild = await Guild.fetch(id=event.guild_id)
     ip = guild.premium_end is not None
 
     await refresh_message(
-        cast("Bot", event.app), orig_msg, valid_starboard_ids, premium=ip
+        cast("Bot", event.app),
+        orig_msg,
+        valid_upvote_starboard_ids.union(valid_downvote_starboard_ids),
+        premium=ip,
     )
     await refresh_xp(event.guild_id, orig_msg.author_id)
 
@@ -164,10 +197,10 @@ async def handle_reaction_remove(
     if orig_msg.frozen:
         return
 
-    starboards = await _get_starboards_for_emoji(emoji_str, event.guild_id)
+    up_sb, down_sb = await _get_starboards_for_emoji(emoji_str, event.guild_id)
 
     valid_sbids: list[int] = []
-    for s in starboards:
+    for s in itertools.chain(up_sb, down_sb):
         c = await get_config(s, orig_msg.channel_id)
         if not c.enabled:
             continue
@@ -207,8 +240,8 @@ def _get_emoji_str_from_event(
 
 async def _get_starboards_for_emoji(
     emoji_str: str, guild_id: int
-) -> apgorm.LazyList[dict, Starboard]:
-    return (
+) -> tuple[apgorm.LazyList[dict, Starboard], apgorm.LazyList[dict, Starboard]]:
+    upvote_starboards = (
         await Starboard.fetch_query()
         .where(guild_id=guild_id)
         .where(
@@ -221,3 +254,18 @@ async def _get_starboards_for_emoji(
         )
         .fetchmany()
     )
+    downvote_starboards = (
+        await Starboard.fetch_query()
+        .where(guild_id=guild_id)
+        .where(
+            apgorm.sql(
+                Starboard.downvote_emojis,
+                apgorm.raw("&& array["),
+                emoji_str,
+                apgorm.raw("]"),
+            )
+        )
+        .fetchmany()
+    )
+
+    return upvote_starboards, downvote_starboards

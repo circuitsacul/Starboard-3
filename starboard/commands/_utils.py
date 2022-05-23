@@ -77,11 +77,13 @@ def pretty_sb_config(
         "attachments-list": config.attachments_list,
     }
 
-    se = pretty_emoji_str(*config.upvote_emojis, bot=bot)
+    upvote_emojis = pretty_emoji_str(*config.upvote_emojis, bot=bot)
+    downvote_emojis = pretty_emoji_str(*config.downvote_emojis, bot=bot)
     requirements = {
         "required": config.required,
         "required-remove": config.required_remove,
-        "upvote-emojis": se,
+        "upvote-emojis": upvote_emojis,
+        "downvote-emojis": downvote_emojis,
         "self-vote": config.self_vote,
         "allow-bots": config.allow_bots,
         "require-image": config.require_image,

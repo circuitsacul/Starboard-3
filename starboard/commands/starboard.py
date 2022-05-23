@@ -284,14 +284,14 @@ class EditStarboard(EditStarboardConfig):
 
 
 upvote_emojis = starboards.sub_group(
-    "upvote-emojis", "Modify upvote emojis for a starboard"
+    "emojis", "Modify upvote/downvote emojis for a starboard"
 )
 
 
 @plugin.include
 @upvote_emojis.child
-@crescent.command(name="set", description="Set the upvote emojis")
-class SetStarEmoji:
+@crescent.command(name="set-upvote", description="Set the upvote emojis")
+class SetUpvoteEmojis:
     starboard = crescent.option(
         hikari.TextableGuildChannel,
         "The starboard to set the upvote emojis for",
@@ -307,15 +307,54 @@ class SetStarEmoji:
 
         guild = await Guild.fetch(id=ctx.guild_id)
         ip = guild.premium_end is not None
-        limit = CONFIG.max_upvote_emojis if ip else CONFIG.np_max_upvote_emojis
+        limit = CONFIG.max_vote_emojis if ip else CONFIG.np_max_vote_emojis
 
-        emojis = any_emoji_list(self.emojis)
-        if len(emojis) > limit:
+        upvote_emojis = any_emoji_list(self.emojis)
+        downvote_emojis = set(s.downvote_emojis)
+        downvote_emojis.difference_update(upvote_emojis)
+        if len(upvote_emojis) + len(downvote_emojis) > limit:
             raise StarboardErr(
-                f"You an only have up to {limit} upvote emojis per starboard."
+                f"You an only have up to {limit} emojis per starboard."
                 + (" Get premium to increase this." if not ip else "")
             )
-        s.upvote_emojis = list(emojis)
+        s.upvote_emojis = list(upvote_emojis)
+        s.downvote_emojis = list(downvote_emojis)
+        await s.save()
+        bot.cache.invalidate_vote_emojis(ctx.guild_id)
+        await ctx.respond("Done.")
+
+
+@plugin.include
+@upvote_emojis.child
+@crescent.command(name="set-downvote", description="Set the downvote emojis")
+class SetDownvoteEmojis:
+    starboard = crescent.option(
+        hikari.TextableGuildChannel,
+        "The starboard to set the upvote emojis for",
+    )
+    emojis = crescent.option(str, "A list of emojis to use")
+
+    async def callback(self, ctx: crescent.Context) -> None:
+        bot = cast("Bot", ctx.app)
+        assert ctx.guild_id
+        s = await Starboard.exists(id=self.starboard.id)
+        if not s:
+            raise StarboardNotFound(self.starboard.id)
+
+        guild = await Guild.fetch(id=ctx.guild_id)
+        ip = guild.premium_end is not None
+        limit = CONFIG.max_vote_emojis if ip else CONFIG.np_max_vote_emojis
+
+        downvote_emojis = any_emoji_list(self.emojis)
+        upvote_emojis = set(s.upvote_emojis)
+        upvote_emojis.difference_update(downvote_emojis)
+        if len(upvote_emojis) + len(downvote_emojis) > limit:
+            raise StarboardErr(
+                f"You an only have up to {limit} emojis per starboard."
+                + (" Get premium to increase this." if not ip else "")
+            )
+        s.upvote_emojis = list(upvote_emojis)
+        s.downvote_emojis = list(downvote_emojis)
         await s.save()
         bot.cache.invalidate_vote_emojis(ctx.guild_id)
         await ctx.respond("Done.")
@@ -329,6 +368,9 @@ class AddStarEmoji:
         hikari.TextableGuildChannel, "The starboard to add the upvote emoji to"
     )
     emoji = crescent.option(str, "The upvote emoji to add")
+    is_downvote = crescent.option(
+        bool, "Whether this is a downvote emoji", default=False
+    )
 
     async def callback(self, ctx: crescent.Context) -> None:
         assert ctx.guild_id
@@ -338,26 +380,32 @@ class AddStarEmoji:
             raise StarboardNotFound(self.starboard.id)
 
         e = any_emoji_str(self.emoji)
-        emojis = list(s.upvote_emojis)
-        if e in emojis:
-            await ctx.respond(
-                f"{e} is already an upvote emoji for <#{s.id}>.",
-                ephemeral=True,
-            )
-            return
+        upvote_emojis = set(s.upvote_emojis)
+        downvote_emojis = set(s.downvote_emojis)
+
+        if self.is_downvote:
+            if e in upvote_emojis:
+                upvote_emojis.remove(e)
+            if e not in downvote_emojis:
+                downvote_emojis.add(e)
+        else:
+            if e in downvote_emojis:
+                downvote_emojis.remove(e)
+            if e not in upvote_emojis:
+                upvote_emojis.add(e)
 
         guild = await Guild.fetch(id=ctx.guild_id)
         ip = guild.premium_end is not None
-        limit = CONFIG.max_upvote_emojis if ip else CONFIG.np_max_upvote_emojis
+        limit = CONFIG.max_vote_emojis if ip else CONFIG.np_max_vote_emojis
 
-        if len(emojis) >= limit:
+        if len(upvote_emojis) + len(downvote_emojis) >= limit:
             raise StarboardErr(
-                f"You an only have up to {limit} upvote emojis per starboard."
+                f"You an only have up to {limit} emojis per starboard."
                 + (" Get premium to increase this." if not ip else "")
             )
 
-        emojis.append(e)
-        s.upvote_emojis = emojis
+        s.upvote_emojis = list(upvote_emojis)
+        s.downvote_emojis = list(downvote_emojis)
         await s.save()
         bot.cache.invalidate_vote_emojis(ctx.guild_id)
         await ctx.respond("Done.")
@@ -365,13 +413,12 @@ class AddStarEmoji:
 
 @plugin.include
 @upvote_emojis.child
-@crescent.command(name="remove", description="Remove an upvote emoji")
+@crescent.command(name="remove", description="Remove an upvote/downvote emoji")
 class RemoveStarEmoji:
     starboard = crescent.option(
-        hikari.TextableGuildChannel,
-        "The starboard to remove the upvote emoji from",
+        hikari.TextableGuildChannel, "The starboard to remove the emoji from"
     )
-    emoji = crescent.option(str, "The upvote emoji to remove")
+    emoji = crescent.option(str, "The emoji to remove")
 
     async def callback(self, ctx: crescent.Context) -> None:
         bot = cast("Bot", ctx.app)
@@ -382,15 +429,21 @@ class RemoveStarEmoji:
             raise StarboardNotFound(self.starboard.id)
 
         e = any_emoji_str(self.emoji)
-        emojis = list(s.upvote_emojis)
-        if e not in emojis:
+        upvote_emojis = set(s.upvote_emojis)
+        downvote_emojis = set(s.downvote_emojis)
+
+        if e in upvote_emojis:
+            upvote_emojis.remove(e)
+        elif e in downvote_emojis:
+            downvote_emojis.remove(e)
+        else:
             await ctx.respond(
                 f"{e} is not an upvote emoji on <#{s.id}>", ephemeral=True
             )
             return
 
-        emojis.remove(e)
-        s.upvote_emojis = emojis
+        s.upvote_emojis = list(upvote_emojis)
+        s.downvote_emojis = list(downvote_emojis)
         await s.save()
         bot.cache.invalidate_vote_emojis(ctx.guild_id)
         await ctx.respond("Done.")

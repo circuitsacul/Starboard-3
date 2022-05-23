@@ -66,4 +66,4 @@ class Member(apgorm.Model):
 
     primary_key = (user_id, guild_id)
 
-    xp.add_validator(num_range("XP", 0, CONFIG.max_xp))
+    xp.add_validator(num_range("XP", CONFIG.min_xp, CONFIG.max_xp))

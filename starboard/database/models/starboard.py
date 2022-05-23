@@ -109,6 +109,11 @@ class Starboard(apgorm.Model):
         .field(default_factory=lambda: list(["⭐"]))
         .with_converter(NonNullArray(str))
     )
+    downvote_emojis = (
+        types.Array(types.Text())
+        .field(default_factory=lambda: [])
+        .with_converter(NonNullArray(str))
+    )
     self_vote = types.Boolean().field(default=False)
     allow_bots = types.Boolean().field(default=True)
     require_image = types.Boolean().field(default=False)

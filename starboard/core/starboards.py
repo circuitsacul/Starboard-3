@@ -24,14 +24,14 @@ from __future__ import annotations
 
 import asyncio
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Awaitable, Sequence
+from typing import TYPE_CHECKING, Iterable
 
 import hikari
 from apgorm import sql
 from pycooldown import FixedCooldown
 
 from starboard.config import CONFIG
-from starboard.database import Guild, Message, SBMessage, Starboard, UpVote
+from starboard.database import Guild, Message, SBMessage, Starboard, Vote
 
 from .config import StarboardConfig, get_config
 from .has_image import has_image
@@ -47,7 +47,7 @@ LOCK: set[int] = set()
 async def refresh_message(
     bot: Bot,
     orig_message: Message,
-    sbids: Sequence[int] | None = None,
+    sbids: Iterable[int] | None = None,
     force: bool = False,
     premium: bool | None = None,
 ) -> None:
@@ -111,7 +111,7 @@ async def _handle_trashed_message(bot: Bot, orig_message: Message) -> None:
 async def _refresh_message(
     bot: Bot,
     orig_message: Message,
-    sbids: Sequence[int] | None,
+    sbids: Iterable[int] | None,
     force: bool,
     premium: bool,
 ) -> None:
@@ -380,10 +380,20 @@ async def _webhook(
     return wh
 
 
-def _get_points(orig_msg_id: int, starboard_id: int) -> Awaitable[int]:
+async def _get_points(orig_msg_id: int, starboard_id: int) -> int:
     return (
-        UpVote.fetch_query()
-        .where(message_id=orig_msg_id, starboard_id=starboard_id)
+        await Vote.fetch_query()
+        .where(
+            message_id=orig_msg_id,
+            starboard_id=starboard_id,
+            is_downvote=False,
+        )
+        .count()
+    ) - (
+        await Vote.fetch_query()
+        .where(
+            message_id=orig_msg_id, starboard_id=starboard_id, is_downvote=True
+        )
         .count()
     )
 
