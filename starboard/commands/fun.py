@@ -337,4 +337,7 @@ class MostStarred:
             ensure_message=True,
         )
         paginator.start(initial)
-        await paginator.wait()
+        try:
+            await paginator.wait()
+        finally:
+            await cursor.aclose()
