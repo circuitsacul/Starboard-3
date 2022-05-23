@@ -101,7 +101,7 @@ def pretty_sb_config(
         "cooldown": f"{votes} votes per {secs} seconds",
     }
 
-    if "cooldown-seconds" in b or "cooldown-votes" in b:
+    if "cooldown-period" in b or "cooldown-count" in b:
         b.add("cooldown")
 
     def gen(dct: dict[str, Any]) -> str:
