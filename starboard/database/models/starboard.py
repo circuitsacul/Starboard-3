@@ -100,6 +100,7 @@ class Starboard(apgorm.Model):
     color = types.Int().field(default=CONFIG.color)
     jump_to_message = types.Boolean().field(default=True)
     attachments_list = types.Boolean().field(default=True)
+    replied_to = types.Boolean().field(default=True)
 
     # Requirements
     required = types.SmallInt().field(default=3)

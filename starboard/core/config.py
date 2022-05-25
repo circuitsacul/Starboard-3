@@ -56,6 +56,7 @@ class StarboardConfig:
     color: int
     jump_to_message: bool
     attachments_list: bool
+    replied_to: bool
 
     # Requirements
     required: int

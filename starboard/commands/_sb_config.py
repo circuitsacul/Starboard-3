@@ -68,6 +68,11 @@ class BaseEditStarboardEmbedStyle:
         "Whether to include the list of attachments",
         name="attachments-list",
     )
+    replied_to = optiond(
+        bool,
+        "Whether to include the message that was replied to",
+        name="replied-to",
+    )
 
     def _options(self) -> dict[str, Any]:
         pk = BaseEditStarboardEmbedStyle.__dict__.copy().keys()

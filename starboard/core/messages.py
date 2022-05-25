@@ -66,19 +66,20 @@ async def get_sbmsg_content(
 
     if dis_orig_msg is not None:
         c, e, es = await embed_message(
-            bot,
-            dis_orig_msg,
-            config.starboard.guild_id,
-            config.color,
-            _display_emoji(),
-            config.use_server_profile,
-            config.ping_author,
-            points,
-            frozen,
-            forced,
-            premium,
-            config.attachments_list,
-            config.jump_to_message,
+            bot=bot,
+            message=dis_orig_msg,
+            guild_id=config.starboard.guild_id,
+            color=config.color,
+            display_emoji=_display_emoji(),
+            server_profile=config.use_server_profile,
+            ping_author=config.ping_author,
+            point_count=points,
+            frozen=frozen,
+            forced=forced,
+            gifs=premium,
+            attachments_list=config.attachments_list,
+            jump_to_message=config.jump_to_message,
+            replied_to=config.replied_to,
         )
         if config.extra_embeds:
             return c, e, es

@@ -75,6 +75,7 @@ def pretty_sb_config(
         "color": pretty_color(config.color),
         "jump-to-message": config.jump_to_message,
         "attachments-list": config.attachments_list,
+        "replied-to": config.replied_to,
     }
 
     upvote_emojis = pretty_emoji_str(*config.upvote_emojis, bot=bot)

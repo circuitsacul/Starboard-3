@@ -232,6 +232,7 @@ class Random:
             guild.premium_end is not None,
             config.attachments_list,
             config.jump_to_message,
+            config.replied_to,
         )
 
         await ctx.respond(content=raw, embeds=[e, *es])
@@ -321,6 +322,7 @@ class MostStarred:
                 guild.premium_end is not None,
                 config.attachments_list,
                 config.jump_to_message,
+                config.replied_to,
             )
 
             return [e, *es], raw
