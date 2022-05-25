@@ -93,7 +93,8 @@ def pretty_sb_config(
     votes = config.cooldown_count
     secs = config.cooldown_period
     behaviour = {
-        "autoreact": config.autoreact,
+        "autoreact-upvote": config.autoreact_upvote,
+        "autoreact-downvote": config.autoreact_downvote,
         "remove-invalid": config.remove_invalid,
         "link-deletes": config.link_deletes,
         "link-edits": config.link_edits,

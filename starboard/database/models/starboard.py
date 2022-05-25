@@ -121,7 +121,8 @@ class Starboard(apgorm.Model):
 
     # Behaviour
     enabled = types.Boolean().field(default=True)
-    autoreact = types.Boolean().field(default=True)
+    autoreact_upvote = types.Boolean().field(default=True)
+    autoreact_downvote = types.Boolean().field(default=True)
     remove_invalid = types.Boolean().field(default=True)
     link_deletes = types.Boolean().field(default=False)
     link_edits = types.Boolean().field(default=True)

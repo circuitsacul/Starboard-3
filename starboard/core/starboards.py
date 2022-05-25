@@ -198,25 +198,12 @@ async def _refresh_message_for_starboard(
             if sbmsg_obj:
                 sbmsg.sb_message_id = sbmsg_obj.id
                 await sbmsg.save()
-                if config.autoreact:
-                    for emoji in config.upvote_emojis:
-                        assert emoji
-                        _emoji: hikari.UnicodeEmoji | hikari.CustomEmoji
-                        try:
-                            __emoji = bot.cache.get_emoji(int(emoji))
-                            if __emoji is None:
-                                continue
-                            _emoji = __emoji
-                        except ValueError:
-                            _emoji = hikari.UnicodeEmoji.parse(emoji)
-                        try:
-                            await sbmsg_obj.add_reaction(_emoji)
-                        except (
-                            hikari.ForbiddenError,
-                            hikari.BadRequestError,
-                            hikari.NotFoundError,
-                        ):
-                            pass
+                if config.autoreact_upvote:
+                    await _add_reactions(bot, config.upvote_emojis, sbmsg_obj)
+                if config.autoreact_downvote:
+                    await _add_reactions(
+                        bot, config.downvote_emojis, sbmsg_obj
+                    )
 
     elif action.remove:
         if sbmsg_obj is not None:
@@ -257,6 +244,28 @@ async def _refresh_message_for_starboard(
 
     sbmsg.last_known_point_count = points
     await sbmsg.save()
+
+
+async def _add_reactions(
+    bot: Bot, emojis: list[str], sbmsg_obj: hikari.Message
+) -> None:
+    for emoji in emojis:
+        _emoji: hikari.UnicodeEmoji | hikari.CustomEmoji
+        try:
+            __emoji = bot.cache.get_emoji(int(emoji))
+            if __emoji is None:
+                continue
+            _emoji = __emoji
+        except ValueError:
+            _emoji = hikari.UnicodeEmoji.parse(emoji)
+        try:
+            await sbmsg_obj.add_reaction(_emoji)
+        except (
+            hikari.ForbiddenError,
+            hikari.BadRequestError,
+            hikari.NotFoundError,
+        ):
+            pass
 
 
 EDIT_COOLDOWN: FixedCooldown[int] = FixedCooldown(
