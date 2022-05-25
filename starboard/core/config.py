@@ -56,6 +56,7 @@ class StarboardConfig:
     color: int
     jump_to_message: bool
     attachments_list: bool
+    replied_to: bool
 
     # Requirements
     required: int
@@ -68,7 +69,8 @@ class StarboardConfig:
 
     # Behaviour
     enabled: bool
-    autoreact: bool
+    autoreact_upvote: bool
+    autoreact_downvote: bool
     remove_invalid: bool
     link_deletes: bool
     link_edits: bool

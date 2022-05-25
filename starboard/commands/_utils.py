@@ -75,6 +75,7 @@ def pretty_sb_config(
         "color": pretty_color(config.color),
         "jump-to-message": config.jump_to_message,
         "attachments-list": config.attachments_list,
+        "replied-to": config.replied_to,
     }
 
     upvote_emojis = pretty_emoji_str(*config.upvote_emojis, bot=bot)
@@ -92,7 +93,8 @@ def pretty_sb_config(
     votes = config.cooldown_count
     secs = config.cooldown_period
     behaviour = {
-        "autoreact": config.autoreact,
+        "autoreact-upvote": config.autoreact_upvote,
+        "autoreact-downvote": config.autoreact_downvote,
         "remove-invalid": config.remove_invalid,
         "link-deletes": config.link_deletes,
         "link-edits": config.link_edits,

@@ -68,6 +68,11 @@ class BaseEditStarboardEmbedStyle:
         "Whether to include the list of attachments",
         name="attachments-list",
     )
+    replied_to = optiond(
+        bool,
+        "Whether to include the message that was replied to",
+        name="replied-to",
+    )
 
     def _options(self) -> dict[str, Any]:
         pk = BaseEditStarboardEmbedStyle.__dict__.copy().keys()
@@ -132,9 +137,17 @@ class BaseEditStarboardBehaviour:
                 continue
             setattr(cls, k, v)
 
-    autoreact = optiond(
+    autoreact_upvote = optiond(
         bool,
-        "Whether to automatically react to messages sent to the starboard",
+        "Whether to automatically react to messages sent to the starboard "
+        "with the upvote emojis",
+        name="autoreact-upvote",
+    )
+    autoreact_downvote = optiond(
+        bool,
+        "Whether to automatically react to messages sent to the starboard "
+        "with the downvote emojis",
+        name="autoreact-downvote",
     )
     remove_invalid = optiond(
         bool, "Whether to remove invalid reactions", name="remove-invalid"

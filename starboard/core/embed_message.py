@@ -74,6 +74,7 @@ async def embed_message(
     gifs: bool,
     attachments_list: bool,
     jump_to_message: bool,
+    replied_to: bool,
 ) -> tuple[str, hikari.Embed, list[hikari.Embed]]:
     channel = await bot.cache.gof_guild_channel_wnsfw(message.channel_id)
     assert channel is not None
@@ -102,7 +103,8 @@ async def embed_message(
     if image_urls and len(image_urls):
         embed.set_image(image_urls[0])
 
-    await _extract_reply(bot, message, guild_id, server_profile, embed)
+    if replied_to:
+        await _extract_reply(bot, message, guild_id, server_profile, embed)
 
     return (
         get_raw_message_text(
