@@ -195,6 +195,11 @@
                     "not_null": true
                 },
                 {
+                    "name": "replied_to",
+                    "type_": "BOOLEAN",
+                    "not_null": true
+                },
+                {
                     "name": "required",
                     "type_": "SMALLINT",
                     "not_null": true
@@ -235,7 +240,12 @@
                     "not_null": true
                 },
                 {
-                    "name": "autoreact",
+                    "name": "autoreact_upvote",
+                    "type_": "BOOLEAN",
+                    "not_null": true
+                },
+                {
+                    "name": "autoreact_downvote",
                     "type_": "BOOLEAN",
                     "not_null": true
                 },
