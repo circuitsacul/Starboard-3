@@ -249,7 +249,7 @@ def paginate(text: str, max: int) -> Iterable[str]:
 
 def seconds_to_human(seconds: int) -> str:
     return cast(
-        str, humanize.naturaldelta(datetime.timedelta(seconds=seconds))
+        str, humanize.precisedelta(datetime.timedelta(seconds=seconds))
     )
 
 
