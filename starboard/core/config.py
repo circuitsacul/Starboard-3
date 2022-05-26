@@ -66,6 +66,8 @@ class StarboardConfig:
     self_vote: bool
     allow_bots: bool
     require_image: bool
+    older_than: int
+    newer_than: int
 
     # Behaviour
     enabled: bool

@@ -22,8 +22,11 @@
 
 from __future__ import annotations
 
+import datetime
 from typing import TYPE_CHECKING, Callable, Iterable, cast
 
+import humanize
+import pytimeparse
 from hikari import UNDEFINED, Message, MessageType
 
 if TYPE_CHECKING:
@@ -242,3 +245,13 @@ def paginate(text: str, max: int) -> Iterable[str]:
             text = text[len(yielded) :]
         else:
             break
+
+
+def seconds_to_human(seconds: int) -> str:
+    return cast(
+        str, humanize.naturaldelta(datetime.timedelta(seconds=seconds))
+    )
+
+
+def human_to_seconds(human: str) -> int:
+    return cast(int, pytimeparse.parse(human)) or 0

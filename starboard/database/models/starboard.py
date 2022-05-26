@@ -78,6 +78,16 @@ def validate_sb_changes(**changes: Any) -> None:
         changes,
         num_range("xp-multiplier", CONFIG.min_xp_mul, CONFIG.max_xp_mul),
     )
+    _validate(
+        "older_than",
+        changes,
+        num_range("older-than", 0, CONFIG.max_older_than),
+    )
+    _validate(
+        "newer_than",
+        changes,
+        num_range("newer-than", 0, CONFIG.max_newer_than),
+    )
 
 
 class Starboard(apgorm.Model):
@@ -118,6 +128,8 @@ class Starboard(apgorm.Model):
     self_vote = types.Boolean().field(default=False)
     allow_bots = types.Boolean().field(default=True)
     require_image = types.Boolean().field(default=False)
+    older_than = types.BigInt().field(default=0)
+    newer_than = types.BigInt().field(default=0)
 
     # Behaviour
     enabled = types.Boolean().field(default=True)

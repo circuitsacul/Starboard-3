@@ -31,6 +31,7 @@ import hikari
 from starboard.core.config import StarboardConfig
 from starboard.core.emojis import stored_to_emoji
 from starboard.undefined import UNDEF
+from starboard.utils import seconds_to_human
 
 if TYPE_CHECKING:
     from starboard.bot import Bot
@@ -88,6 +89,12 @@ def pretty_sb_config(
         "self-vote": config.self_vote,
         "allow-bots": config.allow_bots,
         "require-image": config.require_image,
+        "older-than": seconds_to_human(config.older_than)
+        if config.older_than
+        else "disabled",
+        "newer-than": seconds_to_human(config.newer_than)
+        if config.newer_than
+        else "disabled",
     }
 
     votes = config.cooldown_count
