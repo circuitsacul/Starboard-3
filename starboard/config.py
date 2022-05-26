@@ -48,6 +48,8 @@ class Config:
     max_required_remove: int = 500
     max_cooldown_period: int = 60
     max_cooldown_cap: int = 60
+    max_newer_than: int = 86400 * 7  # 1 week
+    max_older_than: int = 86400 * 7
     max_vote_emojis: int = 5
     max_starboards: int = 10
 

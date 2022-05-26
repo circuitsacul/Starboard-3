@@ -26,8 +26,10 @@ from typing import Any, Callable, Iterable
 
 import apgorm
 from apgorm import types
+from apgorm.exceptions import InvalidFieldValue
 
 from starboard.config import CONFIG
+from starboard.utils import seconds_to_human
 
 from ._converters import DecimalC, NonNullArray, NullDecimalC
 from ._validators import num_range, valid_emoji
@@ -39,6 +41,20 @@ def _validate(
 ) -> None:
     if key in changes:
         assert func(changes[key])
+
+
+def delta_range(name: str, max: int) -> Callable[[int], bool]:
+    def validator(value: int) -> bool:
+        if value is None:
+            return True
+        if max is not None and value > max:
+            raise InvalidFieldValue(
+                f"{name} must be at most {seconds_to_human(max)}."
+            )
+
+        return True
+
+    return validator
 
 
 def validate_sb_changes(**changes: Any) -> None:
@@ -77,6 +93,12 @@ def validate_sb_changes(**changes: Any) -> None:
         "xp_multiplier",
         changes,
         num_range("xp-multiplier", CONFIG.min_xp_mul, CONFIG.max_xp_mul),
+    )
+    _validate(
+        "older_than", changes, delta_range("older-than", CONFIG.max_older_than)
+    )
+    _validate(
+        "newer_than", changes, delta_range("newer-than", CONFIG.max_newer_than)
     )
 
 
@@ -118,6 +140,8 @@ class Starboard(apgorm.Model):
     self_vote = types.Boolean().field(default=False)
     allow_bots = types.Boolean().field(default=True)
     require_image = types.Boolean().field(default=False)
+    older_than = types.BigInt().field(default=0)
+    newer_than = types.BigInt().field(default=0)
 
     # Behaviour
     enabled = types.Boolean().field(default=True)

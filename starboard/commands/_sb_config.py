@@ -7,6 +7,7 @@ import crescent
 
 from starboard.exceptions import StarboardErr
 from starboard.undefined import UNDEF
+from starboard.utils import human_to_seconds
 
 from ._converters import any_emoji_str, convert, hex_color, none_or
 from ._utils import optiond
@@ -118,10 +119,24 @@ class BaseEditStarboardRequirements:
         "Whether to require messages to include an image",
         name="require-image",
     )
+    older_than = optiond(
+        str,
+        "Only messages older than this can be starred (0 to disable)",
+        name="older-than",
+    )
+    newer_than = optiond(
+        str,
+        "Only messages newer than this can be starred (0 to disable)",
+        name="newer-than",
+    )
 
     def _options(self) -> dict[str, Any]:
         pk = BaseEditStarboardRequirements.__dict__.copy().keys()
         params = self.__dict__.copy()
+
+        # conversion
+        convert("newer_than", params, human_to_seconds)
+        convert("older_than", params, human_to_seconds)
 
         for k, v in list(params.items()):
             if k not in pk or v is UNDEF.UNDEF:

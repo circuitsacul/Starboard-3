@@ -22,6 +22,7 @@
 
 from __future__ import annotations
 
+import datetime
 from typing import TYPE_CHECKING, Iterable
 
 import apgorm
@@ -70,6 +71,15 @@ async def is_vote_valid_for(
         config.cooldown_period,
         config.cooldown_count,
     ):
+        return False
+
+    # check age filters
+    now = datetime.datetime.now(datetime.timezone.utc)
+    created_at = hikari.Snowflake(orig_message.id).created_at
+    age = (now - created_at).total_seconds()
+    if config.newer_than and age > config.newer_than:
+        return False
+    if config.older_than and age < config.older_than:
         return False
 
     # check permissions
