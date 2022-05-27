@@ -135,8 +135,8 @@ class BaseEditStarboardRequirements:
         params = self.__dict__.copy()
 
         # conversion
-        convert("newer_than", params, human_to_seconds)
-        convert("older_than", params, human_to_seconds)
+        convert("newer_than", params, none_or(human_to_seconds, noneval=0))
+        convert("older_than", params, none_or(human_to_seconds, noneval=0))
 
         for k, v in list(params.items()):
             if k not in pk or v is UNDEF.UNDEF:

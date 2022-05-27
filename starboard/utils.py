@@ -23,11 +23,13 @@
 from __future__ import annotations
 
 import datetime
+import re
 from typing import TYPE_CHECKING, Callable, Iterable, cast
 
 import humanize
-import pytimeparse
 from hikari import UNDEFINED, Message, MessageType
+
+from .exceptions import StarboardErr
 
 if TYPE_CHECKING:
     from starboard.bot import Bot
@@ -253,5 +255,63 @@ def seconds_to_human(seconds: int) -> str:
     )
 
 
+DELTA_UNITS = {
+    "s": 1,
+    "m": 60,
+    "h": 60 * 60,
+    "d": 60 * 60 * 24,
+    "w": 60 * 60 * 24 * 7,
+    "mo": 60 * 60 * 24 * 30,
+    "y": 60 * 60 * 24 * 365,
+}
+
+
+UNIT_CONVERSION = {
+    "second": "s",
+    "minute": "m",
+    "hour": "h",
+    "day": "d",
+    "week": "w",
+    "month": "mo",
+    "year": "y",
+}
+
+
+def _normalize_unit(unit: str) -> str:
+    unit = unit.strip()
+    _unit = unit[:-1] if unit.endswith("s") else unit
+    return UNIT_CONVERSION.get(_unit) or unit
+
+
+TOKEN_RE = re.compile(r"^(?P<value>\d+)(?P<unit>\w+)$")
+
+
 def human_to_seconds(human: str) -> int:
-    return cast(int, pytimeparse.parse(human)) or 0
+    space_split_tokens = human.split(" ")
+    seconds: int = 0
+
+    carry: str | None = None
+    for token in space_split_tokens:
+        if carry:
+            token = f"{carry}{token}"
+            carry = None
+
+        if token.isdigit():
+            carry = token
+            continue
+
+        match = TOKEN_RE.match(token)
+        if not match:
+            raise StarboardErr(
+                f"I couldn't interpret {token} as a unit of time."
+            )
+
+        value = int(match.group("value"))
+        unit = _normalize_unit(match.group("unit"))
+        conversion_unit = DELTA_UNITS.get(unit)
+        if conversion_unit is None:
+            raise StarboardErr(f"I don't know what `{unit}` is.")
+
+        seconds += value * conversion_unit
+
+    return seconds

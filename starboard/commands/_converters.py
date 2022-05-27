@@ -24,7 +24,7 @@ from __future__ import annotations
 
 import re
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Any, Callable, TypeVar
+from typing import TYPE_CHECKING, Any, Callable, TypeVar, overload
 
 import emoji
 import hikari
@@ -38,6 +38,7 @@ if TYPE_CHECKING:
     from starboard.database import Message
 
 _T = TypeVar("_T")
+_N = TypeVar("_N")
 
 
 def convert(key: str, dct: dict[str, Any], func: Callable[[Any], Any]) -> None:
@@ -83,17 +84,31 @@ def disid(text: Any) -> int:
         raise StarboardErr(f"'{str(text)}' is not a valid ID.")
 
 
+@overload
 def none_or(
-    func: Callable[[str], _T], nonefirst: bool = True
+    func: Callable[[str], _T], noneval: None = ..., nonefirst: bool = ...
 ) -> Callable[[str], _T | None]:
-    def wrapper(text: str) -> _T | None:
+    ...
+
+
+@overload
+def none_or(
+    func: Callable[[str], _T], noneval: _N, nonefirst: bool = ...
+) -> Callable[[str], _T | _N]:
+    ...
+
+
+def none_or(
+    func: Callable[[str], _T], noneval: _N = None, nonefirst: bool = True
+) -> Callable[[str], _T | _N | None]:
+    def wrapper(text: str) -> _T | _N | None:
         if nonefirst and text.lower() in ["none", "default"]:
-            return None
+            return noneval
         try:
             return func(text)
         except Exception as e:
             if not nonefirst and text.lower() in ["none", "default"]:
-                return None
+                return noneval
             raise e
 
     return wrapper
