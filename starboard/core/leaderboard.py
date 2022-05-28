@@ -46,8 +46,10 @@ async def refresh_xp(guild_id: int, user_id: int) -> bool | None:
         await Starboard.fetch_query().where(guild_id=guild_id).fetchmany()
     )
     member.xp = sum(
-        (await _count_votes(sb, user_id)) * sb.xp_multiplier
-        for sb in starboards
+        [
+            (await _count_votes(sb, user_id)) * sb.xp_multiplier
+            for sb in starboards
+        ]
     )
     await member.save()
     return True
