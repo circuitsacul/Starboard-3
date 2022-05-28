@@ -45,10 +45,7 @@ COOLDOWN: FixedCooldown[int] = FixedCooldown(
 
 
 async def update_posroles(bot: Bot, guild_id: int) -> bool:
-    if guild_id in LOCK:
-        return False
-
-    if COOLDOWN.update_rate_limit(guild_id):
+    if guild_id in LOCK or COOLDOWN.update_rate_limit(guild_id):
         return False
 
     LOCK.add(guild_id)
