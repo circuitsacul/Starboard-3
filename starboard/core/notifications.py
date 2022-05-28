@@ -22,6 +22,7 @@
 
 from __future__ import annotations
 
+from contextlib import suppress
 from typing import TYPE_CHECKING, cast
 
 from hikari import ButtonStyle, ForbiddenError, NotFoundError, User
@@ -52,7 +53,5 @@ async def notify(user: User, text: str) -> None:
         print("Skipping notification (development mode)")
         return
 
-    try:
+    with suppress(ForbiddenError, NotFoundError):
         await user.send(text, component=row)
-    except (ForbiddenError, NotFoundError):
-        pass

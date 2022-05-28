@@ -23,6 +23,7 @@
 from __future__ import annotations
 
 import asyncio
+from contextlib import suppress
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Iterable
 
@@ -82,7 +83,7 @@ async def _handle_trashed_message(bot: Bot, orig_message: Message) -> None:
         sbmsg = await SBMessage.exists(
             message_id=orig_message.id, starboard_id=sid
         )
-        if not sbmsg or not sbmsg.sb_message_id:
+        if not (sbmsg and sbmsg.sb_message_id):
             continue
 
         sbmsg_obj = await bot.cache.gof_message(
@@ -232,7 +233,7 @@ async def _refresh_message_for_starboard(
                     bot, config, sbmsg_obj, content, None, orig_msg.author_id
                 )
         else:
-            content, _, _ = await get_sbmsg_content(
+            content, *_ = await get_sbmsg_content(
                 bot, config, None, orig_msg, points, premium
             )
             await _edit(
@@ -258,14 +259,10 @@ async def _add_reactions(
             _emoji = __emoji
         except ValueError:
             _emoji = hikari.UnicodeEmoji.parse(emoji)
-        try:
-            await sbmsg_obj.add_reaction(_emoji)
-        except (
-            hikari.ForbiddenError,
-            hikari.BadRequestError,
-            hikari.NotFoundError,
+        with suppress(
+            hikari.ForbiddenError, hikari.BadRequestError, hikari.NotFoundError
         ):
-            pass
+            await sbmsg_obj.add_reaction(_emoji)
 
 
 EDIT_COOLDOWN: FixedCooldown[int] = FixedCooldown(
@@ -286,7 +283,7 @@ async def _edit(
 
     if message.author.id != bot.me.id:
         wh = await _webhook(bot, config, False)
-        if (not wh) or wh.webhook_id != message.author.id:
+        if not wh or wh.webhook_id != message.author.id:
             return
 
         await wh.edit_message(
@@ -317,10 +314,8 @@ async def _delete(
 
         else:
             # try anyways. will work if bot has manage_messages
-            try:
+            with suppress(hikari.ForbiddenError):
                 await message.delete()
-            except hikari.ForbiddenError:
-                pass
 
 
 async def _send(
@@ -333,7 +328,7 @@ async def _send(
     webhook = await _webhook(bot, config)
 
     if webhook and config.use_webhook:
-        try:
+        with suppress(hikari.NotFoundError):
             botuser = bot.get_me()
             assert botuser
             return await webhook.execute(
@@ -341,18 +336,15 @@ async def _send(
                 embeds=embeds or hikari.UNDEFINED,
                 user_mentions=(author_id,),
             )
-        except hikari.NotFoundError:
-            pass
 
-    try:
+    with suppress(hikari.ForbiddenError, hikari.NotFoundError):
         return await bot.rest.create_message(
             config.starboard.id,
             content,
             embeds=embeds or hikari.UNDEFINED,
             user_mentions=(author_id,),
         )
-    except (hikari.ForbiddenError, hikari.NotFoundError):
-        return None
+    return None
 
 
 async def _webhook(

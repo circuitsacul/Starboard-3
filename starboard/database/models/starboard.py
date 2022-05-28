@@ -103,7 +103,7 @@ def validate_sb_changes(**changes: Any) -> None:
 
 
 class Starboard(apgorm.Model):
-    __slots__: Iterable[str] = tuple()
+    __slots__: Iterable[str] = ()
 
     id = types.Numeric().field().with_converter(DecimalC)
     guild_id = types.Numeric().field().with_converter(DecimalC)
@@ -129,12 +129,12 @@ class Starboard(apgorm.Model):
     required_remove = types.SmallInt().field(default=0)
     upvote_emojis = (
         types.Array(types.Text())
-        .field(default_factory=lambda: list(["⭐"]))
+        .field(default_factory=lambda: ["⭐"])
         .with_converter(NonNullArray(str))
     )
     downvote_emojis = (
         types.Array(types.Text())
-        .field(default_factory=lambda: [])
+        .field(default_factory=list)
         .with_converter(NonNullArray(str))
     )
     self_vote = types.Boolean().field(default=False)
@@ -143,7 +143,7 @@ class Starboard(apgorm.Model):
     older_than = types.BigInt().field(default=0)
     newer_than = types.BigInt().field(default=0)
 
-    # Behaviour
+    # Behavior
     enabled = types.Boolean().field(default=True)
     autoreact_upvote = types.Boolean().field(default=True)
     autoreact_downvote = types.Boolean().field(default=True)

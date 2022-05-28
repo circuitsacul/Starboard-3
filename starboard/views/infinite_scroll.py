@@ -23,7 +23,7 @@
 from __future__ import annotations
 
 import asyncio
-from typing import TYPE_CHECKING, Awaitable, Callable, List, Tuple, cast
+from typing import TYPE_CHECKING, Awaitable, Callable, cast
 
 import hikari
 import miru
@@ -31,7 +31,7 @@ import miru
 if TYPE_CHECKING:
     from starboard.bot import Bot
 
-PAGE = Tuple[List[hikari.Embed], str]
+PAGE = tuple[list[hikari.Embed], str]
 
 
 class InfiniteScroll(miru.View):

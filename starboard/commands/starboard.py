@@ -36,14 +36,14 @@ from starboard.database import (
     goc_guild,
     validate_sb_changes,
 )
-from starboard.exceptions import StarboardErr, StarboardNotFound
+from starboard.exceptions import StarboardError, StarboardNotFound
 from starboard.undefined import UNDEF
 from starboard.views import Confirm
 
 from ._checks import has_guild_perms
 from ._converters import any_emoji_list, any_emoji_str, disid
 from ._sb_config import (
-    BaseEditStarboardBehaviour,
+    BaseEditStarboardBehavior,
     BaseEditStarboardEmbedStyle,
     BaseEditStarboardRequirements,
     BaseEditStarboardStyle,
@@ -82,7 +82,7 @@ class ViewStarboard:
                 .where(guild_id=ctx.guild_id)
                 .fetchmany()
             )
-            if len(all_starboards) == 0:
+            if not all_starboards:
                 await ctx.respond(
                     "There are no starboards in this server.", ephemeral=True
                 )
@@ -99,11 +99,11 @@ class ViewStarboard:
 
             for sb in all_starboards:
                 channel = bot.cache.get_guild_channel(sb.id)
-                if not channel:
-                    name = f"Deleted Channel {sb.id}"
-                else:
+                if channel:
                     assert channel.name is not None
                     name = channel.name
+                else:
+                    name = f"Deleted Channel {sb.id}"
 
                 if sb.prem_locked:
                     name = f"{name} (Locked)"
@@ -153,7 +153,7 @@ class ViewStarboard:
                 name="Requirements", value=config.requirements, inline=True
             )
             embed.add_field(
-                name="Behaviour", value=config.behaviour, inline=True
+                name="Behavior", value=config.behavior, inline=True
             )
 
             await ctx.respond(embed=embed)
@@ -183,7 +183,7 @@ class CreateStarboard:
         limit = CONFIG.max_starboards if ip else CONFIG.np_max_starboards
         count = await Starboard.count(guild_id=ctx.guild_id)
         if count >= limit:
-            raise StarboardErr(
+            raise StarboardError(
                 f"You can only have up to {limit} starboards."
                 + (
                     " You can increase this limit with premium."
@@ -214,7 +214,7 @@ class DeleteStarboard:
             self.starboard.id if self.starboard else disid(self.starboard_id)
         )
         if not chid:
-            raise StarboardErr(
+            raise StarboardError(
                 "Please specify either a channel or channel ID."
             )
 
@@ -239,7 +239,7 @@ class DeleteStarboard:
             .execute()
         )
         bot.cache.invalidate_vote_emojis(ctx.guild_id)
-        if len(res) == 0:
+        if not res:
             await msg.edit(StarboardNotFound(chid).msg, components=[])
             return
 
@@ -266,8 +266,8 @@ edit = starboards.sub_group("edit", description="Edit a starboard")
 
 @plugin.include
 @edit.child
-@crescent.command(name="behaviour", description="Edit a starboard's behaviour")
-class EditStarboardBehaviour(BaseEditStarboardBehaviour):
+@crescent.command(name="behavior", description="Edit a starboard's behavior")
+class EditStarboardBehavior(BaseEditStarboardBehavior):
     starboard = crescent.option(
         hikari.TextableGuildChannel, "The starboard to edit"
     )
@@ -367,7 +367,7 @@ class SetUpvoteEmojis:
         downvote_emojis = set(s.downvote_emojis)
         downvote_emojis.difference_update(upvote_emojis)
         if len(upvote_emojis) + len(downvote_emojis) > limit:
-            raise StarboardErr(
+            raise StarboardError(
                 f"You an only have up to {limit} emojis per starboard."
                 + (" Get premium to increase this." if not ip else "")
             )
@@ -403,7 +403,7 @@ class SetDownvoteEmojis:
         upvote_emojis = set(s.upvote_emojis)
         upvote_emojis.difference_update(downvote_emojis)
         if len(upvote_emojis) + len(downvote_emojis) > limit:
-            raise StarboardErr(
+            raise StarboardError(
                 f"You an only have up to {limit} emojis per starboard."
                 + (" Get premium to increase this." if not ip else "")
             )
@@ -438,22 +438,18 @@ class AddStarEmoji:
         downvote_emojis = set(s.downvote_emojis)
 
         if self.is_downvote:
-            if e in upvote_emojis:
-                upvote_emojis.remove(e)
-            if e not in downvote_emojis:
-                downvote_emojis.add(e)
+            upvote_emojis.discard(e)
+            downvote_emojis.add(e)
         else:
-            if e in downvote_emojis:
-                downvote_emojis.remove(e)
-            if e not in upvote_emojis:
-                upvote_emojis.add(e)
+            downvote_emojis.discard(e)
+            upvote_emojis.add(e)
 
         guild = await Guild.fetch(id=ctx.guild_id)
         ip = guild.premium_end is not None
         limit = CONFIG.max_vote_emojis if ip else CONFIG.np_max_vote_emojis
 
         if len(upvote_emojis) + len(downvote_emojis) >= limit:
-            raise StarboardErr(
+            raise StarboardError(
                 f"You an only have up to {limit} emojis per starboard."
                 + (" Get premium to increase this." if not ip else "")
             )
@@ -486,10 +482,9 @@ class RemoveStarEmoji:
         upvote_emojis = set(s.upvote_emojis)
         downvote_emojis = set(s.downvote_emojis)
 
-        if e in upvote_emojis:
-            upvote_emojis.remove(e)
-        elif e in downvote_emojis:
-            downvote_emojis.remove(e)
+        if e in upvote_emojis | downvote_emojis:
+            upvote_emojis.discard(e)
+            downvote_emojis.discard(e)
         else:
             await ctx.respond(
                 f"{e} is not an upvote emoji on <#{s.id}>", ephemeral=True

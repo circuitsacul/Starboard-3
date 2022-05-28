@@ -53,16 +53,14 @@ async def is_vote_valid_for(
     author_obj: hikari.Member | None,
     voter: hikari.Member,
 ) -> bool:
-    if (not config.self_vote) and voter.id == orig_message.author_id:
-        return False
-
-    if author.is_bot and not config.allow_bots:
-        return False
-
-    if orig_message.trashed:
-        return False
-
-    if orig_message.frozen:
+    if (
+        not config.self_vote
+        and voter.id == orig_message.author_id
+        or author.is_bot
+        and not config.allow_bots
+        or orig_message.trashed
+        or orig_message.frozen
+    ):
         return False
 
     # check cooldown
@@ -77,9 +75,12 @@ async def is_vote_valid_for(
     now = datetime.datetime.now(datetime.timezone.utc)
     created_at = hikari.Snowflake(orig_message.id).created_at
     age = (now - created_at).total_seconds()
-    if config.newer_than and age > config.newer_than:
-        return False
-    if config.older_than and age < config.older_than:
+    if (
+        config.newer_than
+        and age > config.newer_than
+        or config.older_than
+        and age < config.older_than
+    ):
         return False
 
     # check permissions
@@ -101,10 +102,7 @@ async def is_vote_valid_for(
     author_perms = await get_permissions(
         guild, author_roles, config.starboard.id
     )
-    if not author_perms.recv_votes:
-        return False
-
-    return True
+    return author_perms.recv_votes
 
 
 async def add_votes(

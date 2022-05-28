@@ -44,9 +44,10 @@ async def loop_post_stats(bot: Bot) -> None:
         await asyncio.sleep(CONFIG.post_stats_delay)
 
         try:
-            work, fail = await post_stats(bot)
+            _, fail = await post_stats(bot)
         except Exception:
             traceback.print_exc()
+            continue
 
         if fail:
             bot.cluster.logger.warn(

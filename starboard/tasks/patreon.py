@@ -239,7 +239,9 @@ async def _get_all_patrons() -> list[PatronData]:
     return final
 
 
-async def _fetch(path: str, params: dict | None = None) -> dict:
+async def _fetch(
+    path: str, params: dict[Any, Any] | None = None
+) -> dict[Any, Any]:
     s = await _get_session()
     async with s.get(path, **(params or {})) as resp:
         resp.raise_for_status()

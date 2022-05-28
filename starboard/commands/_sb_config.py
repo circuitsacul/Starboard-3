@@ -5,7 +5,7 @@ from typing import Any
 
 import crescent
 
-from starboard.exceptions import StarboardErr
+from starboard.exceptions import StarboardError
 from starboard.undefined import UNDEF
 from starboard.utils import human_to_seconds
 
@@ -145,9 +145,9 @@ class BaseEditStarboardRequirements:
         return params
 
 
-class BaseEditStarboardBehaviour:
+class BaseEditStarboardBehavior:
     def __init_subclass__(cls) -> None:
-        for k, v in BaseEditStarboardBehaviour.__dict__.items():
+        for k, v in BaseEditStarboardBehavior.__dict__.items():
             if not isinstance(v, crescent.ClassCommandOption):
                 continue
             setattr(cls, k, v)
@@ -193,7 +193,7 @@ class BaseEditStarboardBehaviour:
     enabled = optiond(bool, "Whether the starboard is enabled")
 
     def _options(self) -> dict[str, Any]:
-        pk = BaseEditStarboardBehaviour.__dict__.copy().keys()
+        pk = BaseEditStarboardBehavior.__dict__.copy().keys()
         params = self.__dict__.copy()
 
         for k, v in list(params.items()):
@@ -215,7 +215,7 @@ _RE_C = re.compile(r"(?P<count>\d+).+?(?P<secs>\d+)")
 def _parse_cooldown(text: str) -> tuple[int, float]:
     m = _RE_C.match(text)
     if not m:
-        raise StarboardErr(
+        raise StarboardError(
             f"'{text}' is not a valid cooldown. You need to pass both the "
             "capacity and the period. For example, '5 6' means 5 votes per 6 "
             "seconds."
@@ -227,11 +227,11 @@ def _parse_cooldown(text: str) -> tuple[int, float]:
     try:
         count = int(_c)
     except ValueError:
-        raise StarboardErr(f"{_c} is not a valid integer.")
+        raise StarboardError(f"{_c} is not a valid integer.")
 
     try:
         secs = int(_s)
     except ValueError:
-        raise StarboardErr(f"{_s} is not a valid integer.")
+        raise StarboardError(f"{_s} is not a valid integer.")
 
     return count, secs

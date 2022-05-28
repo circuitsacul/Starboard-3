@@ -24,6 +24,7 @@ from __future__ import annotations
 
 import asyncio
 import itertools
+from contextlib import suppress
 from typing import TYPE_CHECKING, cast
 
 import apgorm
@@ -57,18 +58,17 @@ async def handle_reaction_add(event: hikari.GuildReactionAddEvent) -> None:
     bot = cast("Bot", event.app)
 
     emoji_str = _get_emoji_str_from_event(event)
-    if not emoji_str:
-        return
-    if emoji_str not in await bot.cache.guild_vote_emojis(event.guild_id):
-        return
-
-    if COOLDOWN.update_rate_limit(event.guild_id):
+    if (
+        not emoji_str
+        or emoji_str not in await bot.cache.guild_vote_emojis(event.guild_id)
+        or COOLDOWN.update_rate_limit(event.guild_id)
+    ):
         return
 
     up_starboards, down_starboards = await _get_starboards_for_emoji(
         emoji_str, event.guild_id
     )
-    if not up_starboards and not down_starboards:
+    if not (up_starboards or down_starboards):
         return
 
     orig_msg = await get_orig_message(event.message_id)
@@ -98,28 +98,21 @@ async def handle_reaction_add(event: hikari.GuildReactionAddEvent) -> None:
     valid_upvote_starboard_ids: set[int] = set()
     valid_downvote_starboard_ids: set[int] = set()
     remove_invalid: bool = True
-    for s in up_starboards:
-        c = await get_config(s, orig_msg.channel_id)
-        if not c.remove_invalid:
-            remove_invalid = False
-        if not c.enabled:
-            remove_invalid = False
-            continue
-        if await is_vote_valid_for(
-            bot, c, orig_msg, author, author_obj, event.member
-        ):
-            valid_upvote_starboard_ids.add(s.id)
-    for s in down_starboards:
-        c = await get_config(s, orig_msg.channel_id)
-        if not c.remove_invalid:
-            remove_invalid = False
-        if not c.enabled:
-            remove_invalid = False
-            continue
-        if await is_vote_valid_for(
-            bot, c, orig_msg, author, author_obj, event.member
-        ):
-            valid_downvote_starboard_ids.add(s.id)
+    for starboards, id_set in zip(
+        (up_starboards, down_starboards),
+        (valid_upvote_starboard_ids, valid_downvote_starboard_ids),
+    ):
+        for s in starboards:
+            c = await get_config(s, orig_msg.channel_id)
+            if not c.remove_invalid:
+                remove_invalid = False
+            if not c.enabled:
+                remove_invalid = False
+                continue
+            if await is_vote_valid_for(
+                bot, c, orig_msg, author, author_obj, event.member
+            ):
+                id_set.add(s.id)
 
     if (
         not valid_upvote_starboard_ids
@@ -130,7 +123,7 @@ async def handle_reaction_add(event: hikari.GuildReactionAddEvent) -> None:
             event.channel_id, event.message_id
         )
         if actual_msg:
-            try:
+            with suppress(hikari.NotFoundError, hikari.ForbiddenError):
                 if isinstance(event.emoji_name, hikari.UnicodeEmoji):
                     await actual_msg.remove_reaction(
                         event.emoji_name, user=event.member
@@ -142,8 +135,6 @@ async def handle_reaction_add(event: hikari.GuildReactionAddEvent) -> None:
                     await actual_msg.remove_reaction(
                         event.emoji_name, event.emoji_id, user=event.member
                     )
-            except (hikari.NotFoundError, hikari.ForbiddenError):
-                pass
         return
 
     # create a "star" for each starboard
@@ -186,15 +177,13 @@ async def handle_reaction_remove(
     bot = cast("Bot", event.app)
 
     emoji_str = _get_emoji_str_from_event(event)
-    if not emoji_str:
-        return
-    if emoji_str not in await bot.cache.guild_vote_emojis(event.guild_id):
+    if not emoji_str or emoji_str not in await bot.cache.guild_vote_emojis(
+        event.guild_id
+    ):
         return
 
     orig_msg = await get_orig_message(event.message_id)
-    if not orig_msg:
-        return
-    if orig_msg.frozen:
+    if not orig_msg or orig_msg.frozen:
         return
 
     up_sb, down_sb = await _get_starboards_for_emoji(emoji_str, event.guild_id)

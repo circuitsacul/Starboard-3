@@ -60,7 +60,7 @@ async def goc_message(
 
 
 class Message(apgorm.Model):
-    __slots__: Iterable[str] = tuple()
+    __slots__: Iterable[str] = ()
 
     id = types.Numeric().field().with_converter(DecimalC)
     guild_id = types.Numeric().field().with_converter(DecimalC)
@@ -71,7 +71,7 @@ class Message(apgorm.Model):
 
     forced_to = (
         types.Array(types.Numeric())
-        .field(default=[])
+        .field(default_factory=list)
         .with_converter(DecimalArrayC)
     )
     trashed = types.Boolean().field(default=False)

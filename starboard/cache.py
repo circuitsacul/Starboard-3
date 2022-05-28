@@ -113,7 +113,7 @@ class Cache(CacheImpl):
         self, webhook_id: hikari.SnowflakeishOr[hikari.PartialWebhook]
     ) -> hikari.ExecutableWebhook | None:
         id = int(webhook_id)
-        if (c := self.__webhooks.get(id, None)) is not None:
+        if (c := self.__webhooks.get(id)) is not None:
             return c
 
         try:

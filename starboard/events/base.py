@@ -39,13 +39,11 @@ plugin = crescent.Plugin("base-events")
 async def on_message(event: hikari.MessageCreateEvent) -> None:
     bot = cast("Bot", event.app)
 
-    if event.author.is_bot:
-        return
-
-    if event.content is None:
-        return
-
-    if event.content not in [f"<@{bot.me.id}>", f"<@!{bot.me.id}>"]:
+    if (
+        event.author.is_bot
+        or event.content is None
+        or event.content not in {f"<@{bot.me.id}>", f"<@!{bot.me.id}>"}
+    ):
         return
 
     await event.message.respond(

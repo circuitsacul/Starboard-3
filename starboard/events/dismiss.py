@@ -32,13 +32,11 @@ plugin = crescent.Plugin("dismiss-event")
 @crescent.event
 async def on_interaction(event: InteractionCreateEvent) -> None:
     intr = event.interaction
-    if not isinstance(intr, ComponentInteraction):
-        return
-
-    if intr.custom_id != "none.dismiss":
-        return
-
-    if intr.guild_id is not None:
+    if (
+        not isinstance(intr, ComponentInteraction)
+        or intr.custom_id != "none.dismiss"
+        or intr.guild_id is not None
+    ):
         return
 
     await intr.message.delete()

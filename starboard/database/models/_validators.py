@@ -29,10 +29,7 @@ from apgorm.exceptions import InvalidFieldValue
 
 
 def valid_emoji(value: str) -> bool:
-    if value.isalnum():
-        return True
-
-    if emoji.is_emoji(value):  # type: ignore
+    if value.isalnum() or emoji.is_emoji(value):  # type: ignore
         return True
 
     raise InvalidFieldValue(f"{value} is not a valid emoji.")

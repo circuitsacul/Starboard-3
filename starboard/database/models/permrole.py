@@ -32,7 +32,7 @@ from .starboard import Starboard
 
 
 class PermRole(Model):
-    __slots__: Iterable[str] = tuple()
+    __slots__: Iterable[str] = ()
 
     id = types.Numeric().field().with_converter(DecimalC)
     guild_id = types.Numeric().field().with_converter(DecimalC)
@@ -47,7 +47,7 @@ class PermRole(Model):
 
 
 class PermRoleStarboard(Model):
-    __slots__: Iterable[str] = tuple()
+    __slots__: Iterable[str] = ()
 
     permrole_id = types.Numeric().field().with_converter(DecimalC)
     starboard_id = types.Numeric().field().with_converter(DecimalC)

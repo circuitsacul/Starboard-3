@@ -23,6 +23,7 @@
 from __future__ import annotations
 
 import traceback
+from contextlib import suppress
 from datetime import datetime, timedelta
 from typing import TYPE_CHECKING
 
@@ -46,26 +47,20 @@ if TYPE_CHECKING:
 async def _add_role(member: hikari.Member, role_id: int | None) -> None:
     if role_id in member.role_ids or role_id is None:
         return
-    try:
+    with suppress(hikari.ForbiddenError, hikari.NotFoundError):
         await member.add_role(role_id)
-    except (hikari.ForbiddenError, hikari.NotFoundError):
-        pass
 
 
 async def _rm_role(member: hikari.Member, role_id: int | None) -> None:
     if role_id not in member.role_ids or role_id is None:
         return
-    try:
+    with suppress(hikari.ForbiddenError, hikari.NotFoundError):
         await member.remove_role(role_id)
-    except (hikari.ForbiddenError, hikari.NotFoundError):
-        pass
 
 
 async def _try_send(bot: Bot, channel: int, message: str) -> None:
-    try:
+    with suppress(hikari.ForbiddenError, hikari.NotFoundError):
         await bot.rest.create_message(channel, message)
-    except (hikari.ForbiddenError, hikari.NotFoundError):
-        pass
 
 
 async def update_prem_locks(bot: Bot, guild_id: int) -> None:

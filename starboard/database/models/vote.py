@@ -34,7 +34,7 @@ from .user import User
 
 
 class Vote(apgorm.Model):
-    __slots__: Iterable[str] = tuple()
+    __slots__: Iterable[str] = ()
 
     message_id = types.Numeric().field().with_converter(DecimalC)
     starboard_id = types.Numeric().field().with_converter(DecimalC)

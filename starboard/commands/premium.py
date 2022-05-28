@@ -38,7 +38,7 @@ from starboard.database import (
     goc_guild,
     goc_member,
 )
-from starboard.exceptions import StarboardErr
+from starboard.exceptions import StarboardError
 from starboard.views import Confirm
 
 from ._checks import guild_only, has_guild_perms
@@ -115,7 +115,7 @@ class MovePremLock:
             ch_from = await AutoStarChannel.exists(id=self.ch_from.id)
 
         if ch_from is None:
-            raise StarboardErr(
+            raise StarboardError(
                 f"<#{self.ch_from.id}> is not a starboard or AutoStar channel."
             )
 
@@ -123,19 +123,19 @@ class MovePremLock:
         if is_sb:
             ch_to = await Starboard.exists(id=self.ch_to.id)
             if ch_to is None:
-                raise StarboardErr(f"<#{self.ch_to.id}> is not a starboard.")
+                raise StarboardError(f"<#{self.ch_to.id}> is not a starboard.")
         else:
             ch_to = await AutoStarChannel.exists(id=self.ch_to.id)
             if ch_to is None:
-                raise StarboardErr(
+                raise StarboardError(
                     f"<#{self.ch_to.id}> is not an AutoStar channel."
                 )
 
         if ch_from.prem_locked is False:
-            raise StarboardErr(f"<#{self.ch_from.id}> is not locked.")
+            raise StarboardError(f"<#{self.ch_from.id}> is not locked.")
 
         if ch_to.prem_locked is True:
-            raise StarboardErr(f"<#{self.ch_to.id}> is already locked.")
+            raise StarboardError(f"<#{self.ch_to.id}> is already locked.")
 
         ch_from.prem_locked = False
         ch_to.prem_locked = True
@@ -183,7 +183,7 @@ class Redeem:
         bot = cast("Bot", ctx.app)
 
         if self.months < 1:
-            raise StarboardErr("You must redeem at least one month.")
+            raise StarboardError("You must redeem at least one month.")
 
         cost = self.months * CONFIG.credits_per_month
 
@@ -240,7 +240,7 @@ async def enable_autoredeem(ctx: crescent.Context) -> None:
     assert ctx.guild_id
     m = await goc_member(ctx.guild_id, ctx.user.id, ctx.user.is_bot)
     if m.autoredeem_enabled:
-        raise StarboardErr("Autoredeem is already enabled in this server.")
+        raise StarboardError("Autoredeem is already enabled in this server.")
     m.autoredeem_enabled = True
     await m.save()
     await ctx.respond("Enabled autoredeem for this server.", ephemeral=True)
@@ -255,8 +255,8 @@ async def enable_autoredeem(ctx: crescent.Context) -> None:
 async def disable_autoredeem(ctx: crescent.Context) -> None:
     assert ctx.guild_id
     m = await Member.exists(user_id=ctx.user.id, guild_id=ctx.guild_id)
-    if not m or not m.autoredeem_enabled:
-        raise StarboardErr("Autoredeem is not enabled in this server.")
+    if not (m and m.autoredeem_enabled):
+        raise StarboardError("Autoredeem is not enabled in this server.")
 
     m.autoredeem_enabled = False
     await m.save()
@@ -272,19 +272,15 @@ async def view_autoredeem(ctx: crescent.Context) -> None:
     )
     if ctx.guild_id is not None:
         m = await Member.exists(user_id=ctx.user.id, guild_id=ctx.guild_id)
-        this = m.autoredeem_enabled if m else False
-    else:
-        this = None
-
-    if this is None:
+        ar_enabled = m.autoredeem_enabled if m else False
         await ctx.respond(
-            f"Autoredeem is enabled in {count} servers.", ephemeral=True
+            f"Autoredeem is {'' if ar_enabled else 'not '}enabled for this server. "
+            f"It is enabled in {count} servers total.",
+            ephemeral=True,
         )
     else:
         await ctx.respond(
-            f"Autoredeem is {'' if this else 'not '}enabled for this server. "
-            f"It is enabled in {count} servers total.",
-            ephemeral=True,
+            f"Autoredeem is enabled in {count} servers.", ephemeral=True
         )
 
 

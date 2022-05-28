@@ -41,7 +41,7 @@ class StarboardConfig:
 
     def __getattr__(self, key: str) -> Any:
         for ov in self.overrides:
-            if key in ov.overrides.keys():
+            if key in ov.overrides:
                 return ov.overrides[key]
         return getattr(self.starboard, key)
 
@@ -69,7 +69,7 @@ class StarboardConfig:
     older_than: int
     newer_than: int
 
-    # Behaviour
+    # Behavior
     enabled: bool
     autoreact_upvote: bool
     autoreact_downvote: bool

@@ -32,7 +32,7 @@ from asyncpg import UniqueViolationError
 from starboard.config import CONFIG
 from starboard.core.posrole import update_posroles
 from starboard.database import PosRole, PosRoleMember, XPRole, goc_guild
-from starboard.exceptions import StarboardErr
+from starboard.exceptions import StarboardError
 
 from ._checks import has_guild_perms
 
@@ -77,7 +77,7 @@ async def refretch_roles(ctx: crescent.Context, user: hikari.User) -> None:
 
     member = await bot.cache.gof_member(ctx.guild_id, user.id)
     if not member:
-        raise StarboardErr("I couldn't find that member.")
+        raise StarboardError("I couldn't find that member.")
 
     prids = {
         p.id
@@ -86,7 +86,7 @@ async def refretch_roles(ctx: crescent.Context, user: hikari.User) -> None:
         .fetchmany()
     }
     if not prids:
-        raise StarboardErr("This server has no PosRoles.")
+        raise StarboardError("This server has no PosRoles.")
 
     prmrs = {
         prm.role_id
@@ -135,22 +135,22 @@ class CreatePosRole:
             or self.role.is_premium_subscriber_role
             or self.role.position == 0
         ):
-            raise StarboardErr("That role cannot be used as an PosRole.")
+            raise StarboardError("That role cannot be used as an PosRole.")
 
         # check if exists
         if await PosRole.exists(id=self.role.id):
-            raise StarboardErr(f"**{self.role}** is already a PosRole.")
+            raise StarboardError(f"**{self.role}** is already a PosRole.")
 
         # check if it's an XPRole
         if await XPRole.exists(id=self.role.id):
-            raise StarboardErr(
+            raise StarboardError(
                 f"**{self.role}** is an XPRole. A role cannot be a PosRole "
                 "and an XPRole."
             )
 
         # check if they've reached the limit for PosRoles
         if await PosRole.count(guild_id=ctx.guild_id) >= CONFIG.max_posroles:
-            raise StarboardErr(
+            raise StarboardError(
                 f"You can only have up to {CONFIG.max_posroles} PosRoles."
             )
 
@@ -162,7 +162,7 @@ class CreatePosRole:
                 max_members=self.members,
             ).create()
         except UniqueViolationError:
-            raise StarboardErr(
+            raise StarboardError(
                 "There is already a PosRole with max-members set to "
                 f"{self.members}."
             )
@@ -189,13 +189,13 @@ class SetPosRoleMembers:
 
         pr = await PosRole.exists(id=self.posrole.id)
         if not pr:
-            raise StarboardErr(f"**{self.posrole}** is not a PosRole.")
+            raise StarboardError(f"**{self.posrole}** is not a PosRole.")
 
         pr.max_members = self.members
         try:
             await pr.save()
         except UniqueViolationError:
-            raise StarboardErr(
+            raise StarboardError(
                 "There is already a PosRole with max-members set to "
                 f"{self.members}."
             )
@@ -214,7 +214,7 @@ class DeletePosRole:
     async def callback(self, ctx: crescent.Context) -> None:
         ret = await PosRole.delete_query().where(id=self.posrole.id).execute()
         if not ret:
-            raise StarboardErr(f"**{self.posrole}** is not a PosRole.")
+            raise StarboardError(f"**{self.posrole}** is not a PosRole.")
 
         await ctx.respond(f"Deleted PosRole **{self.posrole}**.")
 
@@ -233,7 +233,7 @@ async def view_posroles(ctx: crescent.Context) -> None:
         .fetchmany()
     )
     if not pr:
-        raise StarboardErr("This server has no PosRoles.")
+        raise StarboardError("This server has no PosRoles.")
 
     embed = bot.embed(
         title="PosRoles",
