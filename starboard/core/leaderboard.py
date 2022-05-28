@@ -55,10 +55,10 @@ async def refresh_xp(guild_id: int, user_id: int) -> bool | None:
 
 async def _count_votes(starboard: Starboard, user_id: int) -> int:
     upvotes = await Vote.count(
-        starboard=starboard.id, target_author_id=user_id, is_downvote=False
+        starboard_id=starboard.id, target_author_id=user_id, is_downvote=False
     )
     downvotes = await Vote.count(
-        starboard=starboard.id, target_author_id=user_id, is_downvote=True
+        starboard_id=starboard.id, target_author_id=user_id, is_downvote=True
     )
     return upvotes - downvotes
 
