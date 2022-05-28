@@ -274,8 +274,8 @@ async def view_autoredeem(ctx: crescent.Context) -> None:
         m = await Member.exists(user_id=ctx.user.id, guild_id=ctx.guild_id)
         ar_enabled = m.autoredeem_enabled if m else False
         await ctx.respond(
-            f"Autoredeem is {'' if ar_enabled else 'not '}enabled for this server. "
-            f"It is enabled in {count} servers total.",
+            f"Autoredeem is {'' if ar_enabled else 'not '}enabled for this "
+            f"server. It is enabled in {count} servers total.",
             ephemeral=True,
         )
     else:
