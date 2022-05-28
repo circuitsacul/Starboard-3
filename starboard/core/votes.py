@@ -54,10 +54,8 @@ async def is_vote_valid_for(
     voter: hikari.Member,
 ) -> bool:
     if (
-        not config.self_vote
-        and voter.id == orig_message.author_id
-        or author.is_bot
-        and not config.allow_bots
+        (not config.self_vote and voter.id == orig_message.author_id)
+        or (author.is_bot and not config.allow_bots)
         or orig_message.trashed
         or orig_message.frozen
     ):
