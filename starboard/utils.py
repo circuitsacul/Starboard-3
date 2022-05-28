@@ -29,7 +29,7 @@ from typing import TYPE_CHECKING, Callable, Iterable, cast
 import humanize
 from hikari import UNDEFINED, Message, MessageType
 
-from .exceptions import StarboardErr
+from .exceptions import StarboardError
 
 if TYPE_CHECKING:
     from starboard.bot import Bot
@@ -301,7 +301,7 @@ def human_to_seconds(human: str) -> int:
 
         match = TOKEN_RE.match(token)
         if not match:
-            raise StarboardErr(
+            raise StarboardError(
                 f"I couldn't interpret {token} as a unit of time."
             )
 
@@ -309,7 +309,7 @@ def human_to_seconds(human: str) -> int:
         unit = _normalize_unit(match.group("unit"))
         conversion_unit = DELTA_UNITS.get(unit)
         if conversion_unit is None:
-            raise StarboardErr(f"I don't know what `{unit}` is.")
+            raise StarboardError(f"I don't know what `{unit}` is.")
 
         seconds += value * conversion_unit
 
