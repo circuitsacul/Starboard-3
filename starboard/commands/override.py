@@ -271,12 +271,13 @@ class ResetOverrideSettings:
         ovd = ov.overrides
         c = 0
         for o in options:
-            c += 1
             if o == "cooldown":  # special edge case, sadly
                 del ovd["cooldown_count"]
                 del ovd["cooldown_period"]
+                c += 1
             elif o in ovd:
                 del ovd[o]
+                c += 1
         ov.overrides = ovd
         await ov.save()
         await ctx.respond(f"Reset {c} settings for override '{ov.name}'.")
