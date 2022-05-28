@@ -91,7 +91,6 @@ async def leaderboard(ctx: crescent.Context) -> None:
         bot.embed(title="Leaderboard", description=page) for page in pages
     ]
 
-    ctx.respond
     nav = Paginator(ctx.user.id, embeds)
     await nav.send(ctx.interaction)
 
