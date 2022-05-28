@@ -35,13 +35,6 @@ REFRESH_XP_COOLDOWN: FixedCooldown[tuple[int, int]] = FixedCooldown(
 
 
 async def refresh_xp(guild_id: int, user_id: int) -> bool | None:
-    async def count_votes(starboard: Starboard, is_downvote: bool) -> int:
-        return await Vote.count(
-            starboard=starboard.id,
-            target_author_id=user_id,
-            is_downvote=is_downvote,
-        )
-
     if REFRESH_XP_COOLDOWN.update_rate_limit((guild_id, user_id)) is not None:
         return False
 
