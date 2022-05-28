@@ -98,11 +98,11 @@ async def handle_reaction_add(event: hikari.GuildReactionAddEvent) -> None:
     valid_upvote_starboard_ids: set[int] = set()
     valid_downvote_starboard_ids: set[int] = set()
     remove_invalid: bool = True
-    for starboards, id_set in zip(
+    for sb_set, id_set in zip(
         (up_starboards, down_starboards),
         (valid_upvote_starboard_ids, valid_downvote_starboard_ids),
     ):
-        for s in starboards:
+        for s in sb_set:
             c = await get_config(s, orig_msg.channel_id)
             if not c.remove_invalid:
                 remove_invalid = False
