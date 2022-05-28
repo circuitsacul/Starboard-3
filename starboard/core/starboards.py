@@ -382,7 +382,7 @@ async def _webhook(
 
 
 async def _get_points(orig_msg_id: int, starboard_id: int) -> int:
-    return (
+    upvotes = (
         await Vote.fetch_query()
         .where(
             message_id=orig_msg_id,
@@ -390,13 +390,15 @@ async def _get_points(orig_msg_id: int, starboard_id: int) -> int:
             is_downvote=False,
         )
         .count()
-    ) - (
+    )
+    downvotes = (
         await Vote.fetch_query()
         .where(
             message_id=orig_msg_id, starboard_id=starboard_id, is_downvote=True
         )
         .count()
     )
+    return upvotes - downvotes
 
 
 @dataclass(order=True)
