@@ -73,12 +73,11 @@ async def is_vote_valid_for(
     now = datetime.datetime.now(datetime.timezone.utc)
     created_at = hikari.Snowflake(orig_message.id).created_at
     age = (now - created_at).total_seconds()
-    if (
-        config.newer_than
-        and age > config.newer_than
-        or config.older_than
-        and age < config.older_than
-    ):
+
+    if config.newer_than and age > config.newer_than:
+        return False
+
+    if config.older_than and age < config.older_than:
         return False
 
     # check permissions
