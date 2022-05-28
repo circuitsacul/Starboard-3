@@ -88,8 +88,7 @@ async def leaderboard(ctx: crescent.Context) -> None:
         pages.append(current_page)
 
     embeds: list[hikari.Embed] = [
-        bot.embed(title="Leaderboard", description=page)
-        for _, page in enumerate(pages)
+        bot.embed(title="Leaderboard", description=page) for page in pages
     ]
 
     ctx.respond
