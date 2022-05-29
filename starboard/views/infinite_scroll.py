@@ -49,7 +49,7 @@ class InfiniteScroll(miru.View):
         assert bot.cluster.stop_future
         await asyncio.wait(  # type: ignore
             (
-                asyncio.create_task(self.wait()),
+                asyncio.create_task(super().wait()),
                 asyncio.create_task(bot.cluster.join()),
             ),
             return_when=asyncio.FIRST_COMPLETED,
