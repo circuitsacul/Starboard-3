@@ -39,7 +39,7 @@ async def goc_guild(guild_id: int) -> Guild:
 
 
 class Guild(apgorm.Model):
-    __slots__: Iterable[str] = tuple()
+    __slots__: Iterable[str] = ()
 
     id = types.Numeric().field().with_converter(DecimalC)
 

@@ -23,31 +23,31 @@
 from __future__ import annotations
 
 
-class StarboardErr(Exception):
+class StarboardError(Exception):
     def __init__(self, msg: str) -> None:
         self.msg = msg
         super().__init__(msg)
 
 
-class StarboardNotFound(StarboardErr):
+class StarboardNotFound(StarboardError):
     def __init__(self, channel_id: int) -> None:
         self.channel_id = channel_id
         super().__init__(f"<#{channel_id}> is not a starboard.")
 
 
-class ASCNotFound(StarboardErr):
+class ASCNotFound(StarboardError):
     def __init__(self, channel_id: int) -> None:
         self.channel_id = channel_id
         super().__init__(f"<#{channel_id}> is not an autostar channel.")
 
 
-class OverrideNotFound(StarboardErr):
+class OverrideNotFound(StarboardError):
     def __init__(self, name: str) -> None:
         self.name = name
         super().__init__(f"No override with the name '{name}' exists.")
 
 
-class MessageNotFound(StarboardErr):
+class MessageNotFound(StarboardError):
     def __init__(self, mid: int) -> None:
         self.mid = mid
         super().__init__(

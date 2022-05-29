@@ -33,7 +33,7 @@ from starboard.core.embed_message import embed_message
 from starboard.core.emojis import stored_to_emoji
 from starboard.core.leaderboard import get_leaderboard, refresh_xp
 from starboard.database import Guild, Member, Message, SBMessage, Starboard
-from starboard.exceptions import StarboardErr, StarboardNotFound
+from starboard.exceptions import StarboardError, StarboardNotFound
 from starboard.views import InfiniteScroll, Paginator
 
 from ._checks import guild_only
@@ -72,7 +72,7 @@ async def leaderboard(ctx: crescent.Context) -> None:
     bot = cast("Bot", ctx.app)
     lb = await get_leaderboard(ctx.guild_id)
     if not lb:
-        raise StarboardErr("There is no one on the leaderboard.")
+        raise StarboardError("There is no one on the leaderboard.")
 
     rows = [f"#{s.rank}: <@{u}> with **{s.xp}** XP" for u, s in lb.items()]
     pages: list[str] = []
@@ -88,11 +88,9 @@ async def leaderboard(ctx: crescent.Context) -> None:
         pages.append(current_page)
 
     embeds: list[hikari.Embed] = [
-        bot.embed(title="Leaderboard", description=page)
-        for x, page in enumerate(pages)
+        bot.embed(title="Leaderboard", description=page) for page in pages
     ]
 
-    ctx.respond
     nav = Paginator(ctx.user.id, embeds)
     await nav.send(ctx.interaction)
 
@@ -109,7 +107,7 @@ class Rank:
         assert ctx.guild_id
 
         user = self.user or ctx.user
-        isself = user.id == ctx.user.id
+        is_self = user.id == ctx.user.id
 
         lb = await get_leaderboard(ctx.guild_id)
         stats = lb.get(user.id)
@@ -124,7 +122,7 @@ class Rank:
             m = await Member.exists(user_id=user.id, guild_id=ctx.guild_id)
             xp = m.xp if m else 0
 
-        if isself:
+        if is_self:
             await ctx.respond(
                 f"You have **{xp}** XP"
                 + (
@@ -181,7 +179,7 @@ class Random:
         if not s:
             raise StarboardNotFound(self.starboard.id)
         if s.private:
-            raise StarboardErr(f"<#{s.id}> is a private starboard.")
+            raise StarboardError(f"<#{s.id}> is a private starboard.")
 
         q = SBMessage.fetch_query()
         q.where(starboard_id=self.starboard.id)
@@ -205,12 +203,12 @@ class Random:
         ret = await q.fetchone()
 
         if not ret:
-            raise StarboardErr("Nothing to show.")
+            raise StarboardError("Nothing to show.")
 
         orig = await Message.fetch(id=ret.message_id)
         obj = await bot.cache.gof_message(orig.channel_id, orig.id)
         if not obj:
-            raise StarboardErr("Something went wrong.")
+            raise StarboardError("Something went wrong.")
 
         config = await get_config(s, obj.channel_id)
 
@@ -330,7 +328,7 @@ class MostStarred:
         paginator = InfiniteScroll(ctx.user.id, next_page)
         first_page = await paginator.get_page(0)
         if not first_page:
-            raise StarboardErr("Nothing to show.")
+            raise StarboardError("Nothing to show.")
         first_embeds, first_content = first_page
         initial = await ctx.respond(
             content=first_content,

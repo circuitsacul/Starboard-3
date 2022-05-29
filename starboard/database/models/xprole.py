@@ -35,7 +35,7 @@ from .guild import Guild
 
 
 class XPRole(apgorm.Model):
-    __slots__: Iterable[str] = tuple()
+    __slots__: Iterable[str] = ()
 
     id = types.Numeric().field().with_converter(DecimalC)
     guild_id = types.Numeric().field().with_converter(DecimalC)

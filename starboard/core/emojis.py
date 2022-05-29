@@ -22,6 +22,7 @@
 
 from __future__ import annotations
 
+from contextlib import suppress
 from typing import TYPE_CHECKING
 
 import emoji
@@ -34,11 +35,9 @@ if TYPE_CHECKING:
 def stored_to_emoji(
     e: str, bot: Bot
 ) -> hikari.CustomEmoji | hikari.UnicodeEmoji | None:
-    try:
+    with suppress(ValueError):
         if custom := bot.cache.get_emoji(int(e)):
             return custom
-    except ValueError:
-        pass
 
     if emoji.is_emoji(em := hikari.UnicodeEmoji.parse(e)):  # type: ignore
         return em

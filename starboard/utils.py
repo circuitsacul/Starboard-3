@@ -29,7 +29,7 @@ from typing import TYPE_CHECKING, Callable, Iterable, cast
 import humanize
 from hikari import UNDEFINED, Message, MessageType
 
-from .exceptions import StarboardErr
+from .exceptions import StarboardError
 
 if TYPE_CHECKING:
     from starboard.bot import Bot
@@ -98,55 +98,54 @@ def rendered_content(msg: Message) -> str | None:
         )
 
     if msg.type is MessageType.USER_PREMIUM_GUILD_SUBSCRIPTION:
-        if not msg.content:
-            return f"{msg.author.username} just boosted the server!"
-        else:
+        if msg.content:
             return (
                 f"{msg.author.username} just boosted the server "
                 f"**{msg.content}** times!"
             )
+        return f"{msg.author.username} just boosted the server!"
 
     if msg.type is MessageType.USER_PREMIUM_GUILD_SUBSCRIPTION_TIER_1:
         assert msg.guild_id
         guild = bot.cache.get_guild(msg.guild_id)
         assert guild
-        if not msg.content:
-            return (
-                f"{msg.author.username} just boosted the server! {guild} has "
-                "achieved **Level 1!**"
-            )
-        else:
+        if msg.content:
             return (
                 f"{msg.author.username} just boosted the server "
                 f"**{msg.content}** times! {guild} has achieved **Level 1!**"
             )
+        return (
+            f"{msg.author.username} just boosted the server! {guild} has "
+            "achieved **Level 1!**"
+        )
 
     if msg.type is MessageType.USER_PREMIUM_GUILD_SUBSCRIPTION_TIER_2:
         assert msg.guild_id
         guild = bot.cache.get_guild(msg.guild_id)
         assert guild
-        if not msg.content:
-            return (
-                f"{msg.author.username} just boosted the server! {guild} has "
-                "achieved **Level 2!**"
-            )
-        else:
+        if msg.content:
             return (
                 f"{msg.author.username} just boosted the server "
                 f"**{msg.content}** times! {guild} has achieved **Level 2!**"
             )
+        return (
+            f"{msg.author.username} just boosted the server! {guild} has "
+            "achieved **Level 2!**"
+        )
 
     if msg.type is MessageType.USER_PREMIUM_GUILD_SUBSCRIPTION_TIER_3:
-        if not msg.content:
-            return (
-                f"{msg.author.username} just boosted the server! {guild} has "
-                "achieved **Level 3!**"
-            )
-        else:
+        assert msg.guild_id
+        guild = bot.cache.get_guild(msg.guild_id)
+        assert guild
+        if msg.content:
             return (
                 f"{msg.author.username} just boosted the server "
                 f"**{msg.content}** times! {guild} has achieved **Level 3!**"
             )
+        return (
+            f"{msg.author.username} just boosted the server! {guild} has "
+            "achieved **Level 3!**"
+        )
 
     if msg.type is MessageType.CHANNEL_FOLLOW_ADD:
         return f"{msg.author.username} has added {msg.content} to this channel"
@@ -279,8 +278,8 @@ UNIT_CONVERSION = {
 
 def _normalize_unit(unit: str) -> str:
     unit = unit.strip()
-    _unit = unit[:-1] if unit.endswith("s") else unit
-    return UNIT_CONVERSION.get(_unit) or unit
+    _unit = unit.rstrip("s")
+    return UNIT_CONVERSION.get(_unit, unit)
 
 
 TOKEN_RE = re.compile(r"^(?P<value>\d+)(?P<unit>\w+)$")
@@ -302,7 +301,7 @@ def human_to_seconds(human: str) -> int:
 
         match = TOKEN_RE.match(token)
         if not match:
-            raise StarboardErr(
+            raise StarboardError(
                 f"I couldn't interpret {token} as a unit of time."
             )
 
@@ -310,7 +309,7 @@ def human_to_seconds(human: str) -> int:
         unit = _normalize_unit(match.group("unit"))
         conversion_unit = DELTA_UNITS.get(unit)
         if conversion_unit is None:
-            raise StarboardErr(f"I don't know what `{unit}` is.")
+            raise StarboardError(f"I don't know what `{unit}` is.")
 
         seconds += value * conversion_unit
 

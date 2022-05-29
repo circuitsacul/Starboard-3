@@ -30,7 +30,7 @@ import hikari
 from starboard.config import CONFIG
 from starboard.core.xprole import refresh_xpr
 from starboard.database import PosRole, XPRole, goc_guild
-from starboard.exceptions import StarboardErr
+from starboard.exceptions import StarboardError
 
 from ._checks import has_guild_perms
 
@@ -86,22 +86,22 @@ class AddXPRole:
             or self.role.is_premium_subscriber_role
             or self.role.position == 0
         ):
-            raise StarboardErr("That role cannot be used as an XPRole.")
+            raise StarboardError("That role cannot be used as an XPRole.")
 
         # check if it exists
         if await XPRole.exists(id=self.role.id):
-            raise StarboardErr(f"**{self.role}** is already an XPRole.")
+            raise StarboardError(f"**{self.role}** is already an XPRole.")
 
         # check if it's a PosRole
         if await PosRole.exists(id=self.role.id):
-            raise StarboardErr(
+            raise StarboardError(
                 f"**{self.role}** is a Posrole. A role cannot be a PosRole "
                 "and an XPRole."
             )
 
         # check if they've reached the limit for XPRoles
         if await XPRole.count(guild_id=ctx.guild_id) >= CONFIG.max_xp_roles:
-            raise StarboardErr(
+            raise StarboardError(
                 f"You can only have up to {CONFIG.max_xp_roles} XPRoles."
             )
 
@@ -130,7 +130,7 @@ class SetXPRoleXP:
 
         xpr = await XPRole.exists(id=self.xprole.id)
         if not xpr:
-            raise StarboardErr(f"**{self.xprole}** is not an XPRole.")
+            raise StarboardError(f"**{self.xprole}** is not an XPRole.")
 
         xpr.required = self.xp
         await xpr.save()
@@ -148,7 +148,7 @@ class DeleteXPRole:
     async def callback(self, ctx: crescent.Context) -> None:
         ret = await XPRole.delete_query().where(id=self.xprole.id).execute()
         if not ret:
-            raise StarboardErr(f"**{self.xprole}** is not an XPRole.")
+            raise StarboardError(f"**{self.xprole}** is not an XPRole.")
 
         await ctx.respond(f"Deleted XPRole **{self.xprole}**.")
 
@@ -162,7 +162,7 @@ async def view_xproles(ctx: crescent.Context) -> None:
 
     xpr = await XPRole.fetch_query().where(guild_id=ctx.guild_id).fetchmany()
     if not xpr:
-        raise StarboardErr("This server has no XPRoles.")
+        raise StarboardError("This server has no XPRoles.")
 
     embed = bot.embed(
         title="XPRoles",

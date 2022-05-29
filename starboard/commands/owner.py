@@ -32,7 +32,7 @@ from hikari_clusters import callbacks, payload
 from starboard.config import CONFIG
 from starboard.constants import MESSAGE_LEN
 from starboard.database import goc_user
-from starboard.exceptions import StarboardErr
+from starboard.exceptions import StarboardError
 from starboard.stats import post_stats
 from starboard.tasks.patreon import _get_all_patrons
 from starboard.utils import paginate, trunc_list, truncate
@@ -122,13 +122,13 @@ class GiveCredits:
         try:
             uid = int(self.user)
         except ValueError:
-            raise StarboardErr(f"{self.user} is not a valid id.")
+            raise StarboardError(f"{self.user} is not a valid id.")
 
         bot = cast("Bot", ctx.app)
         try:
             obj = await bot.rest.fetch_user(uid)
         except hikari.NotFoundError:
-            raise StarboardErr(f"No user with id {uid} was found.")
+            raise StarboardError(f"No user with id {uid} was found.")
 
         u = await goc_user(uid, obj.is_bot)
         u.credits = u.credits + self.credits
@@ -196,7 +196,7 @@ class EvalBroadcast:
             pages.append(_parse_response(rid, pl))
 
         if not pages:
-            raise StarboardErr("No responses were received.")
+            raise StarboardError("No responses were received.")
         paginator = Paginator(ctx.user.id, pages)
         await paginator.send(ctx.interaction, ephemeral=True)
 
@@ -229,7 +229,7 @@ class ShellCommand:
             pages.append(_parse_response(rid, pl, block=True))
 
         if not pages:
-            raise StarboardErr("No responses were received.")
+            raise StarboardError("No responses were received.")
         paginator = Paginator(ctx.user.id, pages)
         await paginator.send(ctx.interaction, ephemeral=True)
 
@@ -267,8 +267,6 @@ async def restart_bot(ctx: crescent.Context) -> None:
 
 class Rollback(Exception):
     """Rollback the transaction."""
-
-    pass
 
 
 @plugin.include

@@ -36,7 +36,7 @@ from .user import User
 
 
 class PosRole(apgorm.Model):
-    __slots__: Iterable[str] = tuple()
+    __slots__: Iterable[str] = ()
 
     id = types.Numeric().field().with_converter(DecimalC)
     guild_id = types.Numeric().field().with_converter(DecimalC)
@@ -52,7 +52,7 @@ class PosRole(apgorm.Model):
 
 
 class PosRoleMember(apgorm.Model):
-    __slots__: Iterable[str] = tuple()
+    __slots__: Iterable[str] = ()
 
     role_id = types.Numeric().field().with_converter(DecimalC)
     user_id = types.Numeric().field().with_converter(DecimalC)

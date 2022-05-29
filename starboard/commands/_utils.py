@@ -54,7 +54,7 @@ def optiond(type: type[_T], *args, **kwargs) -> _T | UNDEF:
 class _PrettyConfig:
     general_style: str
     embed_style: str
-    behaviour: str
+    behavior: str
     requirements: str
 
 
@@ -99,7 +99,7 @@ def pretty_sb_config(
 
     votes = config.cooldown_count
     secs = config.cooldown_period
-    behaviour = {
+    behavior = {
         "autoreact-upvote": config.autoreact_upvote,
         "autoreact-downvote": config.autoreact_downvote,
         "remove-invalid": config.remove_invalid,
@@ -117,47 +117,41 @@ def pretty_sb_config(
 
     def gen(dct: dict[str, Any]) -> str:
         return "\n".join(
-            (f"{k}: {str(v)}" if k not in b else f"**{k}**: {str(v)}")
+            (f"{k}: {v}" if k not in b else f"**{k}**: {v}")
             for k, v in dct.items()
         )
 
     return _PrettyConfig(
         general_style=gen(general_style),
         embed_style=gen(embed_style),
-        behaviour=gen(behaviour),
+        behavior=gen(behavior),
         requirements=gen(requirements),
     )
 
 
 def pretty_emoji_str(*emojis: str | None, bot: Bot) -> str:
-    converted = [(stored_to_emoji(e, bot), e) for e in emojis if e is not None]
+    converted = ((stored_to_emoji(e, bot), e) for e in emojis if e is not None)
 
-    return (
-        ", ".join(
-            (
-                e.mention
-                if isinstance(e, hikari.CustomEmoji)
-                else str(e)
-                if e is not None
-                else f"Unkown Emoji {orig}"
-            )
-            for e, orig in converted
-        )
-        or "none"
-    )
+    out: list[str] = []
+    for e, orig in converted:
+        if isinstance(e, hikari.CustomEmoji):
+            out.append(e.mention)
+        elif e is None:
+            out.append(f"Unknown Emoji {orig}")
+        else:
+            out.append(str(e))
+
+    return ", ".join(out) or "none"
 
 
 def pretty_color(color: int) -> str:
-    return hex(color).replace("0x", "#").upper()
+    return f"#{color:06X}"
 
 
 def pretty_channel_str(bot: Bot, channels: Iterable[int]) -> str:
     mentions: list[str] = []
     for id in channels:
         obj = bot.cache.get_guild_channel(id)
-        if obj:
-            mentions.append(obj.mention)
-        else:
-            mentions.append(f"Deleted Channel {id}")
+        mentions.append(obj.mention if obj else f"Deleted Channel {id}")
 
     return ", ".join(mentions) or "none"

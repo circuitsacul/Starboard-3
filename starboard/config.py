@@ -20,24 +20,26 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
+from __future__ import annotations
+
 import inspect
 import json
 import secrets
 from dataclasses import asdict, dataclass, field
 from pathlib import Path
-from typing import Any, Dict, List, Optional, cast
+from typing import Any, cast
 
-_ALWAYS_SAVE = ["discord_token", "db_name", "ipc_token"]
+_ALWAYS_SAVE = {"discord_token", "db_name", "ipc_token"}
 
 
 @dataclass
 class Config:
     # misc
     development: bool = False
-    dev_notify: Optional[int] = None
-    main_guild: Optional[int] = None
-    patron_role: Optional[int] = None
-    donor_role: Optional[int] = None
+    dev_notify: int | None = None
+    main_guild: int | None = None
+    patron_role: int | None = None
+    donor_role: int | None = None
 
     # starboard settings restrictions
     max_xp_mul: float = 10.0
@@ -48,14 +50,14 @@ class Config:
     max_required_remove: int = 500
     max_cooldown_period: int = 60
     max_cooldown_cap: int = 60
-    max_newer_than: int = 86400 * 7  # 1 week
-    max_older_than: int = 86400 * 7
+    max_newer_than: int = 86_400 * 7  # 1 week
+    max_older_than: int = 86_400 * 7
     max_vote_emojis: int = 5
     max_starboards: int = 10
 
     # autostar settings restrictions
-    max_maxchars: int = 4000
-    max_minchars: int = 4000
+    max_maxchars: int = 4_000
+    max_minchars: int = 4_000
     max_asc_emojis: int = 5
     max_autostar: int = 10
 
@@ -116,18 +118,18 @@ class Config:
     vote_emoji_cache_size: int = 1_000
 
     # botlists & stats
-    api_keys: Dict[str, str] = field(default_factory=dict)
+    api_keys: dict[str, str] = field(default_factory=dict)
     """See botblock.org for more details."""
 
     # links
-    docs_link: Optional[str] = None
-    support_invite: Optional[str] = None
-    bot_invite: Optional[str] = None
-    source_link: Optional[str] = None
-    patreon_link: Optional[str] = None
+    docs_link: str | None = None
+    support_invite: str | None = None
+    bot_invite: str | None = None
+    source_link: str | None = None
+    patreon_link: str | None = None
 
     # bot style
-    color: int = int("FFE19C", 16)
+    color: int = 0xFFE19C
 
     # ipc stuff
     host: str = "localhost"
@@ -136,47 +138,47 @@ class Config:
     clusters_per_server: int = 1
     shards_per_cluster: int = 1
     ipc_token: str = secrets.token_urlsafe(32)
-    certificate_path: Optional[str] = None
+    certificate_path: str | None = None
 
     # discord
     discord_token: str = "DISCORD TOKEN"
-    owners: List[int] = field(default_factory=list)
+    owners: list[int] = field(default_factory=list)
 
     # database
     db_host: str = "localhost"
     db_name: str = "DATABASE NAME"
-    db_user: Optional[str] = None
-    db_password: Optional[str] = None
+    db_user: str | None = None
+    db_password: str | None = None
 
     # apis
-    tenor_token: Optional[str] = None
-    giphy_token: Optional[str] = None
-    patreon_token: Optional[str] = None
+    tenor_token: str | None = None
+    giphy_token: str | None = None
+    patreon_token: str | None = None
 
     def save(self):
-        pth = Path("config.json")
+        path = Path("config.json")
 
         dct = asdict(self)
         tosave: dict[str, Any] = {}
-        defaults = self.__class__()
+        defaults = Config()
         for k, v in dct.items():
             if k not in _ALWAYS_SAVE and getattr(defaults, k) == v:
                 continue
 
             tosave[k] = v
 
-        with pth.open("w+") as f:
+        with path.open("w+") as f:
             f.write(json.dumps(tosave, indent=4))
 
-    @classmethod
-    def load(cls) -> "Config":
-        pth = Path("config.json")
+    @staticmethod
+    def load() -> Config:
+        path = Path("config.json")
 
-        if not pth.exists():
+        if not path.exists():
             c = Config()
         else:
             keys = set(inspect.signature(Config).parameters)
-            with pth.open("r") as f:
+            with path.open("r") as f:
                 c = Config(
                     **{
                         k: v

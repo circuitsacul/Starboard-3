@@ -30,7 +30,7 @@ from asyncpg import UniqueViolationError
 
 from starboard.config import CONFIG
 from starboard.database import AutoStarChannel, Guild, goc_guild
-from starboard.exceptions import ASCNotFound, StarboardErr
+from starboard.exceptions import ASCNotFound, StarboardError
 from starboard.undefined import UNDEF
 from starboard.views import Confirm
 
@@ -70,7 +70,7 @@ class CreateAutoStar:
         count = await AutoStarChannel.count(guild_id=ctx.guild_id)
 
         if count >= limit:
-            raise StarboardErr(
+            raise StarboardError(
                 f"You can only have up to {limit} autostar channels."
                 + (" Get premium to increase this limit." if not ip else "")
             )
@@ -80,7 +80,7 @@ class CreateAutoStar:
                 id=self.channel.id, guild_id=ctx.guild_id
             ).create()
         except UniqueViolationError:
-            raise StarboardErr(
+            raise StarboardError(
                 f"<#{self.channel.id}> is already an autostar channel."
             )
 
@@ -107,7 +107,7 @@ class DeleteAutoStar:
 
         chid = self.channel.id if self.channel else disid(self.channel_id)
         if not chid:
-            raise StarboardErr(
+            raise StarboardError(
                 "Please specify either a channel or channel id."
             )
 
@@ -190,7 +190,7 @@ class ViewAutoStar:
             )
 
             if not ascs:
-                raise StarboardErr("This server has no autostar channels.")
+                raise StarboardError("This server has no autostar channels.")
 
             lines: list[str] = []
             for asc in ascs:
@@ -290,7 +290,7 @@ class SetEmoji:
         limit = CONFIG.max_asc_emojis if ip else CONFIG.np_max_asc_emojis
 
         if len(emojis) > limit:
-            raise StarboardErr(
+            raise StarboardError(
                 f"You can only have up to {limit} emojis per autostar channel."
                 + (" Get premium to increase this limit." if not ip else "")
             )
@@ -327,7 +327,7 @@ class AddEmoji:
         limit = CONFIG.max_asc_emojis if ip else CONFIG.np_max_asc_emojis
 
         if len(emojis) >= limit:
-            raise StarboardErr(
+            raise StarboardError(
                 f"You can only have up to {limit} emojis per autostar channel."
                 + (" Get premium to increase this limit." if not ip else "")
             )

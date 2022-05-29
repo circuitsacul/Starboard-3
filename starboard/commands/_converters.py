@@ -23,6 +23,7 @@
 from __future__ import annotations
 
 import re
+from contextlib import suppress
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any, Callable, TypeVar, overload
 
@@ -30,7 +31,7 @@ import emoji
 import hikari
 
 from starboard.core.messages import get_orig_message
-from starboard.exceptions import MessageNotFound, StarboardErr
+from starboard.exceptions import MessageNotFound, StarboardError
 from starboard.undefined import UNDEF
 
 if TYPE_CHECKING:
@@ -47,14 +48,12 @@ def convert(key: str, dct: dict[str, Any], func: Callable[[Any], Any]) -> None:
 
 
 def any_emoji_str(text: str) -> str:
-    try:
+    with suppress(ValueError):
         return str(hikari.CustomEmoji.parse(text).id)
-    except ValueError:
-        pass
 
     uc = str(hikari.UnicodeEmoji.parse(text))
     if not emoji.is_emoji(uc):  # type: ignore
-        raise StarboardErr(f"'{uc}' is not a valid emoji.")
+        raise StarboardError(f"'{uc}' is not a valid emoji.")
 
     return uc
 
@@ -62,10 +61,8 @@ def any_emoji_str(text: str) -> str:
 def any_emoji_list(text: str) -> set[str]:
     ret: set[str] = set()
     for piece in text.split(" "):
-        try:
+        with suppress(StarboardError):
             ret.add(any_emoji_str(piece))
-        except StarboardErr:
-            pass
 
     return ret
 
@@ -74,14 +71,14 @@ def hex_color(text: str) -> int:
     try:
         return int(text.replace("#", ""), base=16)
     except ValueError:
-        raise StarboardErr(f"'{text}' is not a valid hex color.")
+        raise StarboardError(f"'{text}' is not a valid hex color.")
 
 
 def disid(text: Any) -> int:
     try:
         return int(text)
     except (ValueError, TypeError):
-        raise StarboardErr(f"'{str(text)}' is not a valid ID.")
+        raise StarboardError(f"'{str(text)}' is not a valid ID.")
 
 
 @overload
@@ -102,12 +99,12 @@ def none_or(
     func: Callable[[str], _T], noneval: _N = None, nonefirst: bool = True
 ) -> Callable[[str], _T | _N | None]:
     def wrapper(text: str) -> _T | _N | None:
-        if nonefirst and text.lower() in ["none", "default"]:
+        if nonefirst and text.lower() in {"none", "default"}:
             return noneval
         try:
             return func(text)
         except Exception as e:
-            if not nonefirst and text.lower() in ["none", "default"]:
+            if not nonefirst and text.lower() in {"none", "default"}:
                 return noneval
             raise e
 
@@ -115,14 +112,14 @@ def none_or(
 
 
 def none_or_str(text: str) -> None | str:
-    if text.lower() in ["none", "default"]:
+    if text.lower() in {"none", "default"}:
         return None
     return text
 
 
 QUICK_ID = re.compile(r"(?P<message_id>[0-9]+)-(?P<channel_id>[0-9]+)$")
 MSG_LINK = re.compile(
-    r"^https:\/\/discord.com\/channels\/[0-9]+\/(?P<channel_id>[0-9]+)\/"
+    r"^https://discord.com/channels/[0-9]+/(?P<channel_id>[0-9]+)/"
     r"(?P<message_id>[0-9]+)$"
 )
 
@@ -133,21 +130,17 @@ def msg_ch_id(text: str) -> tuple[int, int]:
     if (m := QUICK_ID.match(text)) is not None:
         return int(m["message_id"]), int(m["channel_id"])
 
-    raise StarboardErr(f"`{text}` is not a valid message link.")
+    raise StarboardError(f"`{text}` is not a valid message link.")
 
 
 def message_id(text: str) -> int:
-    try:
+    with suppress(ValueError):
         return int(text)
-    except ValueError:
-        pass
 
-    try:
+    with suppress(StarboardError):
         return msg_ch_id(text)[0]
-    except StarboardErr:
-        pass
 
-    raise StarboardErr(f"`{text}` is not a valid message link or id.")
+    raise StarboardError(f"`{text}` is not a valid message link or id.")
 
 
 async def orig_msg_from_link(text: str) -> Message:
@@ -183,6 +176,4 @@ NUM = re.compile(r"(?P<id>[0-9]+)")
 
 
 def channel_list(text: str, bot: Bot) -> _ValidChannels:
-    return validate_channels(
-        list(int(c["id"]) for c in NUM.finditer(text)), bot
-    )
+    return validate_channels([int(c["id"]) for c in NUM.finditer(text)], bot)

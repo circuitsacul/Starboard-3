@@ -100,7 +100,7 @@ async def embed_message(
         )
 
     image_urls = await _extract_images(bot, message, gifs)
-    if image_urls and len(image_urls):
+    if image_urls:
         embed.set_image(image_urls[0])
 
     if replied_to:
@@ -160,13 +160,7 @@ async def _extract_reply(
 
 
 def _is_rich(embed: hikari.Embed) -> bool:
-    if embed.title:
-        return True
-    if embed.description:
-        return True
-    if embed.fields:
-        return True
-    return False
+    return bool(embed.title or embed.description or embed.fields)
 
 
 async def _get_gifv(bot: Bot, embed: hikari.Embed) -> str | None:
@@ -236,7 +230,7 @@ async def _extract_images(
         for a in message.attachments
         if a.media_type is not None
         and a.media_type.lower().startswith("image")
-        and not a.filename.startswith("SPOILER_")
+        and not _is_spoiler(a.filename)
     ]
 
     for embed in message.embeds:

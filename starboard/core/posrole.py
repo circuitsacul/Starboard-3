@@ -22,6 +22,7 @@
 
 from __future__ import annotations
 
+from contextlib import suppress
 from typing import TYPE_CHECKING
 
 import hikari
@@ -44,10 +45,7 @@ COOLDOWN: FixedCooldown[int] = FixedCooldown(
 
 
 async def update_posroles(bot: Bot, guild_id: int) -> bool:
-    if guild_id in LOCK:
-        False
-
-    if COOLDOWN.update_rate_limit(guild_id):
+    if guild_id in LOCK or COOLDOWN.update_rate_limit(guild_id):
         return False
 
     LOCK.add(guild_id)
@@ -67,12 +65,10 @@ async def _update_posroles(bot: Bot, guild_id: int) -> None:
 
     for roleid, users in add.items():
         for uid in users:
-            try:
+            with suppress(hikari.NotFoundError, hikari.ForbiddenError):
                 await bot.rest.add_role_to_member(
                     guild_id, uid, roleid, reason="Position-based Role Awards"
                 )
-            except (hikari.NotFoundError, hikari.ForbiddenError):
-                pass
             await PosRoleMember(user_id=uid, role_id=roleid).create()
 
     for roleid, users in remove.items():
@@ -80,12 +76,10 @@ async def _update_posroles(bot: Bot, guild_id: int) -> None:
             PosRoleMember.user_id.eq(sql(users).any)
         ).execute()
         for uid in users:
-            try:
+            with suppress(hikari.NotFoundError, hikari.ForbiddenError):
                 await bot.rest.remove_role_from_member(
                     guild_id, uid, roleid, reason="Position-based Role Awards"
                 )
-            except (hikari.NotFoundError, hikari.ForbiddenError):
-                pass
 
 
 async def _get_updates(

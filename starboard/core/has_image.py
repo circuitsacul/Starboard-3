@@ -33,10 +33,7 @@ def has_image(message: hikari.Message) -> bool:
         if attachment.media_type.startswith("image"):
             return True
 
-    for embed in message.embeds:
-        if embed.image is not None:
-            return True
-        if embed.thumbnail is not None:
-            return True
-
-    return False
+    return any(
+        embed.image is not None or embed.thumbnail is not None
+        for embed in message.embeds
+    )

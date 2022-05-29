@@ -54,7 +54,7 @@ class PatreonStatus(IntEnum):
 
 
 class User(apgorm.Model):
-    __slots__: Iterable[str] = tuple()
+    __slots__: Iterable[str] = ()
 
     id = types.Numeric().field().with_converter(DecimalC)
 

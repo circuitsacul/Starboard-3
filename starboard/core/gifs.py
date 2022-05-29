@@ -23,7 +23,7 @@
 from __future__ import annotations
 
 import re
-from typing import TYPE_CHECKING, Optional, Tuple, cast
+from typing import TYPE_CHECKING, Any, Optional, cast
 
 from cachetools import LFUCache
 
@@ -36,15 +36,15 @@ TENOR_BASE = "https://api.tenor.com/v1/gifs?ids={0}&key={1}"
 GIPHY_BASE = "https://api.giphy.com/v1/gifs/{0}"
 
 TENOR_PATTERN = re.compile(
-    r"^http[s]?:\/\/tenor.com\/view\/[a-zA-Z-]+(?P<id>\d+)$"
+    r"^http[s]?://tenor.com/view/[a-zA-Z-]+(?P<id>\d+)$"
 )
 GIPHY_PATTERN = re.compile(
-    r"^http[s]?:\/\/giphy.com\/gifs\/[a-zA-Z-]+-(?P<id>[\w]+)$"
+    r"^http[s]?://giphy.com/gifs/[a-zA-Z-]+-(?P<id>[\w]+)$"
 )
 CACHE: LFUCache[str, str | None] = LFUCache(5_000)
 
 
-def _get_gif_id(url: str) -> Optional[Tuple[str, str]]:
+def _get_gif_id(url: str) -> Optional[tuple[str, str]]:
     tenor_result = TENOR_PATTERN.match(url)
     if tenor_result:
         return tenor_result.groupdict()["id"], "tenor"
@@ -54,7 +54,7 @@ def _get_gif_id(url: str) -> Optional[Tuple[str, str]]:
     return None
 
 
-async def _get(bot: Bot, url: str, *args, **kwargs) -> dict:
+async def _get(bot: Bot, url: str, *args, **kwargs) -> dict[Any, Any]:
     async with (await bot.session()).get(
         url, *args, timeout=3, **kwargs
     ) as resp:

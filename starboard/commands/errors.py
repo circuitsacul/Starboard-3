@@ -36,10 +36,10 @@ plugin = crescent.Plugin("error-handler")
     exceptions.ASCNotFound,
     exceptions.MessageNotFound,
     exceptions.OverrideNotFound,
-    exceptions.StarboardErr,
+    exceptions.StarboardError,
 )
 async def basic_handler(
-    exc: exceptions.StarboardErr, ctx: crescent.Context
+    exc: exceptions.StarboardError, ctx: crescent.Context
 ) -> None:
     await ctx.respond(exc.msg, ephemeral=True)
 

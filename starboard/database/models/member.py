@@ -52,7 +52,7 @@ async def goc_member(guild_id: int, user_id: int, is_bot: bool) -> Member:
 
 
 class Member(apgorm.Model):
-    __slots__: Iterable[str] = tuple()
+    __slots__: Iterable[str] = ()
 
     user_id = types.Numeric().field().with_converter(DecimalC)
     guild_id = types.Numeric().field().with_converter(DecimalC)

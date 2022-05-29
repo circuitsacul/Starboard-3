@@ -45,17 +45,24 @@ async def refresh_xp(guild_id: int, user_id: int) -> bool | None:
     starboards = (
         await Starboard.fetch_query().where(guild_id=guild_id).fetchmany()
     )
-    xp: float = 0.0
-    for sb in starboards:
-        points = await Vote.count(
-            starboard_id=sb.id, target_author_id=user_id, is_downvote=False
-        ) - await Vote.count(
-            starboard_id=sb.id, target_author_id=user_id, is_downvote=True
-        )
-        xp += points * sb.xp_multiplier
-    member.xp = xp
+    member.xp = sum(
+        [
+            (await _count_votes(sb, user_id)) * sb.xp_multiplier
+            for sb in starboards
+        ]
+    )
     await member.save()
     return True
+
+
+async def _count_votes(starboard: Starboard, user_id: int) -> int:
+    upvotes = await Vote.count(
+        starboard_id=starboard.id, target_author_id=user_id, is_downvote=False
+    )
+    downvotes = await Vote.count(
+        starboard_id=starboard.id, target_author_id=user_id, is_downvote=True
+    )
+    return upvotes - downvotes
 
 
 async def get_leaderboard(

@@ -11,14 +11,14 @@ from starboard.core.config import StarboardConfig
 from starboard.database import Override, Starboard, validate_sb_changes
 from starboard.exceptions import (
     OverrideNotFound,
-    StarboardErr,
+    StarboardError,
     StarboardNotFound,
 )
 
 from ._checks import has_guild_perms
 from ._converters import channel_list
 from ._sb_config import (
-    BaseEditStarboardBehaviour,
+    BaseEditStarboardBehavior,
     BaseEditStarboardEmbedStyle,
     BaseEditStarboardRequirements,
     BaseEditStarboardStyle,
@@ -74,7 +74,7 @@ class ViewSettingOverrides:
                 name="Requirements", value=options.requirements, inline=True
             )
             embed.add_field(
-                name="Behaviour", value=options.behaviour, inline=True
+                name="Behavior", value=options.behavior, inline=True
             )
 
             await ctx.respond(embed=embed)
@@ -138,7 +138,7 @@ class CreateOverride:
             guild_id=ctx.guild_id, starboard_id=self.starboard.id
         )
         if count >= CONFIG.max_ov_per_starboard:
-            raise StarboardErr(
+            raise StarboardError(
                 f"You can only have up to {CONFIG.max_ov_per_starboard} "
                 "overrides per starboard."
             )
@@ -153,7 +153,7 @@ class CreateOverride:
         try:
             await o.create()
         except asyncpg.UniqueViolationError:
-            raise StarboardErr(
+            raise StarboardError(
                 f"There is already an override with the name '{self.name}'."
             )
         except asyncpg.ForeignKeyViolationError:
@@ -202,8 +202,8 @@ edit = overrides.sub_group("edit", description="Edit a starboard")
 
 @plugin.include
 @edit.child
-@crescent.command(name="behaviour", description="Edit a starboard's behaviour")
-class EditStarboardBehaviour(BaseEditStarboardBehaviour):
+@crescent.command(name="behavior", description="Edit a starboard's behavior")
+class EditStarboardBehavior(BaseEditStarboardBehavior):
     name = crescent.option(str, "The override to edit")
 
     async def callback(self, ctx: crescent.Context) -> None:
@@ -272,14 +272,12 @@ class ResetOverrideSettings:
         c = 0
         for o in options:
             if o == "cooldown":  # special edge case, sadly
-                c += 1
                 del ovd["cooldown_count"]
                 del ovd["cooldown_period"]
-                continue
-            if o not in ovd:
-                continue
-            c += 1
-            del ovd[o]
+                c += 1
+            elif o in ovd:
+                del ovd[o]
+                c += 1
         ov.overrides = ovd
         await ov.save()
         await ctx.respond(f"Reset {c} settings for override '{ov.name}'.")
@@ -303,7 +301,7 @@ class RenameOverride:
         try:
             await ov.save()
         except asyncpg.UniqueViolationError:
-            raise StarboardErr(
+            raise StarboardError(
                 f"There is already an override with the name '{self.new}'."
             )
         await ctx.respond(

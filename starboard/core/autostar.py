@@ -23,6 +23,7 @@
 from __future__ import annotations
 
 import asyncio
+from contextlib import suppress
 from typing import TYPE_CHECKING, cast
 
 import hikari
@@ -47,13 +48,11 @@ COOLDOWN: FixedCooldown[int] = FixedCooldown(
 async def handle_message(event: hikari.MessageCreateEvent) -> None:
     bot = cast("Bot", event.app)
 
-    if event.message.author.is_bot:
-        return
-
-    if event.channel_id not in bot.database.asc:
-        return
-
-    if COOLDOWN.update_rate_limit(event.channel_id):
+    if (
+        event.message.author.is_bot
+        or event.channel_id not in bot.database.asc
+        or COOLDOWN.update_rate_limit(event.channel_id)
+    ):
         return
 
     asc = await AutoStarChannel.exists(id=event.channel_id)
@@ -77,15 +76,12 @@ async def handle_message(event: hikari.MessageCreateEvent) -> None:
         m = await bot.cache.gof_message(event.channel_id, event.message_id)
         if m is None:
             return
-        if not has_image(m):
-            valid = False
+        valid = has_image(m)
 
     if not valid:
         if asc.delete_invalid:
-            try:
+            with suppress(hikari.ForbiddenError):
                 await event.message.delete()
-            except hikari.ForbiddenError:
-                pass
 
             await notify(
                 event.message.author,
@@ -107,11 +103,7 @@ async def handle_message(event: hikari.MessageCreateEvent) -> None:
     emojis = cast("set[hikari.CustomEmoji | hikari.UnicodeEmoji]", _emojis)
 
     for e in emojis:
-        try:
-            await event.message.add_reaction(e)
-        except (
-            hikari.ForbiddenError,
-            hikari.NotFoundError,
-            hikari.BadRequestError,
+        with suppress(
+            hikari.ForbiddenError, hikari.NotFoundError, hikari.BadRequestError
         ):
-            pass
+            await event.message.add_reaction(e)
