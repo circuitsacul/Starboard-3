@@ -52,13 +52,13 @@ class Config:
     max_cooldown_cap: int = 60
     max_newer_than: int = 86_400 * 7  # 1 week
     max_older_than: int = 86_400 * 7
-    max_vote_emojis: int = 5
+    max_vote_emojis: int = 10
     max_starboards: int = 10
 
     # autostar settings restrictions
     max_maxchars: int = 4_000
     max_minchars: int = 4_000
-    max_asc_emojis: int = 5
+    max_asc_emojis: int = 10
     max_autostar: int = 10
 
     # override settings restrictions
@@ -81,7 +81,7 @@ class Config:
 
     # non-premium restrictions
     np_max_starboards: int = 3
-    np_max_autostar: int = 1
+    np_max_autostar: int = 3
     np_max_asc_emojis: int = 3
     np_max_vote_emojis: int = 3
 
