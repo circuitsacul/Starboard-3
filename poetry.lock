@@ -733,7 +733,7 @@ multidict = ">=4.0"
 [metadata]
 lock-version = "1.1"
 python-versions = ">=3.8,<3.11"
-content-hash = "f57afd2c162fb3985f4e59f9c713c7e2a5ed81b8d8f6d95498c7c70f1303651a"
+content-hash = "4b3f0e5436b59b8e53cb8acb4ba4814eb5d0e56a1e8b6487716a362fd45b4622"
 
 [metadata.files]
 aiodns = [
