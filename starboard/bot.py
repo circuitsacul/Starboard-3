@@ -54,6 +54,7 @@ from .tasks import expired_premium, patreon, post_stats
 
 if os.name != "nt":
     import uvloop  # type: ignore
+
     uvloop.install()  # type: ignore
 
 
