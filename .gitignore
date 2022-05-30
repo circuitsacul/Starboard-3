@@ -1,5 +1,6 @@
 config.json
 
+poetry.lock
 .vscode
 .DS_Store
 

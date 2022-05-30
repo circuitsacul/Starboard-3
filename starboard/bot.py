@@ -23,6 +23,7 @@
 from __future__ import annotations
 
 import asyncio
+import os
 import subprocess
 import traceback
 from contextlib import redirect_stdout
@@ -51,6 +52,11 @@ from .config import CONFIG, Config
 from .database import Database
 from .tasks import expired_premium, patreon, post_stats
 
+if os.name != "nt":
+    import uvloop  # type: ignore
+
+    uvloop.install()  # type: ignore
+
 
 class Bot(crescent.Bot):
     cluster: Cluster
@@ -68,7 +74,6 @@ class Bot(crescent.Bot):
         super().__init__(
             token=CONFIG.discord_token,
             tracked_guilds=[CONFIG.main_guild] if CONFIG.main_guild else None,
-            # default_guild=CONFIG.main_guild if CONFIG.development else None,
             intents=intents,
             update_commands=False,
         )
