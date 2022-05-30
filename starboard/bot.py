@@ -53,9 +53,8 @@ from .database import Database
 from .tasks import expired_premium, patreon, post_stats
 
 if os.name != "nt":
-    import uvloop
-
-    uvloop.install()
+    import uvloop  # type: ignore
+    uvloop.install()  # type: ignore
 
 
 class Bot(crescent.Bot):
