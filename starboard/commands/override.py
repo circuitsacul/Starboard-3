@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from difflib import get_close_matches
 from typing import TYPE_CHECKING, Any, cast
 
 import asyncpg
@@ -37,11 +38,30 @@ overrides = crescent.Group(
 )
 
 
+async def override_autocomplete(
+    ctx: crescent.Context, option: hikari.AutocompleteInteractionOption
+) -> list[hikari.CommandChoice]:
+    if not ctx.guild_id:
+        return []
+    prefix = cast(str, option.value).lower()
+    ovs = await Override.fetch_query().where(guild_id=ctx.guild_id).fetchmany()
+    ov_names = [ov.name for ov in ovs]
+    return [
+        hikari.CommandChoice(name=name, value=name)
+        for name in get_close_matches(prefix, ov_names, 10, 0.2)
+    ]
+
+
 @plugin.include
 @overrides.child
 @crescent.command(name="view", description="View setting overrides")
 class ViewSettingOverrides:
-    name = crescent.option(str, "The override to view", default=None)
+    name = crescent.option(
+        str,
+        "The override to view",
+        default=None,
+        autocomplete=override_autocomplete,
+    )
 
     async def callback(self, ctx: crescent.Context) -> None:
         bot = cast("Bot", ctx.app)
@@ -118,6 +138,7 @@ class CreateOverride:
         "An existing override to copy options from",
         default=None,
         name="copy-from",
+        autocomplete=override_autocomplete,
     )
 
     async def callback(self, ctx: crescent.Context) -> None:
@@ -166,7 +187,9 @@ class CreateOverride:
 @overrides.child
 @crescent.command(name="delete", description="Delete a setting override")
 class DeleteOverride:
-    name = crescent.option(str, "The name of the override")
+    name = crescent.option(
+        str, "The name of the override", autocomplete=override_autocomplete
+    )
 
     async def callback(self, ctx: crescent.Context) -> None:
         q = Override.delete_query()
@@ -204,7 +227,9 @@ edit = overrides.sub_group("edit", description="Edit a starboard")
 @edit.child
 @crescent.command(name="behavior", description="Edit a starboard's behavior")
 class EditStarboardBehavior(BaseEditStarboardBehavior):
-    name = crescent.option(str, "The override to edit")
+    name = crescent.option(
+        str, "The override to edit", autocomplete=override_autocomplete
+    )
 
     async def callback(self, ctx: crescent.Context) -> None:
         assert ctx.guild_id
@@ -216,7 +241,9 @@ class EditStarboardBehavior(BaseEditStarboardBehavior):
 @edit.child
 @crescent.command(name="embed", description="Edit a starboard's embed style")
 class EditStarboardEmbedStyle(BaseEditStarboardEmbedStyle):
-    name = crescent.option(str, "The override to edit")
+    name = crescent.option(
+        str, "The override to edit", autocomplete=override_autocomplete
+    )
 
     async def callback(self, ctx: crescent.Context) -> None:
         assert ctx.guild_id
@@ -230,7 +257,9 @@ class EditStarboardEmbedStyle(BaseEditStarboardEmbedStyle):
     name="requirements", description="Edit a starboard's requirements"
 )
 class EditStarboardRequirements(BaseEditStarboardRequirements):
-    name = crescent.option(str, "The override to edit")
+    name = crescent.option(
+        str, "The override to edit", autocomplete=override_autocomplete
+    )
 
     async def callback(self, ctx: crescent.Context) -> None:
         assert ctx.guild_id
@@ -242,7 +271,9 @@ class EditStarboardRequirements(BaseEditStarboardRequirements):
 @edit.child
 @crescent.command(name="style", description="Edit a starboard's style")
 class EditStarboardStyle(BaseEditStarboardStyle):
-    name = crescent.option(str, "The override to edit")
+    name = crescent.option(
+        str, "The override to edit", autocomplete=override_autocomplete
+    )
 
     async def callback(self, ctx: crescent.Context) -> None:
         assert ctx.guild_id
@@ -256,7 +287,9 @@ class EditStarboardStyle(BaseEditStarboardStyle):
     name="reset", description="Reset specific settings to their defaults"
 )
 class ResetOverrideSettings:
-    name = crescent.option(str, "The name of the override")
+    name = crescent.option(
+        str, "The name of the override", autocomplete=override_autocomplete
+    )
     options = crescent.option(str, "A list of settings to reset")
 
     async def callback(self, ctx: crescent.Context) -> None:
@@ -288,7 +321,10 @@ class ResetOverrideSettings:
 @crescent.command(name="rename", description="Rename an override")
 class RenameOverride:
     orig = crescent.option(
-        str, "The original name of the override", name="original-name"
+        str,
+        "The original name of the override",
+        name="original-name",
+        autocomplete=override_autocomplete,
     )
     new = crescent.option(str, "The new name of the override", name="new-name")
 
@@ -315,7 +351,9 @@ class RenameOverride:
     name="set-channels", description="Set the channels for an override"
 )
 class SetOverrideChannels:
-    name = crescent.option(str, "The name of the override")
+    name = crescent.option(
+        str, "The name of the override", autocomplete=override_autocomplete
+    )
     channels = crescent.option(str, "The channels to use for the override")
 
     async def callback(self, ctx: crescent.Context) -> None:
@@ -335,7 +373,9 @@ class SetOverrideChannels:
     name="remove-channels", description="Removes channels from an override"
 )
 class RemoveOverrideChannels:
-    name = crescent.option(str, "The name of the override")
+    name = crescent.option(
+        str, "The name of the override", autocomplete=override_autocomplete
+    )
     channels = crescent.option(str, "The channels to remove from the override")
 
     async def callback(self, ctx: crescent.Context) -> None:
@@ -360,7 +400,9 @@ class RemoveOverrideChannels:
     name="add-channels", description="Adds channel to an override"
 )
 class AddOverrideChannels:
-    name = crescent.option(str, "The name of the override")
+    name = crescent.option(
+        str, "The name of the override", autocomplete=override_autocomplete
+    )
     channels = crescent.option(str, "The channels to use for the override")
 
     async def callback(self, ctx: crescent.Context) -> None:
