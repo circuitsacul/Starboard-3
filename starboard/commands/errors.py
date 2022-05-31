@@ -31,7 +31,7 @@ plugin = crescent.Plugin("error-handler")
 
 
 @plugin.include
-@crescent.catch(
+@crescent.catch_command(
     exceptions.StarboardNotFound,
     exceptions.ASCNotFound,
     exceptions.MessageNotFound,
@@ -45,7 +45,7 @@ async def basic_handler(
 
 
 @plugin.include
-@crescent.catch(InvalidFieldValue)
+@crescent.catch_command(InvalidFieldValue)
 async def invalid_field_value(
     exc: InvalidFieldValue, ctx: crescent.Context
 ) -> None:
