@@ -15,4 +15,4 @@ The best Discord Starboard, trusted by thousands of servers.
 ## Quickstart
  - Use `/starboards create channel: #starboard` to create a starboard.
  - Use `/starboards view starboard: #starboard` to view the settings.
- - Use `/starboards edit starboard: #starboard [options...]` to edit a starboard.
+ - Use `/starboards edit [behavior|requirements|style|embed] starboard: #starboard [options...]` to edit a starboard.
