@@ -111,7 +111,7 @@ async def _update_patrons(bot: Bot) -> None:
             await user.save()
             await patron.save()
 
-        asyncio.create_task(update_supporter_roles(bot, user))
+        await update_supporter_roles(bot, user)
 
     # find any users who are marked as patrons, but aren't in the list
     q = User.fetch_query()
