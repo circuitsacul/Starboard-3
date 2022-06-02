@@ -104,6 +104,11 @@ class Config:
     credits_per_month: int = 3
     days_per_month: int = 32  # just be safe
 
+    # cooldowns
+    random_cooldown: tuple[int, int] = (5, 10)
+    moststarred_cooldown: tuple[int, int] = (1, 10)
+    global_cooldown: tuple[int, int] = (10, 10)
+
     # tasks
     check_expired_premium_delay: int = 60 * 60
     update_patreons_delay: int = 60 * 5
