@@ -278,7 +278,7 @@ async def _edit(
     embeds: list[hikari.Embed] | None,
     author_id: int,
 ) -> None:
-    if EDIT_COOLDOWN.update_rate_limit(message.id):
+    if EDIT_COOLDOWN.update_ratelimit(message.id):
         return
 
     if message.author.id != bot.me.id:

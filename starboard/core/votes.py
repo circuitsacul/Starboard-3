@@ -62,7 +62,7 @@ async def is_vote_valid_for(
         return False
 
     # check cooldown
-    if config.cooldown_enabled and COOLDOWN.update_rate_limit(
+    if config.cooldown_enabled and COOLDOWN.update_ratelimit(
         (voter.id, config.starboard.id),
         config.cooldown_period,
         config.cooldown_count,

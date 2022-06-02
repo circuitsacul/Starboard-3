@@ -41,7 +41,7 @@ COOLDOWN: FixedCooldown[int] = FixedCooldown(
 
 
 async def refresh_xpr(bot: Bot, guild_id: int, user_id: int) -> bool:
-    if COOLDOWN.update_rate_limit(user_id):
+    if COOLDOWN.update_ratelimit(user_id):
         return False
 
     obj = await bot.cache.gof_member(guild_id, user_id)
