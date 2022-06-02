@@ -51,7 +51,7 @@ async def handle_message(event: hikari.MessageCreateEvent) -> None:
     if (
         event.message.author.is_bot
         or event.channel_id not in bot.database.asc
-        or COOLDOWN.update_rate_limit(event.channel_id)
+        or COOLDOWN.update_ratelimit(event.channel_id)
     ):
         return
 

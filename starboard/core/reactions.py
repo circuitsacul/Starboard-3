@@ -61,7 +61,7 @@ async def handle_reaction_add(event: hikari.GuildReactionAddEvent) -> None:
     if (
         not emoji_str
         or emoji_str not in await bot.cache.guild_vote_emojis(event.guild_id)
-        or COOLDOWN.update_rate_limit(event.guild_id)
+        or COOLDOWN.update_ratelimit(event.guild_id)
     ):
         return
 

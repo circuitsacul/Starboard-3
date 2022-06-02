@@ -35,7 +35,7 @@ REFRESH_XP_COOLDOWN: FixedCooldown[tuple[int, int]] = FixedCooldown(
 
 
 async def refresh_xp(guild_id: int, user_id: int) -> bool | None:
-    if REFRESH_XP_COOLDOWN.update_rate_limit((guild_id, user_id)) is not None:
+    if REFRESH_XP_COOLDOWN.update_ratelimit((guild_id, user_id)) is not None:
         return False
 
     member = await Member.exists(guild_id=guild_id, user_id=user_id)
