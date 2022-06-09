@@ -37,7 +37,6 @@ import aiohttp
 import crescent
 import hikari
 import miru
-from crescent.ext import cooldowns
 from hikari_clusters import (
     Brain,
     Cluster,
@@ -50,6 +49,7 @@ from hikari_clusters import (
 
 from .cache import Cache
 from .config import CONFIG, Config
+from .cooldowns import cooldown
 from .database import Database
 from .tasks import expired_premium, patreon, post_stats
 
@@ -57,15 +57,6 @@ if os.name != "nt":
     import uvloop  # type: ignore
 
     uvloop.install()  # type: ignore
-
-
-async def _global_cooldown_callback(
-    ctx: crescent.Context, retry: float
-) -> None:
-    await ctx.respond(
-        f"You're using commands too fast! Please wait {round(retry)} seconds.",
-        ephemeral=True,
-    )
 
 
 class Bot(crescent.Bot):
@@ -86,11 +77,7 @@ class Bot(crescent.Bot):
             tracked_guilds=[CONFIG.main_guild] if CONFIG.main_guild else None,
             intents=intents,
             update_commands=False,
-            command_hooks=[
-                cooldowns.cooldown(
-                    *CONFIG.global_cooldown, callback=_global_cooldown_callback
-                )
-            ],
+            command_hooks=[cooldown(*CONFIG.global_cooldown)],
         )
 
         self.bot_stats: dict[int, int] = {}

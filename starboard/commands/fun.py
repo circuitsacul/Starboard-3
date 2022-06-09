@@ -27,9 +27,9 @@ from typing import TYPE_CHECKING, cast
 import crescent
 import hikari
 from apgorm import raw as r
-from crescent.ext import cooldowns
 
 from starboard.config import CONFIG
+from starboard.cooldowns import cooldown
 from starboard.core.config import get_config
 from starboard.core.embed_message import embed_message
 from starboard.core.emojis import stored_to_emoji
@@ -145,7 +145,7 @@ class Rank:
 
 
 @plugin.include
-@crescent.hook(cooldowns.cooldown(*CONFIG.random_cooldown))
+@crescent.hook(cooldown(*CONFIG.random_cooldown))
 @crescent.hook(guild_only)
 @crescent.command(
     name="random", description="A random message from the starboards"
@@ -240,7 +240,7 @@ class Random:
 
 
 @plugin.include
-@crescent.hook(cooldowns.cooldown(*CONFIG.moststarred_cooldown))
+@crescent.hook(cooldown(*CONFIG.moststarred_cooldown))
 @crescent.hook(guild_only)
 @crescent.command(
     name="moststarred", description="Shows the most starred messages"
