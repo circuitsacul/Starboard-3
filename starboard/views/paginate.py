@@ -26,8 +26,7 @@ from typing import Sequence
 
 import hikari
 import miru
-from miru.ext.nav import NavigatorView  # type: ignore
-from miru.ext.nav import buttons  # type: ignore
+from miru.ext.nav import NavigatorView, buttons
 
 
 class FirstButton(buttons.FirstButton):
@@ -64,7 +63,7 @@ class Paginator(NavigatorView):
     ) -> None:
         self.user_id = user_id
         super().__init__(
-            pages=pages,
+            pages=pages,  # type: ignore
             buttons=[
                 FirstButton(),
                 PrevButton(),

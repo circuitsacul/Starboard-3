@@ -49,6 +49,7 @@ from hikari_clusters import (
 
 from .cache import Cache
 from .config import CONFIG, Config
+from .cooldowns import cooldown
 from .database import Database
 from .tasks import expired_premium, patreon, post_stats
 
@@ -76,6 +77,7 @@ class Bot(crescent.Bot):
             tracked_guilds=[CONFIG.main_guild] if CONFIG.main_guild else None,
             intents=intents,
             update_commands=False,
+            command_hooks=[cooldown(*CONFIG.global_cooldown)],
         )
 
         self.bot_stats: dict[int, int] = {}
