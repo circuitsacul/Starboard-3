@@ -123,7 +123,6 @@ class DeleteAutoStar:
             return
 
         await asc.delete()
-        bot.database.asc.discard(asc.channel_id)
         await msg.edit(
             f"Deleted autostar channel '{asc.name}'.", components=[]
         )
