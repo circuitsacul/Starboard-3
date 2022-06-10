@@ -238,6 +238,34 @@ class DeleteStarboard:
         await msg.edit(f"Deleted starboard '{starboard.name}'.", components=[])
 
 
+@plugin.include
+@starboards.child
+@crescent.command(name="rename", description="Rename a starboard")
+class RenameStarboard:
+    starboard = crescent.option(
+        str, "The starboard to rename", autocomplete=starboard_autocomplete
+    )
+    name = crescent.option(str, "The new name of the starboard")
+
+    async def callback(self, ctx: crescent.Context) -> None:
+        assert ctx.guild_id
+        starboard = await Starboard.from_user_input(
+            ctx.guild_id, self.starboard
+        )
+        old_name = starboard.name
+        starboard.name = self.name
+        try:
+            await starboard.save()
+        except asyncpg.UniqueViolationError:
+            raise StarboardError(
+                f"A starboard with the name '{self.name}' already exists."
+            )
+
+        await ctx.respond(
+            f"Renamed starboard '{old_name}' to '{self.name}'."
+        )
+
+
 async def _update_starboard(
     guild: int, starboard: str, params: dict[str, Any]
 ) -> Starboard:
