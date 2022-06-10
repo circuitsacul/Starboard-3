@@ -32,15 +32,13 @@ class StarboardError(Exception):
 class StarboardNotFound(StarboardError):
     def __init__(self, name: str) -> None:
         self.inp = name
-        super().__init__(
-            f"No starboard found with channel ID or name '{name}'."
-        )
+        super().__init__(f"No starboard found with the name '{name}'.")
 
 
 class ASCNotFound(StarboardError):
-    def __init__(self, channel_id: int) -> None:
-        self.channel_id = channel_id
-        super().__init__(f"<#{channel_id}> is not an autostar channel.")
+    def __init__(self, name: str) -> None:
+        self.name = name
+        super().__init__(f"No autostar channel found with name '{name}'.")
 
 
 class OverrideNotFound(StarboardError):

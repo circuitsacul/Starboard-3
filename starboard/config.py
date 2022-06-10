@@ -55,17 +55,19 @@ class Config:
     max_vote_emojis: int = 10
     max_starboards: int = 10
     max_starboard_name: int = 32
-    min_starboard_name: int = 5
+    min_starboard_name: int = 3
 
     # autostar settings restrictions
     max_maxchars: int = 4_000
     max_minchars: int = 4_000
     max_asc_emojis: int = 10
     max_autostar: int = 10
+    max_asc_name: int = 32
+    min_asc_name: int = 3
 
     # override settings restrictions
     max_ov_name: int = 32
-    min_ov_name: int = 5
+    min_ov_name: int = 3
     max_ov_channels: int = 100
     max_ov_per_starboard: int = 10
 

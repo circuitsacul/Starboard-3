@@ -160,7 +160,7 @@ class Starboard(apgorm.Model):
     cooldown_period = types.SmallInt().field(default=5)
 
     # ForeignKeys & PrimaryKey
-    guild_name_unique = Unique(guild_id, name)
+    sb_guild_name_unique = Unique(guild_id, name)
 
     guild_id_fk = apgorm.ForeignKey(guild_id, Guild.guild_id)
 

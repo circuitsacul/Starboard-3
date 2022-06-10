@@ -45,35 +45,48 @@ COOLDOWN: FixedCooldown[int] = FixedCooldown(
 )
 
 
-async def handle_message(event: hikari.MessageCreateEvent) -> None:
+async def handle_message(event: hikari.GuildMessageCreateEvent) -> None:
     bot = cast("Bot", event.app)
 
     if (
         event.message.author.is_bot
         or event.channel_id not in bot.database.asc
-        or COOLDOWN.update_ratelimit(event.channel_id)
+        or COOLDOWN.update_ratelimit(event.guild_id)
     ):
         return
 
-    asc = await AutoStarChannel.exists(channel_id=event.channel_id)
+    asc = (
+        await AutoStarChannel.fetch_query()
+        .where(channel_id=event.channel_id)
+        .fetchmany()
+    )
     if not asc:
         bot.database.asc.discard(event.channel_id)
         return
 
+    for a in asc:
+        if a.prem_locked:
+            continue
+        await _handle_asc(bot, event.message, a)
+
+
+async def _handle_asc(
+    bot: "Bot", message: hikari.Message, asc: AutoStarChannel
+) -> None:
     if asc.prem_locked:
         return
 
     # validation
     valid: bool = True
-    content = event.message.content or ""
+    content = message.content or ""
     ln = len(content)
     if ln < asc.min_chars:
         valid = False
     elif asc.max_chars is not None and ln > asc.max_chars:
         valid = False
-    elif asc.require_image and not has_image(event.message):
+    elif asc.require_image and not has_image(message):
         await asyncio.sleep(0.5)
-        m = await bot.cache.gof_message(event.channel_id, event.message_id)
+        m = await bot.cache.gof_message(message.channel_id, message.id)
         if m is None:
             return
         valid = has_image(m)
@@ -81,17 +94,17 @@ async def handle_message(event: hikari.MessageCreateEvent) -> None:
     if not valid:
         if asc.delete_invalid:
             with suppress(hikari.ForbiddenError):
-                await event.message.delete()
+                await message.delete()
 
             await notify(
-                event.message.author,
-                f"Your message in <#{event.channel_id}> was deleted because "
+                message.author,
+                f"Your message in <#{message.channel_id}> was deleted because "
                 "it didn't meet the requirements for that autostar channel. "
                 "Here is the content of your message:",
             )
             await notify(
-                event.message.author,
-                event.message.content
+                message.author,
+                message.content
                 or "Your message doesn't seem to have any text content.",
             )
 
@@ -106,4 +119,4 @@ async def handle_message(event: hikari.MessageCreateEvent) -> None:
         with suppress(
             hikari.ForbiddenError, hikari.NotFoundError, hikari.BadRequestError
         ):
-            await event.message.add_reaction(e)
+            await message.add_reaction(e)

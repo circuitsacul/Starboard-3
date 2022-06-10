@@ -87,7 +87,9 @@ class Database(apgorm.Database):
         # patrons
         Index(patrons, patrons.discord_id, IndexType.HASH),
         # autostar channels
+        Index(aschannels, aschannels.channel_id, IndexType.HASH),
         Index(aschannels, aschannels.guild_id, IndexType.HASH),
+        Index(aschannels, aschannels.name, IndexType.HASH),
         # guild
         Index(guilds, guilds.premium_end),
         # member

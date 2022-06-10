@@ -322,8 +322,8 @@
             },
             "unique_constraints": [
                 {
-                    "name": "guild_name_unique",
-                    "raw_sql": "CONSTRAINT guild_name_unique UNIQUE ( guild_id , name )"
+                    "name": "sb_guild_name_unique",
+                    "raw_sql": "CONSTRAINT sb_guild_name_unique UNIQUE ( guild_id , name )"
                 }
             ],
             "check_constraints": [],
@@ -470,6 +470,16 @@
             "name": "aschannels",
             "fields": [
                 {
+                    "name": "id",
+                    "type_": "SERIAL",
+                    "not_null": true
+                },
+                {
+                    "name": "name",
+                    "type_": "TEXT",
+                    "not_null": true
+                },
+                {
                     "name": "channel_id",
                     "type_": "NUMERIC",
                     "not_null": true
@@ -517,10 +527,15 @@
                 }
             ],
             "pk_constraint": {
-                "name": "_aschannels_channel_id_primary_key",
-                "raw_sql": "CONSTRAINT _aschannels_channel_id_primary_key PRIMARY KEY ( channel_id )"
+                "name": "_aschannels_id_primary_key",
+                "raw_sql": "CONSTRAINT _aschannels_id_primary_key PRIMARY KEY ( id )"
             },
-            "unique_constraints": [],
+            "unique_constraints": [
+                {
+                    "name": "asc_guild_name_unique",
+                    "raw_sql": "CONSTRAINT asc_guild_name_unique UNIQUE ( guild_id , name )"
+                }
+            ],
             "check_constraints": [],
             "exclude_constraints": []
         },
@@ -811,8 +826,16 @@
             "raw_sql": "INDEX _hash_index_patrons__discord_id ON patrons USING HASH ( ( discord_id ) )"
         },
         {
+            "name": "_hash_index_aschannels__channel_id",
+            "raw_sql": "INDEX _hash_index_aschannels__channel_id ON aschannels USING HASH ( ( channel_id ) )"
+        },
+        {
             "name": "_hash_index_aschannels__guild_id",
             "raw_sql": "INDEX _hash_index_aschannels__guild_id ON aschannels USING HASH ( ( guild_id ) )"
+        },
+        {
+            "name": "_hash_index_aschannels__name",
+            "raw_sql": "INDEX _hash_index_aschannels__name ON aschannels USING HASH ( ( name ) )"
         },
         {
             "name": "_btree_index_guilds__premium_end",
