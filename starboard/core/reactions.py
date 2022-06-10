@@ -112,7 +112,7 @@ async def handle_reaction_add(event: hikari.GuildReactionAddEvent) -> None:
             if await is_vote_valid_for(
                 bot, c, orig_msg, author, author_obj, event.member
             ):
-                id_set.add(s.channel_id)
+                id_set.add(s.id)
 
     if (
         not valid_upvote_starboard_ids
@@ -193,7 +193,7 @@ async def handle_reaction_remove(
         c = await get_config(s, orig_msg.channel_id)
         if not c.enabled:
             continue
-        valid_sbids.append(s.channel_id)
+        valid_sbids.append(s.id)
 
     if not valid_sbids:
         return

@@ -35,11 +35,16 @@ def valid_emoji(value: str) -> bool:
     raise InvalidFieldValue(f"{value} is not a valid emoji.")
 
 
-def str_len(name: str, max: int) -> Callable[[str], bool]:
+def str_len(name: str, min: int, max: int) -> Callable[[str], bool]:
     def validator(value: str | None) -> bool:
         if len(value or "") > max:
             raise InvalidFieldValue(
                 f"The length of {name} cannot be greater than {max} "
+                "characters."
+            )
+        elif len(value or "") < min:
+            raise InvalidFieldValue(
+                f"The length of {name} cannot be less than {min} "
                 "characters."
             )
 

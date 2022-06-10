@@ -25,14 +25,15 @@ from __future__ import annotations
 from typing import Any, Callable, Iterable
 
 import apgorm
-from apgorm import types
+from apgorm import Unique, types
 from apgorm.exceptions import InvalidFieldValue
 
 from starboard.config import CONFIG
+from starboard.exceptions import StarboardNotFound
 from starboard.utils import seconds_to_human
 
 from ._converters import DecimalC, NonNullArray, NullDecimalC
-from ._validators import num_range, valid_emoji
+from ._validators import num_range, str_len, valid_emoji
 from .guild import Guild
 
 
@@ -105,6 +106,8 @@ def validate_sb_changes(**changes: Any) -> None:
 class Starboard(apgorm.Model):
     __slots__: Iterable[str] = ()
 
+    id = types.Serial().field()
+    name = types.Text().field()
     channel_id = types.Numeric().field().with_converter(DecimalC)
     guild_id = types.Numeric().field().with_converter(DecimalC)
 
@@ -157,6 +160,31 @@ class Starboard(apgorm.Model):
     cooldown_period = types.SmallInt().field(default=5)
 
     # ForeignKeys & PrimaryKey
+    guild_name_unique = Unique(guild_id, name)
+
     guild_id_fk = apgorm.ForeignKey(guild_id, Guild.guild_id)
 
-    primary_key = (channel_id,)
+    primary_key = (id,)
+
+    # Checks
+    name.add_validator(
+        str_len("name", CONFIG.min_starboard_name, CONFIG.max_starboard_name)
+    )
+
+    # methods
+    @staticmethod
+    async def from_user_input(guild_id: int, inp: str) -> Starboard:
+        try:
+            inp_as_id = int(inp.replace("<#", "").replace(">", ""))
+        except ValueError:
+            pass
+        else:
+            if s := await Starboard.exists(
+                guild_id=guild_id, channel_id=inp_as_id
+            ):
+                return s
+
+        if s := await Starboard.exists(guild_id=guild_id, name=inp):
+            return s
+        else:
+            raise StarboardNotFound(inp)

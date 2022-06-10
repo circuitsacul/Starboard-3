@@ -42,7 +42,7 @@ class Override(Model):
     guild_id = types.Numeric().field().with_converter(DecimalC)
     name = types.Text().field()
 
-    starboard_id = types.Numeric().field().with_converter(DecimalC)
+    starboard_id = types.Int().field()
 
     channel_ids = (
         types.Array(types.Numeric())
@@ -55,11 +55,11 @@ class Override(Model):
     primary_key = (id,)
 
     guild_fk = ForeignKey(guild_id, Guild.guild_id)
-    starboard_fk = ForeignKey(starboard_id, Starboard.channel_id)
+    starboard_fk = ForeignKey(starboard_id, Starboard.id)
 
     # validators
     channel_ids.add_validator(array_len("channels", CONFIG.max_ov_channels))
-    name.add_validator(str_len("name", CONFIG.max_ov_name))
+    name.add_validator(str_len("name", CONFIG.min_ov_name, CONFIG.max_ov_name))
 
     @property
     def overrides(self) -> dict[str, Any]:

@@ -73,7 +73,7 @@ async def refresh_message(
 
 async def _handle_trashed_message(bot: Bot, orig_message: Message) -> None:
     starboards = {
-        sb.channel_id: sb
+        sb.id: sb
         for sb in await Starboard.fetch_query()
         .where(guild_id=orig_message.guild_id)
         .fetchmany()
@@ -119,7 +119,7 @@ async def _refresh_message(
     if sbids:
         _s = (
             await Starboard.fetch_query()
-            .where(Starboard.channel_id.eq(sql(sbids).any))
+            .where(Starboard.id.eq(sql(sbids).any))
             .where(prem_locked=False)
             .fetchmany()
         )
@@ -161,16 +161,13 @@ async def _refresh_message_for_starboard(
         orig_msg.channel_id, orig_msg.message_id
     )
 
-    points = await _get_points(
-        orig_msg.message_id, config.starboard.channel_id
-    )
+    points = await _get_points(orig_msg.message_id, config.starboard.id)
     action = _get_action(
         orig_msg, orig_msg_obj, config, points, orig_msg_obj is None
     )
 
     sbmsg = await SBMessage.exists(
-        message_id=orig_msg.message_id,
-        starboard_id=config.starboard.channel_id,
+        message_id=orig_msg.message_id, starboard_id=config.starboard.id
     )
     if (
         sbmsg is not None
@@ -181,8 +178,7 @@ async def _refresh_message_for_starboard(
         return
     if not sbmsg:
         sbmsg = await SBMessage(
-            message_id=orig_msg.message_id,
-            starboard_id=config.starboard.channel_id,
+            message_id=orig_msg.message_id, starboard_id=config.starboard.id
         ).create()
     if sbmsg.sb_message_id is not None:
         sbmsg_obj = await bot.cache.gof_message(
@@ -372,7 +368,7 @@ async def _webhook(
     try:
         wh = await bot.rest.create_webhook(
             config.starboard.channel_id,
-            name="Starboard",
+            name=f"Starboard {config.starboard.name}",
             avatar=bot.me.avatar_url or hikari.UNDEFINED,
             reason="This starboard has use_webhook set to True.",
         )
@@ -439,7 +435,7 @@ def _get_action(
         add_trib = None
 
     # check if forced
-    if config.starboard.channel_id in orig_msg.forced_to:
+    if config.starboard.id in orig_msg.forced_to:
         add_trib = True
 
     # return

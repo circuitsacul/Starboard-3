@@ -54,6 +54,8 @@ class Config:
     max_older_than: int = 86_400 * 7
     max_vote_emojis: int = 10
     max_starboards: int = 10
+    max_starboard_name: int = 32
+    min_starboard_name: int = 5
 
     # autostar settings restrictions
     max_maxchars: int = 4_000
@@ -63,6 +65,7 @@ class Config:
 
     # override settings restrictions
     max_ov_name: int = 32
+    min_ov_name: int = 5
     max_ov_channels: int = 100
     max_ov_per_starboard: int = 10
 

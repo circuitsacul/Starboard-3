@@ -36,7 +36,7 @@ class SBMessage(apgorm.Model):
     __slots__: Iterable[str] = ()
 
     message_id = types.Numeric().field().with_converter(DecimalC)
-    starboard_id = types.Numeric().field().with_converter(DecimalC)
+    starboard_id = types.Int().field()
     sb_message_id = (
         types.Numeric().nullablefield().with_converter(NullDecimalC)
     )
@@ -44,6 +44,6 @@ class SBMessage(apgorm.Model):
     last_known_point_count = types.SmallInt().field(default=0)
 
     message_id_fk = apgorm.ForeignKey(message_id, Message.message_id)
-    starboard_id_fk = apgorm.ForeignKey(starboard_id, Starboard.channel_id)
+    starboard_id_fk = apgorm.ForeignKey(starboard_id, Starboard.id)
 
     primary_key = (message_id, starboard_id)

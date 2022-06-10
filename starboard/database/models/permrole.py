@@ -50,12 +50,12 @@ class PermRoleStarboard(Model):
     __slots__: Iterable[str] = ()
 
     permrole_id = types.Numeric().field().with_converter(DecimalC)
-    starboard_id = types.Numeric().field().with_converter(DecimalC)
+    starboard_id = types.Int().field()
 
     vote = types.Boolean().nullablefield()
     recv_votes = types.Boolean().nullablefield()
 
     primary_key = (permrole_id, starboard_id)
 
-    starboard_id_fk = ForeignKey(starboard_id, Starboard.channel_id)
+    starboard_id_fk = ForeignKey(starboard_id, Starboard.id)
     permrole_id_fk = ForeignKey(permrole_id, PermRole.role_id)

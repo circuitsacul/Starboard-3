@@ -24,9 +24,11 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any, cast
 
+import asyncpg
 import crescent
 import hikari
 
+from starboard.commands._converters import any_emoji_list
 from starboard.config import CONFIG
 from starboard.core.config import StarboardConfig
 from starboard.database import (
@@ -36,12 +38,12 @@ from starboard.database import (
     goc_guild,
     validate_sb_changes,
 )
-from starboard.exceptions import StarboardError, StarboardNotFound
+from starboard.exceptions import StarboardError
 from starboard.undefined import UNDEF
 from starboard.views import Confirm
 
+from ._autocomplete import starboard_autocomplete
 from ._checks import has_guild_perms
-from ._converters import any_emoji_list, any_emoji_str, disid
 from ._sb_config import (
     BaseEditStarboardBehavior,
     BaseEditStarboardEmbedStyle,
@@ -69,7 +71,10 @@ starboards = crescent.Group(
 @crescent.command(name="view", description="View a starboard")
 class ViewStarboard:
     starboard = crescent.option(
-        hikari.TextableGuildChannel, "The starboard to view", default=None
+        str,
+        "The starboard to view",
+        default=None,
+        autocomplete=starboard_autocomplete,
     )
 
     async def callback(self, ctx: crescent.Context) -> None:
@@ -98,15 +103,10 @@ class ViewStarboard:
             )
 
             for sb in all_starboards:
-                channel = bot.cache.get_guild_channel(sb.channel_id)
-                if channel:
-                    assert channel.name is not None
-                    name = channel.name
-                else:
-                    name = f"Deleted Channel {sb.channel_id}"
-
                 if sb.prem_locked:
-                    name = f"{name} (Locked)"
+                    name = f"{sb.name} (Locked)"
+                else:
+                    name = sb.name
 
                 emoji_str = pretty_emoji_str(*sb.upvote_emojis, bot=bot)
                 embed.add_field(
@@ -121,14 +121,13 @@ class ViewStarboard:
             await ctx.respond(embed=embed)
 
         else:
-            starboard = await Starboard.exists(channel_id=self.starboard.id)
-            if not starboard:
-                raise StarboardNotFound(self.starboard.id)
-
-            overrides = await Override.count(starboard_id=starboard.channel_id)
+            starboard = await Starboard.from_user_input(
+                ctx.guild_id, self.starboard
+            )
+            overrides = await Override.count(starboard_id=starboard.id)
 
             config = pretty_sb_config(StarboardConfig(starboard, None), bot)
-            embed = bot.embed(title=self.starboard.name)
+            embed = bot.embed(title=starboard.name)
             notes: list[str] = []
             if overrides:
                 notes.append(
@@ -166,17 +165,11 @@ class CreateStarboard:
     channel = crescent.option(
         hikari.TextableGuildChannel, "Channel to use as starboard"
     )
+    name = crescent.option(str, "The name of the starboard")
 
     async def callback(self, ctx: crescent.Context) -> None:
         bot = cast("Bot", ctx.app)
         assert ctx.guild_id
-        exists = await Starboard.exists(channel_id=self.channel.id)
-        if exists:
-            await ctx.respond(
-                f"<#{self.channel.id}> is already a starboard.", ephemeral=True
-            )
-            return
-
         guild = await goc_guild(ctx.guild_id)
         ip = guild.premium_end is not None
 
@@ -192,12 +185,21 @@ class CreateStarboard:
                 )
             )
 
-        await Starboard(
-            channel_id=self.channel.id, guild_id=ctx.guild_id
-        ).create()
-        bot.cache.invalidate_vote_emojis(ctx.guild_id)
+        try:
+            sb = await Starboard(
+                channel_id=self.channel.id,
+                guild_id=ctx.guild_id,
+                name=self.name,
+            ).create()
+        except asyncpg.UniqueViolationError:
+            raise StarboardError(
+                f"A starboard with the name {self.name} already exists."
+            )
 
-        await ctx.respond(f"Created starboard <#{self.channel.id}>.")
+        bot.cache.invalidate_vote_emojis(ctx.guild_id)
+        await ctx.respond(
+            f"Created starboard {sb.name} in <#{self.channel.id}>."
+        )
 
 
 @plugin.include
@@ -205,20 +207,14 @@ class CreateStarboard:
 @crescent.command(name="delete", description="Remove a starboard")
 class DeleteStarboard:
     starboard = crescent.option(
-        hikari.TextableGuildChannel, "Starboard to delete.", default=None
-    )
-    starboard_id = crescent.option(
-        str, "Starboard to delete, by ID", default=None, name="starboard-id"
+        str, "The starboard to delete", autocomplete=starboard_autocomplete
     )
 
     async def callback(self, ctx: crescent.Context) -> None:
-        chid = (
-            self.starboard.id if self.starboard else disid(self.starboard_id)
+        assert ctx.guild_id
+        starboard = await Starboard.from_user_input(
+            ctx.guild_id, self.starboard
         )
-        if not chid:
-            raise StarboardError(
-                "Please specify either a channel or channel ID."
-            )
 
         bot = cast("Bot", ctx.app)
         assert ctx.guild_id
@@ -235,32 +231,20 @@ class DeleteStarboard:
             await msg.edit("Cancelled.", components=[])
             return
 
-        res = (
-            await Starboard.delete_query()
-            .where(channel_id=chid, guild_id=ctx.guild_id)
-            .execute()
-        )
+        await starboard.delete()
         bot.cache.invalidate_vote_emojis(ctx.guild_id)
-        if not res:
-            await msg.edit(StarboardNotFound(chid).msg, components=[])
-            return
-
-        await msg.edit(f"Deleted starboard <#{chid}>.", components=[])
+        await msg.edit(f"Deleted starboard {starboard.name}.", components=[])
 
 
 async def _update_starboard(
-    starboard: hikari.InteractionChannel, params: dict[str, Any]
-) -> None:
+    guild: int, starboard: str, params: dict[str, Any]
+) -> Starboard:
     validate_sb_changes(**params)
-
-    s = await Starboard.exists(channel_id=starboard.id)
-    if not s:
-        raise StarboardNotFound(starboard.id)
-
+    s = await Starboard.from_user_input(guild, starboard)
     for k, v in params.items():
         setattr(s, k, v)
-
     await s.save()
+    return s
 
 
 edit = starboards.sub_group("edit", description="Edit a starboard")
@@ -271,7 +255,7 @@ edit = starboards.sub_group("edit", description="Edit a starboard")
 @crescent.command(name="behavior", description="Edit a starboard's behavior")
 class EditStarboardBehavior(BaseEditStarboardBehavior):
     starboard = crescent.option(
-        hikari.TextableGuildChannel, "The starboard to edit"
+        str, "The starboard to edit", autocomplete=starboard_autocomplete
     )
 
     # these options cannot be implemented for overrides, so we put it on the
@@ -294,8 +278,11 @@ class EditStarboardBehavior(BaseEditStarboardBehavior):
         return d
 
     async def callback(self, ctx: crescent.Context) -> None:
-        await _update_starboard(self.starboard, self._options())
-        await ctx.respond(f"Settings for <#{self.starboard.id}> updated.")
+        assert ctx.guild_id
+        s = await _update_starboard(
+            ctx.guild_id, self.starboard, self._options()
+        )
+        await ctx.respond(f"Settings for {s.name} updated.")
 
 
 @plugin.include
@@ -303,12 +290,15 @@ class EditStarboardBehavior(BaseEditStarboardBehavior):
 @crescent.command(name="embed", description="Edit a starboard's embed style")
 class EditStarboardEmbedStyle(BaseEditStarboardEmbedStyle):
     starboard = crescent.option(
-        hikari.TextableGuildChannel, "The starboard to edit"
+        str, "The starboard to edit", autocomplete=starboard_autocomplete
     )
 
     async def callback(self, ctx: crescent.Context) -> None:
-        await _update_starboard(self.starboard, self._options())
-        await ctx.respond(f"Settings for <#{self.starboard.id}> updated.")
+        assert ctx.guild_id
+        s = await _update_starboard(
+            ctx.guild_id, self.starboard, self._options()
+        )
+        await ctx.respond(f"Settings for {s.name} updated.")
 
 
 @plugin.include
@@ -318,12 +308,15 @@ class EditStarboardEmbedStyle(BaseEditStarboardEmbedStyle):
 )
 class EditStarboardRequirements(BaseEditStarboardRequirements):
     starboard = crescent.option(
-        hikari.TextableGuildChannel, "The starboard to edit"
+        str, "The starboard to edit", autocomplete=starboard_autocomplete
     )
 
     async def callback(self, ctx: crescent.Context) -> None:
-        await _update_starboard(self.starboard, self._options())
-        await ctx.respond(f"Settings for <#{self.starboard.id}> updated.")
+        assert ctx.guild_id
+        s = await _update_starboard(
+            ctx.guild_id, self.starboard, self._options()
+        )
+        await ctx.respond(f"Settings for {s.name} updated.")
 
 
 @plugin.include
@@ -331,12 +324,15 @@ class EditStarboardRequirements(BaseEditStarboardRequirements):
 @crescent.command(name="style", description="Edit a starboard's style")
 class EditStarboardStyle(BaseEditStarboardStyle):
     starboard = crescent.option(
-        hikari.TextableGuildChannel, "The starboard to edit"
+        str, "The starboard to edit", autocomplete=starboard_autocomplete
     )
 
     async def callback(self, ctx: crescent.Context) -> None:
-        await _update_starboard(self.starboard, self._options())
-        await ctx.respond(f"Settings for <#{self.starboard.id}> updated.")
+        assert ctx.guild_id
+        s = await _update_starboard(
+            ctx.guild_id, self.starboard, self._options()
+        )
+        await ctx.respond(f"Settings for {s.name} updated.")
 
 
 upvote_emojis = starboards.sub_group(
@@ -349,17 +345,16 @@ upvote_emojis = starboards.sub_group(
 @crescent.command(name="set-upvote", description="Set the upvote emojis")
 class SetUpvoteEmojis:
     starboard = crescent.option(
-        hikari.TextableGuildChannel,
+        str,
         "The starboard to set the upvote emojis for",
+        autocomplete=starboard_autocomplete,
     )
     emojis = crescent.option(str, "A list of emojis to use")
 
     async def callback(self, ctx: crescent.Context) -> None:
         bot = cast("Bot", ctx.app)
         assert ctx.guild_id
-        s = await Starboard.exists(channel_id=self.starboard.id)
-        if not s:
-            raise StarboardNotFound(self.starboard.id)
+        s = await Starboard.from_user_input(ctx.guild_id, self.starboard)
 
         guild = await Guild.fetch(guild_id=ctx.guild_id)
         ip = guild.premium_end is not None
@@ -385,17 +380,16 @@ class SetUpvoteEmojis:
 @crescent.command(name="set-downvote", description="Set the downvote emojis")
 class SetDownvoteEmojis:
     starboard = crescent.option(
-        hikari.TextableGuildChannel,
-        "The starboard to set the upvote emojis for",
+        str,
+        "The starboard to set the downvote emojis for",
+        autocomplete=starboard_autocomplete,
     )
     emojis = crescent.option(str, "A list of emojis to use")
 
     async def callback(self, ctx: crescent.Context) -> None:
         bot = cast("Bot", ctx.app)
         assert ctx.guild_id
-        s = await Starboard.exists(channel_id=self.starboard.id)
-        if not s:
-            raise StarboardNotFound(self.starboard.id)
+        s = await Starboard.from_user_input(ctx.guild_id, self.starboard)
 
         guild = await Guild.fetch(guild_id=ctx.guild_id)
         ip = guild.premium_end is not None
@@ -409,91 +403,6 @@ class SetDownvoteEmojis:
                 f"You an only have up to {limit} emojis per starboard."
                 + (" Get premium to increase this." if not ip else "")
             )
-        s.upvote_emojis = list(upvote_emojis)
-        s.downvote_emojis = list(downvote_emojis)
-        await s.save()
-        bot.cache.invalidate_vote_emojis(ctx.guild_id)
-        await ctx.respond("Done.")
-
-
-@plugin.include
-@upvote_emojis.child
-@crescent.command(name="add", description="Add an upvote emoji")
-class AddStarEmoji:
-    starboard = crescent.option(
-        hikari.TextableGuildChannel, "The starboard to add the upvote emoji to"
-    )
-    emoji = crescent.option(str, "The upvote emoji to add")
-    is_downvote = crescent.option(
-        bool, "Whether this is a downvote emoji", default=False
-    )
-
-    async def callback(self, ctx: crescent.Context) -> None:
-        assert ctx.guild_id
-        bot = cast("Bot", ctx.app)
-        s = await Starboard.exists(channel_id=self.starboard.id)
-        if not s:
-            raise StarboardNotFound(self.starboard.id)
-
-        e = any_emoji_str(self.emoji)
-        upvote_emojis = set(s.upvote_emojis)
-        downvote_emojis = set(s.downvote_emojis)
-
-        if self.is_downvote:
-            upvote_emojis.discard(e)
-            downvote_emojis.add(e)
-        else:
-            downvote_emojis.discard(e)
-            upvote_emojis.add(e)
-
-        guild = await Guild.fetch(guild_id=ctx.guild_id)
-        ip = guild.premium_end is not None
-        limit = CONFIG.max_vote_emojis if ip else CONFIG.np_max_vote_emojis
-
-        if len(upvote_emojis) + len(downvote_emojis) >= limit:
-            raise StarboardError(
-                f"You an only have up to {limit} emojis per starboard."
-                + (" Get premium to increase this." if not ip else "")
-            )
-
-        s.upvote_emojis = list(upvote_emojis)
-        s.downvote_emojis = list(downvote_emojis)
-        await s.save()
-        bot.cache.invalidate_vote_emojis(ctx.guild_id)
-        await ctx.respond("Done.")
-
-
-@plugin.include
-@upvote_emojis.child
-@crescent.command(name="remove", description="Remove an upvote/downvote emoji")
-class RemoveStarEmoji:
-    starboard = crescent.option(
-        hikari.TextableGuildChannel, "The starboard to remove the emoji from"
-    )
-    emoji = crescent.option(str, "The emoji to remove")
-
-    async def callback(self, ctx: crescent.Context) -> None:
-        bot = cast("Bot", ctx.app)
-        assert ctx.guild_id
-
-        s = await Starboard.exists(channel_id=self.starboard.id)
-        if not s:
-            raise StarboardNotFound(self.starboard.id)
-
-        e = any_emoji_str(self.emoji)
-        upvote_emojis = set(s.upvote_emojis)
-        downvote_emojis = set(s.downvote_emojis)
-
-        if e in upvote_emojis | downvote_emojis:
-            upvote_emojis.discard(e)
-            downvote_emojis.discard(e)
-        else:
-            await ctx.respond(
-                f"{e} is not an upvote emoji on <#{s.channel_id}>",
-                ephemeral=True,
-            )
-            return
-
         s.upvote_emojis = list(upvote_emojis)
         s.downvote_emojis = list(downvote_emojis)
         await s.save()

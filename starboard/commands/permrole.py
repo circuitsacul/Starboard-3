@@ -28,15 +28,16 @@ import asyncpg
 import crescent
 import hikari
 
+from starboard.commands._converters import disid
 from starboard.config import CONFIG
 from starboard.core.permrole import get_permroles
 from starboard.database import PermRole, Starboard, goc_guild
 from starboard.database.models.permrole import PermRoleStarboard
-from starboard.exceptions import StarboardError, StarboardNotFound
+from starboard.exceptions import StarboardError
 from starboard.undefined import UNDEF
 
+from ._autocomplete import starboard_autocomplete
 from ._checks import has_guild_perms
-from ._converters import disid
 from ._utils import TRIBOOL, TRIBOOL_CHOICES, optiond
 
 if TYPE_CHECKING:
@@ -63,6 +64,12 @@ async def view_permroles(ctx: crescent.Context) -> None:
     if not pr:
         raise StarboardError("This server has no PermRoles.")
 
+    sb_id_name: dict[int, str] = {}
+    for sb in (
+        await Starboard.fetch_query().where(guild_id=ctx.guild.id).fetchmany()
+    ):
+        sb_id_name[sb.id] = sb.name
+
     embed = bot.embed(title="PermRoles")
     for r in pr:
         obj = ctx.guild.get_role(r.permrole.role_id)
@@ -79,7 +86,7 @@ async def view_permroles(ctx: crescent.Context) -> None:
                 f"gain-xproles: {r.permrole.xproles}\n"
                 + (
                     "\n".join(
-                        f"\nPermissions for <#{sid}>\n"
+                        f"\nPermissions for {sb_id_name[sid]}\n"
                         f"vote: {conf.vote}\n"
                         f"receive-votes: {conf.recv_votes}\n"
                         for sid, conf in r.starboards.items()
@@ -208,7 +215,9 @@ class EditPermRoleGlobal:
 class EditPermRoleStarboard:
     permrole = crescent.option(hikari.Role, "The PermRole to edit")
     starboard = crescent.option(
-        hikari.TextableGuildChannel, "The starboard to edit the PermRole for"
+        str,
+        "The starboard to edit the PermRole for",
+        autocomplete=starboard_autocomplete,
     )
 
     vote = optiond(str, "Whether to allow voting", choices=TRIBOOL_CHOICES)
@@ -220,9 +229,8 @@ class EditPermRoleStarboard:
     )
 
     async def callback(self, ctx: crescent.Context) -> None:
-        sb = await Starboard.exists(channel_id=self.starboard.id)
-        if not sb:
-            raise StarboardNotFound(self.starboard.id)
+        assert ctx.guild_id
+        sb = await Starboard.from_user_input(ctx.guild_id, self.starboard)
 
         try:
             pr = await PermRoleStarboard(
@@ -241,6 +249,4 @@ class EditPermRoleStarboard:
             pr.recv_votes = TRIBOOL[self.recv_votes]
 
         await pr.save()
-        await ctx.respond(
-            f"Updated **{self.permrole}** for <#{self.starboard.id}>."
-        )
+        await ctx.respond(f"Updated **{self.permrole}** for {sb.name}.")

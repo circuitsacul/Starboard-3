@@ -109,9 +109,11 @@ class Database(apgorm.Database):
             posroles, (posroles.guild_id, posroles.max_members), unique=True
         ),
         # starboards
+        Index(starboards, starboards.channel_id, IndexType.HASH),
         Index(starboards, starboards.guild_id, IndexType.HASH),
         Index(starboards, starboards.upvote_emojis, IndexType.GIN),
         Index(starboards, starboards.downvote_emojis, IndexType.GIN),
+        Index(starboards, starboards.name, IndexType.HASH),
         # xproles
         Index(xproles, xproles.guild_id, IndexType.HASH),
         # votes

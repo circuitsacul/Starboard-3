@@ -94,8 +94,8 @@ async def update_prem_locks(bot: Bot, guild_id: int) -> None:
             await _try_send(
                 bot,
                 sb.channel_id,
-                "This starboard exceeds the non-premium limit and has been "
-                "locked.",
+                f"This starboard ({sb.name}) exceeds the non-premium limit "
+                "and has been locked.",
             )
     elif to_lock < 0:
         sb_to_unlock = (

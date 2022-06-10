@@ -28,16 +28,17 @@ import crescent
 import hikari
 from hikari import Permissions
 
+from starboard.commands._converters import msg_ch_id, orig_msg_from_link
 from starboard.core.config import get_config
 from starboard.core.messages import get_orig_message
 from starboard.core.starboards import refresh_message
 from starboard.database import Message, SBMessage, Starboard, goc_message
-from starboard.exceptions import StarboardError, StarboardNotFound
+from starboard.exceptions import StarboardError
 from starboard.utils import jump
 from starboard.views import Paginator
 
+from ._autocomplete import starboard_autocomplete
 from ._checks import has_guild_perms
-from ._converters import msg_ch_id, orig_msg_from_link
 
 if TYPE_CHECKING:
     from starboard.bot import Bot
@@ -237,12 +238,14 @@ class ForceMessage:
         str, "The message to force", name="message-link"
     )
     starboard = crescent.option(
-        hikari.TextableGuildChannel,
+        str,
         "The starboard to force the message to",
+        autocomplete=starboard_autocomplete,
         default=None,
     )
 
     async def callback(self, ctx: crescent.Context) -> None:
+        assert ctx.guild_id
         bot = cast("Bot", ctx.app)
         msgid, chid = msg_ch_id(self.message_link)
         msg = await get_orig_message(msgid)
@@ -266,9 +269,7 @@ class ForceMessage:
             )
 
         if self.starboard:
-            sb = await Starboard.exists(channel_id=self.starboard.id)
-            if not sb:
-                raise StarboardNotFound(self.starboard.id)
+            sb = await Starboard.from_user_input(ctx.guild_id, self.starboard)
             sbids = [sb.channel_id]
         else:
             assert ctx.guild_id

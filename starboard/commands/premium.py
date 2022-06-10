@@ -92,7 +92,7 @@ async def refresh_prem_lock(ctx: crescent.Context) -> None:
     description="Move a lock from one starboard or AutoStar channel to "
     "another",
 )
-class MovePremLock:
+class MovePremLock:  # TODO: fix this to support multiple sb thing
     ch_from = crescent.option(
         hikari.TextableGuildChannel,
         "The channel to move the lock from",
