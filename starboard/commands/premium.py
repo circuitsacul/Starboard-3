@@ -41,7 +41,7 @@ from starboard.database import (
 from starboard.exceptions import StarboardError
 from starboard.views import Confirm
 
-from ._autocomplete import starboard_autocomplete, asc_autocomplete
+from ._autocomplete import asc_autocomplete, starboard_autocomplete
 from ._checks import guild_only, has_guild_perms
 
 if TYPE_CHECKING:

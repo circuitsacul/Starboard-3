@@ -105,7 +105,6 @@ class DeleteAutoStar:
 
     async def callback(self, ctx: crescent.Context) -> None:
         assert ctx.guild_id
-        bot = cast("Bot", ctx.app)
 
         asc = await AutoStarChannel.from_name(ctx.guild_id, self.autostar)
 
