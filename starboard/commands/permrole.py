@@ -230,7 +230,7 @@ class EditPermRoleStarboard:
 
     async def callback(self, ctx: crescent.Context) -> None:
         assert ctx.guild_id
-        sb = await Starboard.from_user_input(ctx.guild_id, self.starboard)
+        sb = await Starboard.from_name(ctx.guild_id, self.starboard)
 
         try:
             pr = await PermRoleStarboard(

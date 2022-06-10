@@ -269,7 +269,7 @@ class ForceMessage:
             )
 
         if self.starboard:
-            sb = await Starboard.from_user_input(ctx.guild_id, self.starboard)
+            sb = await Starboard.from_name(ctx.guild_id, self.starboard)
             sbids = [sb.id]
         else:
             assert ctx.guild_id
@@ -319,7 +319,7 @@ class UnforceMessage:
             )
 
         if self.starboard:
-            sb = await Starboard.from_user_input(ctx.guild_id, self.starboard)
+            sb = await Starboard.from_name(ctx.guild_id, self.starboard)
             ft = set(msg.forced_to)
             if sb.id not in ft:
                 raise StarboardError(

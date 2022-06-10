@@ -181,7 +181,7 @@ class Random:
         assert ctx.guild_id
         bot = cast("Bot", ctx.app)
 
-        s = await Starboard.from_user_input(ctx.guild_id, self.starboard)
+        s = await Starboard.from_name(ctx.guild_id, self.starboard)
         if s.private:
             raise StarboardError(f"{s.name} is a private starboard.")
 
@@ -276,7 +276,7 @@ class MostStarred:
         assert ctx.guild_id is not None
         bot = cast("Bot", ctx.app)
 
-        s = await Starboard.from_user_input(ctx.guild_id, self.starboard)
+        s = await Starboard.from_name(ctx.guild_id, self.starboard)
         if s.private:
             raise StarboardError(f"{s.name} is a private starboard.")
 

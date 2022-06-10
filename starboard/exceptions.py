@@ -30,10 +30,10 @@ class StarboardError(Exception):
 
 
 class StarboardNotFound(StarboardError):
-    def __init__(self, inp: str) -> None:
-        self.inp = inp
+    def __init__(self, name: str) -> None:
+        self.inp = name
         super().__init__(
-            f"No starboard found with channel ID or name '{inp}'."
+            f"No starboard found with channel ID or name '{name}'."
         )
 
 

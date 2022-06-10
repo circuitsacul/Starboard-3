@@ -173,18 +173,8 @@ class Starboard(apgorm.Model):
 
     # methods
     @staticmethod
-    async def from_user_input(guild_id: int, inp: str) -> Starboard:
-        try:
-            inp_as_id = int(inp.replace("<#", "").replace(">", ""))
-        except ValueError:
-            pass
-        else:
-            if s := await Starboard.exists(
-                guild_id=guild_id, channel_id=inp_as_id
-            ):
-                return s
-
-        if s := await Starboard.exists(guild_id=guild_id, name=inp):
+    async def from_name(guild_id: int, name: str) -> Starboard:
+        if s := await Starboard.exists(guild_id=guild_id, name=name):
             return s
         else:
-            raise StarboardNotFound(inp)
+            raise StarboardNotFound(name)

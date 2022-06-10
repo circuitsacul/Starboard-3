@@ -131,9 +131,7 @@ class CreateOverride:
         assert ctx.guild_id
         bot = cast("Bot", ctx.app)
 
-        starboard = await Starboard.from_user_input(
-            ctx.guild_id, self.starboard
-        )
+        starboard = await Starboard.from_name(ctx.guild_id, self.starboard)
 
         if self.copy_from is not None:
             ov = await Override.exists(

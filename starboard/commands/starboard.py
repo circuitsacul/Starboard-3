@@ -122,9 +122,7 @@ class ViewStarboard:
             await ctx.respond(embed=embed)
 
         else:
-            starboard = await Starboard.from_user_input(
-                ctx.guild_id, self.starboard
-            )
+            starboard = await Starboard.from_name(ctx.guild_id, self.starboard)
             overrides = await Override.count(starboard_id=starboard.id)
 
             config = pretty_sb_config(StarboardConfig(starboard, None), bot)
@@ -214,9 +212,7 @@ class DeleteStarboard:
 
     async def callback(self, ctx: crescent.Context) -> None:
         assert ctx.guild_id
-        starboard = await Starboard.from_user_input(
-            ctx.guild_id, self.starboard
-        )
+        starboard = await Starboard.from_name(ctx.guild_id, self.starboard)
 
         bot = cast("Bot", ctx.app)
         assert ctx.guild_id
@@ -249,9 +245,7 @@ class RenameStarboard:
 
     async def callback(self, ctx: crescent.Context) -> None:
         assert ctx.guild_id
-        starboard = await Starboard.from_user_input(
-            ctx.guild_id, self.starboard
-        )
+        starboard = await Starboard.from_name(ctx.guild_id, self.starboard)
         old_name = starboard.name
         starboard.name = self.name
         try:
@@ -268,7 +262,7 @@ async def _update_starboard(
     guild: int, starboard: str, params: dict[str, Any]
 ) -> Starboard:
     validate_sb_changes(**params)
-    s = await Starboard.from_user_input(guild, starboard)
+    s = await Starboard.from_name(guild, starboard)
     for k, v in params.items():
         setattr(s, k, v)
     await s.save()
@@ -382,7 +376,7 @@ class SetUpvoteEmojis:
     async def callback(self, ctx: crescent.Context) -> None:
         bot = cast("Bot", ctx.app)
         assert ctx.guild_id
-        s = await Starboard.from_user_input(ctx.guild_id, self.starboard)
+        s = await Starboard.from_name(ctx.guild_id, self.starboard)
 
         guild = await Guild.fetch(guild_id=ctx.guild_id)
         ip = guild.premium_end is not None
@@ -417,7 +411,7 @@ class SetDownvoteEmojis:
     async def callback(self, ctx: crescent.Context) -> None:
         bot = cast("Bot", ctx.app)
         assert ctx.guild_id
-        s = await Starboard.from_user_input(ctx.guild_id, self.starboard)
+        s = await Starboard.from_name(ctx.guild_id, self.starboard)
 
         guild = await Guild.fetch(guild_id=ctx.guild_id)
         ip = guild.premium_end is not None
