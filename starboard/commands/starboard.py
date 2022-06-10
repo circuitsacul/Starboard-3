@@ -261,9 +261,7 @@ class RenameStarboard:
                 f"A starboard with the name '{self.name}' already exists."
             )
 
-        await ctx.respond(
-            f"Renamed starboard '{old_name}' to '{self.name}'."
-        )
+        await ctx.respond(f"Renamed starboard '{old_name}' to '{self.name}'.")
 
 
 async def _update_starboard(
