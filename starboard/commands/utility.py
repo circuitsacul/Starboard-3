@@ -270,11 +270,11 @@ class ForceMessage:
 
         if self.starboard:
             sb = await Starboard.from_user_input(ctx.guild_id, self.starboard)
-            sbids = [sb.channel_id]
+            sbids = [sb.id]
         else:
             assert ctx.guild_id
             sbids = [
-                sb.channel_id
+                sb.id
                 for sb in await Starboard.fetch_query()
                 .where(guild_id=ctx.guild_id)
                 .fetchmany()
@@ -304,12 +304,14 @@ class UnforceMessage:
         str, "The message to unforce", name="message-link"
     )
     starboard = crescent.option(
-        hikari.TextableGuildChannel,
-        "The starboard to unforce from",
+        str,
+        "The starboard to unforce the message from",
+        autocomplete=starboard_autocomplete,
         default=None,
     )
 
     async def callback(self, ctx: crescent.Context) -> None:
+        assert ctx.guild_id
         msg = await orig_msg_from_link(self.message_link)
         if not msg.forced_to:
             raise StarboardError(
@@ -317,22 +319,21 @@ class UnforceMessage:
             )
 
         if self.starboard:
+            sb = await Starboard.from_user_input(ctx.guild_id, self.starboard)
             ft = set(msg.forced_to)
-            if self.starboard.id not in ft:
+            if sb.id not in ft:
                 raise StarboardError(
                     "That message is not forced to that starboard."
                 )
 
-            ft.remove(self.starboard.id)
+            ft.remove(sb.id)
             msg.forced_to = list(ft)
             await msg.save()
-
-            sbids = [self.starboard.id]
+            sbids = [sb.id]
 
         else:
             msg.forced_to = []
             await msg.save()
-
             sbids = None
 
         await ctx.respond("Message unforced.", ephemeral=True)
@@ -348,7 +349,7 @@ async def force_message(
     bot = cast("Bot", ctx.app)
 
     sbids = [
-        sb.channel_id
+        sb.id
         for sb in await Starboard.fetch_query()
         .where(guild_id=ctx.guild_id)
         .fetchmany()
