@@ -112,6 +112,7 @@ class ViewStarboard:
                 embed.add_field(
                     name=name,
                     value=(
+                        f"channel: <#{sb.channel_id}>\n"
                         f"required: {sb.required}\n"
                         f"self-vote: {sb.self_vote}\n"
                         f"upvote-emojis: {emoji_str}"
@@ -140,6 +141,7 @@ class ViewStarboard:
                     "locked. If you believe this is a mistake, run `/premium "
                     "locks refresh`."
                 )
+            notes.append(f"This starboard is in <#{starboard.channel_id}>.")
             if notes:
                 embed.description = "\n\n".join(notes)
             embed.add_field(
@@ -193,12 +195,12 @@ class CreateStarboard:
             ).create()
         except asyncpg.UniqueViolationError:
             raise StarboardError(
-                f"A starboard with the name {self.name} already exists."
+                f"A starboard with the name '{self.name}' already exists."
             )
 
         bot.cache.invalidate_vote_emojis(ctx.guild_id)
         await ctx.respond(
-            f"Created starboard {sb.name} in <#{self.channel.id}>."
+            f"Created starboard '{sb.name}' in <#{self.channel.id}>."
         )
 
 
@@ -233,7 +235,7 @@ class DeleteStarboard:
 
         await starboard.delete()
         bot.cache.invalidate_vote_emojis(ctx.guild_id)
-        await msg.edit(f"Deleted starboard {starboard.name}.", components=[])
+        await msg.edit(f"Deleted starboard '{starboard.name}'.", components=[])
 
 
 async def _update_starboard(
@@ -282,7 +284,7 @@ class EditStarboardBehavior(BaseEditStarboardBehavior):
         s = await _update_starboard(
             ctx.guild_id, self.starboard, self._options()
         )
-        await ctx.respond(f"Settings for {s.name} updated.")
+        await ctx.respond(f"Settings for '{s.name}' updated.")
 
 
 @plugin.include
@@ -298,7 +300,7 @@ class EditStarboardEmbedStyle(BaseEditStarboardEmbedStyle):
         s = await _update_starboard(
             ctx.guild_id, self.starboard, self._options()
         )
-        await ctx.respond(f"Settings for {s.name} updated.")
+        await ctx.respond(f"Settings for '{s.name}' updated.")
 
 
 @plugin.include
@@ -316,7 +318,7 @@ class EditStarboardRequirements(BaseEditStarboardRequirements):
         s = await _update_starboard(
             ctx.guild_id, self.starboard, self._options()
         )
-        await ctx.respond(f"Settings for {s.name} updated.")
+        await ctx.respond(f"Settings for '{s.name}' updated.")
 
 
 @plugin.include
@@ -332,7 +334,7 @@ class EditStarboardStyle(BaseEditStarboardStyle):
         s = await _update_starboard(
             ctx.guild_id, self.starboard, self._options()
         )
-        await ctx.respond(f"Settings for {s.name} updated.")
+        await ctx.respond(f"Settings for '{s.name}' updated.")
 
 
 upvote_emojis = starboards.sub_group(
