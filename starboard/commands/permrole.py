@@ -234,13 +234,13 @@ class EditPermRoleStarboard:
 
         try:
             pr = await PermRoleStarboard(
-                permrole_id=self.permrole.id, starboard_id=sb.channel_id
+                permrole_id=self.permrole.id, starboard_id=sb.id
             ).create()
         except asyncpg.ForeignKeyViolationError:
             raise StarboardError(f"**{self.permrole}** is not a PermRole.")
         except asyncpg.UniqueViolationError:
             pr = await PermRoleStarboard.fetch(
-                permrole_id=self.permrole.id, starboard_id=sb.channel_id
+                permrole_id=self.permrole.id, starboard_id=sb.id
             )
 
         if self.vote is not UNDEF.UNDEF:
