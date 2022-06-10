@@ -106,7 +106,7 @@ async def _get_updates(
     for p in posroles:
         uids = leaderboard[0 : p.max_members]
         leaderboard = leaderboard[p.max_members :]
-        wanted[p.id] = set(uids)
+        wanted[p.role_id] = set(uids)
 
     # get the description of what the posrole setup actually looks like, and
     # generate updates from it
@@ -117,10 +117,10 @@ async def _get_updates(
         curr = {
             m.user_id
             for m in await PosRoleMember.fetch_query()
-            .where(role_id=p.id)
+            .where(role_id=p.role_id)
             .fetchmany()
         }
-        adds[p.id] = wanted[p.id].difference(curr)
-        removals[p.id] = curr.difference(wanted[p.id])
+        adds[p.role_id] = wanted[p.role_id].difference(curr)
+        removals[p.role_id] = curr.difference(wanted[p.role_id])
 
     return adds, removals

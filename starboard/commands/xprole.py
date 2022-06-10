@@ -89,11 +89,11 @@ class AddXPRole:
             raise StarboardError("That role cannot be used as an XPRole.")
 
         # check if it exists
-        if await XPRole.exists(id=self.role.id):
+        if await XPRole.exists(role_id=self.role.id):
             raise StarboardError(f"**{self.role}** is already an XPRole.")
 
         # check if it's a PosRole
-        if await PosRole.exists(id=self.role.id):
+        if await PosRole.exists(role_id=self.role.id):
             raise StarboardError(
                 f"**{self.role}** is a Posrole. A role cannot be a PosRole "
                 "and an XPRole."
@@ -107,7 +107,7 @@ class AddXPRole:
 
         # create the xprole
         await XPRole(
-            id=self.role.id, guild_id=ctx.guild_id, required=self.xp
+            role_id=self.role.id, guild_id=ctx.guild_id, required=self.xp
         ).create()
         await ctx.respond(f"**{self.role}** is now an XPRole.")
 
@@ -128,7 +128,7 @@ class SetXPRoleXP:
     async def callback(self, ctx: crescent.Context) -> None:
         assert ctx.guild_id
 
-        xpr = await XPRole.exists(id=self.xprole.id)
+        xpr = await XPRole.exists(role_id=self.xprole.id)
         if not xpr:
             raise StarboardError(f"**{self.xprole}** is not an XPRole.")
 
@@ -146,7 +146,9 @@ class DeleteXPRole:
     xprole = crescent.option(hikari.Role, "The XPRole to delete")
 
     async def callback(self, ctx: crescent.Context) -> None:
-        ret = await XPRole.delete_query().where(id=self.xprole.id).execute()
+        ret = (
+            await XPRole.delete_query().where(role_id=self.xprole.id).execute()
+        )
         if not ret:
             raise StarboardError(f"**{self.xprole}** is not an XPRole.")
 
@@ -166,6 +168,8 @@ async def view_xproles(ctx: crescent.Context) -> None:
 
     embed = bot.embed(
         title="XPRoles",
-        description="\n".join(f"<@&{r.id}>: **{r.required}** XP" for r in xpr),
+        description="\n".join(
+            f"<@&{r.role_id}>: **{r.required}** XP" for r in xpr
+        ),
     ).set_footer("Note: XPRoles are a premium-only feature.")
     await ctx.respond(embed=embed)

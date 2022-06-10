@@ -38,13 +38,13 @@ from .user import User
 class PosRole(apgorm.Model):
     __slots__: Iterable[str] = ()
 
-    id = types.Numeric().field().with_converter(DecimalC)
+    role_id = types.Numeric().field().with_converter(DecimalC)
     guild_id = types.Numeric().field().with_converter(DecimalC)
     max_members = types.Int().field()
 
-    guild_id_fk = apgorm.ForeignKey(guild_id, Guild.id)
+    guild_id_fk = apgorm.ForeignKey(guild_id, Guild.guild_id)
 
-    primary_key = (id,)
+    primary_key = (role_id,)
 
     max_members.add_validator(
         num_range("max-members", CONFIG.min_pr_members, CONFIG.max_pr_members)
@@ -57,7 +57,7 @@ class PosRoleMember(apgorm.Model):
     role_id = types.Numeric().field().with_converter(DecimalC)
     user_id = types.Numeric().field().with_converter(DecimalC)
 
-    role_id_fk = apgorm.ForeignKey(role_id, PosRole.id)
-    user_id_fk = apgorm.ForeignKey(user_id, User.id)
+    role_id_fk = apgorm.ForeignKey(role_id, PosRole.role_id)
+    user_id_fk = apgorm.ForeignKey(user_id, User.user_id)
 
     primary_key = (role_id, user_id)

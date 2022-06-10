@@ -37,13 +37,13 @@ from .guild import Guild
 class XPRole(apgorm.Model):
     __slots__: Iterable[str] = ()
 
-    id = types.Numeric().field().with_converter(DecimalC)
+    role_id = types.Numeric().field().with_converter(DecimalC)
     guild_id = types.Numeric().field().with_converter(DecimalC)
     required = types.SmallInt().field()
 
-    guild_id_fk = apgorm.ForeignKey(guild_id, Guild.id)
+    guild_id_fk = apgorm.ForeignKey(guild_id, Guild.guild_id)
 
-    primary_key = (id,)
+    primary_key = (role_id,)
 
     required.add_validator(
         num_range("required-xp", CONFIG.min_xpr_xp, CONFIG.max_xpr_xp)

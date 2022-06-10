@@ -107,12 +107,12 @@ class MovePremLock:
     async def callback(self, ctx: crescent.Context) -> None:
         # first, see if ch_from is a starboard
         ch_from: Starboard | AutoStarChannel | None
-        ch_from = await Starboard.exists(id=self.ch_from.id)
+        ch_from = await Starboard.exists(channel_id=self.ch_from.id)
         is_sb = True
 
         if ch_from is None:
             is_sb = False
-            ch_from = await AutoStarChannel.exists(id=self.ch_from.id)
+            ch_from = await AutoStarChannel.exists(channel_id=self.ch_from.id)
 
         if ch_from is None:
             raise StarboardError(
@@ -121,11 +121,11 @@ class MovePremLock:
 
         ch_to: Starboard | AutoStarChannel | None
         if is_sb:
-            ch_to = await Starboard.exists(id=self.ch_to.id)
+            ch_to = await Starboard.exists(channel_id=self.ch_to.id)
             if ch_to is None:
                 raise StarboardError(f"<#{self.ch_to.id}> is not a starboard.")
         else:
-            ch_to = await AutoStarChannel.exists(id=self.ch_to.id)
+            ch_to = await AutoStarChannel.exists(channel_id=self.ch_to.id)
             if ch_to is None:
                 raise StarboardError(
                     f"<#{self.ch_to.id}> is not an AutoStar channel."
@@ -154,7 +154,7 @@ class MovePremLock:
 )
 async def guild_premium(ctx: crescent.Context) -> None:
     assert ctx.guild_id is not None
-    g = await Guild.exists(id=ctx.guild_id)
+    g = await Guild.exists(guild_id=ctx.guild_id)
 
     prem_end = g.premium_end if g else None
 
@@ -203,12 +203,12 @@ class Redeem:
             return
 
         g = await goc_guild(ctx.guild_id)
-        u = await User.exists(id=ctx.user.id)
+        u = await User.exists(user_id=ctx.user.id)
         if not u:
             await ctx.edit("You don't have enough credits.", components=[])
             return
 
-        success = await redeem(bot, u.id, g.id, self.months)
+        success = await redeem(bot, u.user_id, g.guild_id, self.months)
         if not success:
             await ctx.edit("You don't have enough credits.", components=[])
             return
@@ -224,7 +224,7 @@ class Redeem:
     name="credits", description="Tells you how many credits you have"
 )
 async def credits(ctx: crescent.Context) -> None:
-    u = await User.exists(id=ctx.user.id)
+    u = await User.exists(user_id=ctx.user.id)
     credits = u.credits if u else 0
     await ctx.respond(f"You have {credits} credits.", ephemeral=True)
 

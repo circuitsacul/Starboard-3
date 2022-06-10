@@ -65,11 +65,11 @@ async def view_permroles(ctx: crescent.Context) -> None:
 
     embed = bot.embed(title="PermRoles")
     for r in pr:
-        obj = ctx.guild.get_role(r.permrole.id)
+        obj = ctx.guild.get_role(r.permrole.role_id)
         if obj:
             name = obj.name
         else:
-            name = f"Deleted Role {r.permrole.id}"
+            name = f"Deleted Role {r.permrole.role_id}"
         embed.add_field(
             name=name,
             inline=True,
@@ -108,7 +108,9 @@ class CreatePermRole:
 
         await goc_guild(ctx.guild_id)
         try:
-            await PermRole(id=self.role.id, guild_id=ctx.guild_id).create()
+            await PermRole(
+                role_id=self.role.id, guild_id=ctx.guild_id
+            ).create()
         except asyncpg.UniqueViolationError:
             raise StarboardError(f"**{self.role}** is already a PermRole.")
 
@@ -146,7 +148,7 @@ class DeletePermRole:
 
         ret = (
             await PermRole.delete_query()
-            .where(id=roleid, guild_id=ctx.guild_id)
+            .where(role_id=roleid, guild_id=ctx.guild_id)
             .execute()
         )
         if self.permrole_id:
@@ -183,7 +185,7 @@ class EditPermRoleGlobal:
     )
 
     async def callback(self, ctx: crescent.Context) -> None:
-        pr = await PermRole.exists(id=self.permrole.id)
+        pr = await PermRole.exists(role_id=self.permrole.id)
         if not pr:
             raise StarboardError(f"**{self.permrole}** is not a PermRole.")
 
@@ -218,19 +220,19 @@ class EditPermRoleStarboard:
     )
 
     async def callback(self, ctx: crescent.Context) -> None:
-        sb = await Starboard.exists(id=self.starboard.id)
+        sb = await Starboard.exists(channel_id=self.starboard.id)
         if not sb:
             raise StarboardNotFound(self.starboard.id)
 
         try:
             pr = await PermRoleStarboard(
-                permrole_id=self.permrole.id, starboard_id=sb.id
+                permrole_id=self.permrole.id, starboard_id=sb.channel_id
             ).create()
         except asyncpg.ForeignKeyViolationError:
             raise StarboardError(f"**{self.permrole}** is not a PermRole.")
         except asyncpg.UniqueViolationError:
             pr = await PermRoleStarboard.fetch(
-                permrole_id=self.permrole.id, starboard_id=sb.id
+                permrole_id=self.permrole.id, starboard_id=sb.channel_id
             )
 
         if self.vote is not UNDEF.UNDEF:

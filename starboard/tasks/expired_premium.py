@@ -66,7 +66,7 @@ async def _check_expired_premium(bot) -> None:
 
 
 async def _check_for_server(bot: Bot, g: Guild, now: datetime) -> None:
-    guild = bot.cache.get_guild(g.id)
+    guild = bot.cache.get_guild(g.guild_id)
     if not guild:
         return
 
@@ -77,9 +77,9 @@ async def _check_for_server(bot: Bot, g: Guild, now: datetime) -> None:
         # expired guilds) and this query. We don't want any added
         # premium to disappear.
         await Guild.update_query().where(
-            Guild.premium_end.lt(now), id=g.id
+            Guild.premium_end.lt(now), guild_id=g.guild_id
         ).set(premium_end=None).execute()
-        await update_prem_locks(bot, g.id)
+        await update_prem_locks(bot, g.guild_id)
         return
 
     await notify(

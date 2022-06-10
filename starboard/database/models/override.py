@@ -54,8 +54,8 @@ class Override(Model):
 
     primary_key = (id,)
 
-    guild_fk = ForeignKey(guild_id, Guild.id)
-    starboard_fk = ForeignKey(starboard_id, Starboard.id)
+    guild_fk = ForeignKey(guild_id, Guild.guild_id)
+    starboard_fk = ForeignKey(starboard_id, Starboard.channel_id)
 
     # validators
     channel_ids.add_validator(array_len("channels", CONFIG.max_ov_channels))

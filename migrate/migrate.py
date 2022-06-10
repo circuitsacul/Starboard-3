@@ -110,7 +110,7 @@ async def _migrate_guilds(
         if prem_end:
             prem_end = prem_end.replace(tzinfo=pytz.UTC)
         await new.execute(
-            "INSERT INTO guilds (id, premium_end) VALUES ($1, $2)",
+            "INSERT INTO guilds (guild_id, premium_end) VALUES ($1, $2)",
             [oldguild["id"], prem_end],
         )
 
@@ -127,7 +127,7 @@ async def _migrate_users(
             "users",
             records=args,
             columns=[
-                "id",
+                "user_id",
                 "is_bot",
                 "credits",
                 "donated_cents",
@@ -209,7 +209,7 @@ async def _migrate_autostars(
             newemojis.append(name)
 
         await new.execute(
-            "INSERT INTO aschannels (id, guild_id, emojis, min_chars, "
+            "INSERT INTO aschannels (channel_id, guild_id, emojis, min_chars, "
             "require_image, delete_invalid, prem_locked) VALUES ($1, $2, $3, "
             "$4, $5, $6, false)",
             [
@@ -251,7 +251,7 @@ async def _migrate_starboards(
             newemojis.append(name)
 
         await newdb.Starboard(
-            id=oldsb["id"],
+            channel_id=oldsb["id"],
             guild_id=oldsb["guild_id"],
             required=oldsb["required"],
             required_remove=max(-1, oldsb["rtl"]),
@@ -284,7 +284,7 @@ async def _migrate_orig_messages(
             "messages",
             records=args,
             columns=[
-                "id",
+                "message_id",
                 "guild_id",
                 "channel_id",
                 "author_id",
@@ -337,7 +337,8 @@ async def _migrate_starboard_messages(
     }
     pairs: set[tuple[int, int]] = set()
     valid_orig_ids: set[int] = {
-        r["id"] for r in await new.fetchmany("SELECT id FROM messages")
+        r["message_id"]
+        for r in await new.fetchmany("SELECT message_id FROM messages")
     }
 
     missing_sb: int = 0
@@ -418,7 +419,7 @@ async def _migrate_reactions(
 
     for s in await newdb.Starboard.fetch_query(new).fetchmany():
         sb_emoji_map.setdefault(s.guild_id, dict()).setdefault(
-            s.id, set()
+            s.channel_id, set()
         ).update(s.upvote_emojis)
 
     def get_sb(guild: int, reaction: str) -> set[int] | None:
@@ -557,7 +558,7 @@ async def _migrate_xproles(
 ) -> None:
     for oldxp in tqdm(await old.fetch("SELECT * FROM xproles"), "XPRoles"):
         await newdb.XPRole(
-            id=oldxp["id"],
+            role_id=oldxp["id"],
             guild_id=oldxp["guild_id"],
             required=max(5, oldxp["req_xp"]),
         ).create(new)
@@ -572,7 +573,7 @@ async def _migrate_posroles(
         if await newdb.PosRole.exists(new, guild_id=gid, max_members=mu):
             mu += 1
         await newdb.PosRole(
-            id=oldpr["id"], guild_id=gid, max_members=mu
+            role_id=oldpr["id"], guild_id=gid, max_members=mu
         ).create(con=new)
 
 
@@ -588,12 +589,12 @@ async def _migrate_channel_bl(
         oldbl = await old.fetch(
             "SELECT * FROM channelbl WHERE starboard_id=$1 AND "
             "is_whitelist=False",
-            sb.id,
+            sb.channel_id,
         )
         oldwl = await old.fetch(
             "SELECT * FROM channelbl WHERE starboard_id=$1 AND "
             "is_whitelist=True",
-            sb.id,
+            sb.channel_id,
         )
 
         if oldwl:
@@ -609,7 +610,7 @@ async def _migrate_channel_bl(
         await newdb.Override._from_raw(
             guild_id=sb.guild_id,
             name="channel-" + ("wl" if wl else "bl") + f"-{x}",
-            starboard_id=sb.id,
+            starboard_id=sb.channel_id,
             channel_ids=channels,
             _overrides=json.dumps({"enabled": wl is True}),
         ).create(new)
@@ -629,12 +630,12 @@ async def _migrate_role_bl(
     ):
         role_wl = await old.fetch(
             "SELECT * FROM rolebl WHERE starboard_id=$1 AND is_whitelist=True",
-            sb.id,
+            sb.channel_id,
         )
         role_bl = await old.fetch(
             "SELECT * FROM rolebl WHERE starboard_id=$1 AND "
             "is_whitelist=False",
-            sb.id,
+            sb.channel_id,
         )
 
         if (not role_wl) and (not role_bl):
@@ -648,20 +649,22 @@ async def _migrate_role_bl(
 
         async def create(rid: int, wl: bool) -> None:
             nonlocal role_bl_and_wl
-            pr = await newdb.PermRole.exists(new, id=rid)
+            pr = await newdb.PermRole.exists(new, role_id=rid)
             if not pr:
-                pr = await newdb.PermRole(id=rid, guild_id=sb.guild_id).create(
-                    new
-                )
+                pr = await newdb.PermRole(
+                    role_id=rid, guild_id=sb.guild_id
+                ).create(new)
 
             if await newdb.PermRoleStarboard.exists(
-                new, permrole_id=pr.id, starboard_id=sb.id
+                new, permrole_id=pr.role_id, starboard_id=sb.channel_id
             ):
                 role_bl_and_wl += 1
                 return
 
             await newdb.PermRoleStarboard(
-                permrole_id=pr.id, starboard_id=sb.id, give_stars=wl
+                permrole_id=pr.role_id,
+                starboard_id=sb.channel_id,
+                give_stars=wl,
             ).create(new)
 
         for role in bl_roles:

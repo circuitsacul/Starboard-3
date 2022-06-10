@@ -34,9 +34,9 @@ from ._converters import DecimalC, NullDecimalC
 
 async def goc_user(user_id: int, is_bot: bool) -> User:
     try:
-        return await User(id=user_id, is_bot=is_bot).create()
+        return await User(user_id=user_id, is_bot=is_bot).create()
     except UniqueViolationError:
-        return await User.fetch(id=user_id)
+        return await User.fetch(user_id=user_id)
 
 
 async def goc_patron(patreon_id: str) -> Patron:
@@ -56,7 +56,7 @@ class PatreonStatus(IntEnum):
 class User(apgorm.Model):
     __slots__: Iterable[str] = ()
 
-    id = types.Numeric().field().with_converter(DecimalC)
+    user_id = types.Numeric().field().with_converter(DecimalC)
 
     is_bot = types.Boolean().field()
     credits = types.Int().field(default=0)
@@ -69,7 +69,7 @@ class User(apgorm.Model):
         .with_converter(apgorm.IntEFConverter(PatreonStatus))
     )
 
-    primary_key = (id,)
+    primary_key = (user_id,)
 
 
 class Patron(apgorm.Model):

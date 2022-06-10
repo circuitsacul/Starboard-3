@@ -33,18 +33,18 @@ from ._converters import DecimalC
 
 async def goc_guild(guild_id: int) -> Guild:
     try:
-        return await Guild(id=guild_id).create()
+        return await Guild(guild_id=guild_id).create()
     except UniqueViolationError:
-        return await Guild.fetch(id=guild_id)
+        return await Guild.fetch(guild_id=guild_id)
 
 
 class Guild(apgorm.Model):
     __slots__: Iterable[str] = ()
 
-    id = types.Numeric().field().with_converter(DecimalC)
+    guild_id = types.Numeric().field().with_converter(DecimalC)
 
     # config options
     premium_end = types.TimestampTZ().nullablefield()
 
     # primary key
-    primary_key = (id,)
+    primary_key = (guild_id,)

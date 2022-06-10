@@ -61,8 +61,8 @@ class Member(apgorm.Model):
 
     autoredeem_enabled = types.Boolean().field(default=False)
 
-    userid_fk = apgorm.ForeignKey(user_id, User.id)
-    guildid_fk = apgorm.ForeignKey(guild_id, Guild.id)
+    userid_fk = apgorm.ForeignKey(user_id, User.user_id)
+    guildid_fk = apgorm.ForeignKey(guild_id, Guild.guild_id)
 
     primary_key = (user_id, guild_id)
 

@@ -43,7 +43,7 @@ class SBMessage(apgorm.Model):
 
     last_known_point_count = types.SmallInt().field(default=0)
 
-    message_id_fk = apgorm.ForeignKey(message_id, Message.id)
-    starboard_id_fk = apgorm.ForeignKey(starboard_id, Starboard.id)
+    message_id_fk = apgorm.ForeignKey(message_id, Message.message_id)
+    starboard_id_fk = apgorm.ForeignKey(starboard_id, Starboard.channel_id)
 
     primary_key = (message_id, starboard_id)

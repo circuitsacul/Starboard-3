@@ -178,18 +178,18 @@ class Random:
         assert ctx.guild_id
         bot = cast("Bot", ctx.app)
 
-        s = await Starboard.exists(id=self.starboard.id)
+        s = await Starboard.exists(channel_id=self.starboard.id)
         if not s:
             raise StarboardNotFound(self.starboard.id)
         if s.private:
-            raise StarboardError(f"<#{s.id}> is a private starboard.")
+            raise StarboardError(f"<#{s.channel_id}> is a private starboard.")
 
         q = SBMessage.fetch_query()
         q.where(starboard_id=self.starboard.id)
         q.where(SBMessage.sb_message_id.is_null.not_)
 
         sbq = Message.fetch_query()
-        sbq.where(id=SBMessage.message_id)
+        sbq.where(message_id=SBMessage.message_id)
         sbq.where(trashed=False)
         if self.channel:
             sbq.where(channel_id=self.channel.id)
@@ -208,14 +208,14 @@ class Random:
         if not ret:
             raise StarboardError("Nothing to show.")
 
-        orig = await Message.fetch(id=ret.message_id)
-        obj = await bot.cache.gof_message(orig.channel_id, orig.id)
+        orig = await Message.fetch(message_id=ret.message_id)
+        obj = await bot.cache.gof_message(orig.channel_id, orig.message_id)
         if not obj:
             raise StarboardError("Something went wrong.")
 
         config = await get_config(s, obj.channel_id)
 
-        guild = await Guild.fetch(id=ctx.guild_id)
+        guild = await Guild.fetch(guild_id=ctx.guild_id)
 
         raw, e, es = await embed_message(
             bot,
@@ -229,7 +229,7 @@ class Random:
             config.ping_author,
             ret.last_known_point_count,
             orig.frozen,
-            s.id in orig.forced_to,
+            s.channel_id in orig.forced_to,
             guild.premium_end is not None,
             config.attachments_list,
             config.jump_to_message,
@@ -273,7 +273,7 @@ class MostStarred:
         assert ctx.guild_id is not None
         bot = cast("Bot", ctx.app)
 
-        s = await Starboard.exists(id=self.starboard.id)
+        s = await Starboard.exists(channel_id=self.starboard.id)
         if not s:
             raise StarboardNotFound(self.starboard.id)
 
@@ -282,7 +282,7 @@ class MostStarred:
         q.where(SBMessage.sb_message_id.is_null.not_)
 
         sbq = Message.fetch_query()
-        sbq.where(id=SBMessage.message_id)
+        sbq.where(message_id=SBMessage.message_id)
         sbq.where(trashed=False)
         if self.channel:
             sbq.where(channel_id=self.channel.id)
@@ -298,14 +298,14 @@ class MostStarred:
         cursor = q.cursor()
 
         config = await get_config(s, ctx.guild_id)
-        guild = await Guild.fetch(id=ctx.guild_id)
+        guild = await Guild.fetch(guild_id=ctx.guild_id)
 
         async def next_page() -> tuple[list[hikari.Embed], str]:
             assert s is not None
 
             sql_msg = await cursor.__anext__()
-            orig = await Message.fetch(id=sql_msg.message_id)
-            obj = await bot.cache.gof_message(orig.channel_id, orig.id)
+            orig = await Message.fetch(message_id=sql_msg.message_id)
+            obj = await bot.cache.gof_message(orig.channel_id, orig.message_id)
             assert obj is not None
 
             raw, e, es = await embed_message(
@@ -320,7 +320,7 @@ class MostStarred:
                 config.ping_author,
                 sql_msg.last_known_point_count,
                 orig.frozen,
-                s.id in orig.forced_to,
+                s.channel_id in orig.forced_to,
                 guild.premium_end is not None,
                 config.attachments_list,
                 config.jump_to_message,
