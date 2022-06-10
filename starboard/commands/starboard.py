@@ -98,12 +98,12 @@ class ViewStarboard:
             )
 
             for sb in all_starboards:
-                channel = bot.cache.get_guild_channel(sb.id)
+                channel = bot.cache.get_guild_channel(sb.channel_id)
                 if channel:
                     assert channel.name is not None
                     name = channel.name
                 else:
-                    name = f"Deleted Channel {sb.id}"
+                    name = f"Deleted Channel {sb.channel_id}"
 
                 if sb.prem_locked:
                     name = f"{name} (Locked)"
@@ -121,11 +121,11 @@ class ViewStarboard:
             await ctx.respond(embed=embed)
 
         else:
-            starboard = await Starboard.exists(id=self.starboard.id)
+            starboard = await Starboard.exists(channel_id=self.starboard.id)
             if not starboard:
                 raise StarboardNotFound(self.starboard.id)
 
-            overrides = await Override.count(starboard_id=starboard.id)
+            overrides = await Override.count(starboard_id=starboard.channel_id)
 
             config = pretty_sb_config(StarboardConfig(starboard, None), bot)
             embed = bot.embed(title=self.starboard.name)
@@ -170,7 +170,7 @@ class CreateStarboard:
     async def callback(self, ctx: crescent.Context) -> None:
         bot = cast("Bot", ctx.app)
         assert ctx.guild_id
-        exists = await Starboard.exists(id=self.channel.id)
+        exists = await Starboard.exists(channel_id=self.channel.id)
         if exists:
             await ctx.respond(
                 f"<#{self.channel.id}> is already a starboard.", ephemeral=True
@@ -192,7 +192,9 @@ class CreateStarboard:
                 )
             )
 
-        await Starboard(id=self.channel.id, guild_id=ctx.guild_id).create()
+        await Starboard(
+            channel_id=self.channel.id, guild_id=ctx.guild_id
+        ).create()
         bot.cache.invalidate_vote_emojis(ctx.guild_id)
 
         await ctx.respond(f"Created starboard <#{self.channel.id}>.")
@@ -235,7 +237,7 @@ class DeleteStarboard:
 
         res = (
             await Starboard.delete_query()
-            .where(id=chid, guild_id=ctx.guild_id)
+            .where(channel_id=chid, guild_id=ctx.guild_id)
             .execute()
         )
         bot.cache.invalidate_vote_emojis(ctx.guild_id)
@@ -251,7 +253,7 @@ async def _update_starboard(
 ) -> None:
     validate_sb_changes(**params)
 
-    s = await Starboard.exists(id=starboard.id)
+    s = await Starboard.exists(channel_id=starboard.id)
     if not s:
         raise StarboardNotFound(starboard.id)
 
@@ -355,11 +357,11 @@ class SetUpvoteEmojis:
     async def callback(self, ctx: crescent.Context) -> None:
         bot = cast("Bot", ctx.app)
         assert ctx.guild_id
-        s = await Starboard.exists(id=self.starboard.id)
+        s = await Starboard.exists(channel_id=self.starboard.id)
         if not s:
             raise StarboardNotFound(self.starboard.id)
 
-        guild = await Guild.fetch(id=ctx.guild_id)
+        guild = await Guild.fetch(guild_id=ctx.guild_id)
         ip = guild.premium_end is not None
         limit = CONFIG.max_vote_emojis if ip else CONFIG.np_max_vote_emojis
 
@@ -391,11 +393,11 @@ class SetDownvoteEmojis:
     async def callback(self, ctx: crescent.Context) -> None:
         bot = cast("Bot", ctx.app)
         assert ctx.guild_id
-        s = await Starboard.exists(id=self.starboard.id)
+        s = await Starboard.exists(channel_id=self.starboard.id)
         if not s:
             raise StarboardNotFound(self.starboard.id)
 
-        guild = await Guild.fetch(id=ctx.guild_id)
+        guild = await Guild.fetch(guild_id=ctx.guild_id)
         ip = guild.premium_end is not None
         limit = CONFIG.max_vote_emojis if ip else CONFIG.np_max_vote_emojis
 
@@ -429,7 +431,7 @@ class AddStarEmoji:
     async def callback(self, ctx: crescent.Context) -> None:
         assert ctx.guild_id
         bot = cast("Bot", ctx.app)
-        s = await Starboard.exists(id=self.starboard.id)
+        s = await Starboard.exists(channel_id=self.starboard.id)
         if not s:
             raise StarboardNotFound(self.starboard.id)
 
@@ -444,7 +446,7 @@ class AddStarEmoji:
             downvote_emojis.discard(e)
             upvote_emojis.add(e)
 
-        guild = await Guild.fetch(id=ctx.guild_id)
+        guild = await Guild.fetch(guild_id=ctx.guild_id)
         ip = guild.premium_end is not None
         limit = CONFIG.max_vote_emojis if ip else CONFIG.np_max_vote_emojis
 
@@ -474,7 +476,7 @@ class RemoveStarEmoji:
         bot = cast("Bot", ctx.app)
         assert ctx.guild_id
 
-        s = await Starboard.exists(id=self.starboard.id)
+        s = await Starboard.exists(channel_id=self.starboard.id)
         if not s:
             raise StarboardNotFound(self.starboard.id)
 
@@ -487,7 +489,8 @@ class RemoveStarEmoji:
             downvote_emojis.discard(e)
         else:
             await ctx.respond(
-                f"{e} is not an upvote emoji on <#{s.id}>", ephemeral=True
+                f"{e} is not an upvote emoji on <#{s.channel_id}>",
+                ephemeral=True,
             )
             return
 

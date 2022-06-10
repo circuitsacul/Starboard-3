@@ -54,17 +54,19 @@ async def refresh_xpr(bot: Bot, guild_id: int, user_id: int) -> bool:
         return True
 
     add = [
-        r for r in xpr if member.xp >= r.required and r.id not in obj.role_ids
+        r
+        for r in xpr
+        if member.xp >= r.required and r.role_id not in obj.role_ids
     ]
     remove = [
-        r for r in xpr if member.xp < r.required and r.id in obj.role_ids
+        r for r in xpr if member.xp < r.required and r.role_id in obj.role_ids
     ]
 
     with suppress(hikari.ForbiddenError):
         for r in remove:
             with suppress(hikari.NotFoundError):
-                await obj.remove_role(r.id, reason="XPRoles")
+                await obj.remove_role(r.role_id, reason="XPRoles")
         for r in add:
             with suppress(hikari.NotFoundError):
-                await obj.add_role(r.id, reason="XPRoles")
+                await obj.add_role(r.role_id, reason="XPRoles")
     return True

@@ -42,7 +42,7 @@ async def goc_message(
     author_id: int,
     is_author_bot: bool,
 ) -> Message:
-    if (m := await Message.exists(id=message_id)) is not None:
+    if (m := await Message.exists(message_id=message_id)) is not None:
         return m
 
     await goc_member(guild_id, author_id, is_author_bot)
@@ -52,17 +52,17 @@ async def goc_message(
             guild_id=guild_id,
             author_id=author_id,
             channel_id=channel_id,
-            id=message_id,
+            message_id=message_id,
             is_nsfw=is_nsfw,
         ).create()
     except UniqueViolationError:
-        return await Message.fetch(id=message_id)
+        return await Message.fetch(message_id=message_id)
 
 
 class Message(apgorm.Model):
     __slots__: Iterable[str] = ()
 
-    id = types.Numeric().field().with_converter(DecimalC)
+    message_id = types.Numeric().field().with_converter(DecimalC)
     guild_id = types.Numeric().field().with_converter(DecimalC)
     channel_id = types.Numeric().field().with_converter(DecimalC)
     author_id = types.Numeric().field().with_converter(DecimalC)
@@ -78,7 +78,7 @@ class Message(apgorm.Model):
     trash_reason = types.VarChar(32).nullablefield()
     frozen = types.Boolean().field(default=False)
 
-    guild_id_fk = apgorm.ForeignKey(guild_id, Guild.id)
-    author_id_fk = apgorm.ForeignKey(author_id, User.id)
+    guild_id_fk = apgorm.ForeignKey(guild_id, Guild.guild_id)
+    author_id_fk = apgorm.ForeignKey(author_id, User.user_id)
 
-    primary_key = (id,)
+    primary_key = (message_id,)

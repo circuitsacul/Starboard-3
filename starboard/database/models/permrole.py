@@ -34,16 +34,16 @@ from .starboard import Starboard
 class PermRole(Model):
     __slots__: Iterable[str] = ()
 
-    id = types.Numeric().field().with_converter(DecimalC)
+    role_id = types.Numeric().field().with_converter(DecimalC)
     guild_id = types.Numeric().field().with_converter(DecimalC)
 
     xproles = types.Boolean().nullablefield()
     vote = types.Boolean().nullablefield()
     recv_votes = types.Boolean().nullablefield()
 
-    primary_key = (id,)
+    primary_key = (role_id,)
 
-    guild_id_fk = ForeignKey(guild_id, Guild.id)
+    guild_id_fk = ForeignKey(guild_id, Guild.guild_id)
 
 
 class PermRoleStarboard(Model):
@@ -57,5 +57,5 @@ class PermRoleStarboard(Model):
 
     primary_key = (permrole_id, starboard_id)
 
-    starboard_id_fk = ForeignKey(starboard_id, Starboard.id)
-    permrole_id_fk = ForeignKey(permrole_id, PermRole.id)
+    starboard_id_fk = ForeignKey(starboard_id, Starboard.channel_id)
+    permrole_id_fk = ForeignKey(permrole_id, PermRole.role_id)

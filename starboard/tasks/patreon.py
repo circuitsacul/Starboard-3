@@ -117,7 +117,7 @@ async def _update_patrons(bot: Bot) -> None:
     q = User.fetch_query()
     q.where(User.patreon_status.neq(PatreonStatus.NONE))
     subq = Patron.fetch_query()
-    subq.where(Patron.discord_id.eq(User.id))
+    subq.where(Patron.discord_id.eq(User.user_id))
     q.where(subq.exists().not_)
     for user in await q.fetchmany():
         user.patreon_status = PatreonStatus.NONE
@@ -161,7 +161,7 @@ async def _notify_for_status(user: User, bot: Bot) -> None:
             "link to the support server by running `/help`."
         )
 
-    obj = await bot.cache.gof_user(user.id)
+    obj = await bot.cache.gof_user(user.user_id)
     if obj is not None:
         await notify(obj, msg)
 

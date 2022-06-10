@@ -38,9 +38,9 @@ if TYPE_CHECKING:
 
 async def get_orig_message(message_id: int) -> Message | None:
     if sbm := await SBMessage.exists(sb_message_id=message_id):
-        return await Message.fetch(id=sbm.message_id)
+        return await Message.fetch(message_id=sbm.message_id)
 
-    if m := await Message.exists(id=message_id):
+    if m := await Message.exists(message_id=message_id):
         return m
 
     return None
@@ -62,7 +62,7 @@ async def get_sbmsg_content(
         )
 
     frozen = sql_orig_msg.frozen
-    forced = config.starboard.id in sql_orig_msg.forced_to
+    forced = config.starboard.channel_id in sql_orig_msg.forced_to
 
     if dis_orig_msg is not None:
         c, e, es = await embed_message(

@@ -37,7 +37,7 @@ from .guild import Guild
 class AutoStarChannel(apgorm.Model):
     __slots__: Iterable[str] = ()
 
-    id = types.Numeric().field().with_converter(DecimalC)
+    channel_id = types.Numeric().field().with_converter(DecimalC)
     guild_id = types.Numeric().field().with_converter(DecimalC)
 
     prem_locked = types.Boolean().field(default=False)
@@ -52,9 +52,9 @@ class AutoStarChannel(apgorm.Model):
     require_image = types.Boolean().field(default=False)
     delete_invalid = types.Boolean().field(default=False)
 
-    guild_id_fk = apgorm.ForeignKey(guild_id, Guild.id)
+    guild_id_fk = apgorm.ForeignKey(guild_id, Guild.guild_id)
 
-    primary_key = (id,)
+    primary_key = (channel_id,)
 
     # validators:
     min_chars.add_validator(num_range("min-chars", 0, CONFIG.max_minchars))

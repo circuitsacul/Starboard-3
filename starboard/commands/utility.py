@@ -127,7 +127,8 @@ async def trashcan(ctx: crescent.Context) -> None:
     if not trashed:
         raise StarboardError("There are no trashed messages in this server.")
     lines = [
-        f"[{t.id}]({jump(t.guild_id, t.channel_id, t.id)}): {t.trash_reason}"
+        f"[{t.message_id}]({jump(t.guild_id, t.channel_id, t.message_id)}): "
+        f"{t.trash_reason}"
         for t in trashed
     ]
     pages: list[str] = []
@@ -265,14 +266,14 @@ class ForceMessage:
             )
 
         if self.starboard:
-            sb = await Starboard.exists(id=self.starboard.id)
+            sb = await Starboard.exists(channel_id=self.starboard.id)
             if not sb:
                 raise StarboardNotFound(self.starboard.id)
-            sbids = [sb.id]
+            sbids = [sb.channel_id]
         else:
             assert ctx.guild_id
             sbids = [
-                sb.id
+                sb.channel_id
                 for sb in await Starboard.fetch_query()
                 .where(guild_id=ctx.guild_id)
                 .fetchmany()
@@ -346,7 +347,7 @@ async def force_message(
     bot = cast("Bot", ctx.app)
 
     sbids = [
-        sb.id
+        sb.channel_id
         for sb in await Starboard.fetch_query()
         .where(guild_id=ctx.guild_id)
         .fetchmany()
@@ -445,11 +446,11 @@ class MessageInfo:
 
         msg = await orig_msg_from_link(self.message_link)
 
-        j = jump(ctx.guild_id, msg.channel_id, msg.id)
+        j = jump(ctx.guild_id, msg.channel_id, msg.message_id)
         embed = bot.embed(
             title="Message Info",
             description=(
-                f"Original: `{msg.id}` | [jump]({j})\n"
+                f"Original: `{msg.message_id}` | [jump]({j})\n"
                 f"Channel: `{msg.channel_id}` | <#{msg.channel_id}>\n"
                 f"Author: `{msg.author_id}` | <@{msg.author_id}>\n"
                 f"Trashed: {msg.trashed}\n"
@@ -468,18 +469,22 @@ class MessageInfo:
             .fetchmany()
         )
         for sb in sbs:
-            ch = bot.cache.get_guild_channel(sb.id)
-            sbm = await SBMessage.exists(message_id=msg.id, starboard_id=sb.id)
+            ch = bot.cache.get_guild_channel(sb.channel_id)
+            sbm = await SBMessage.exists(
+                message_id=msg.message_id, starboard_id=sb.channel_id
+            )
             config = await get_config(sb, msg.channel_id)
 
             points = sbm.last_known_point_count if sbm else 0
 
             embed.add_field(
-                name=cast(str, ch.name if ch else f"Deleted Channel {sb.id}"),
+                name=cast(
+                    str, ch.name if ch else f"Deleted Channel {sb.channel_id}"
+                ),
                 value=(
                     (
                         f"Message: `{sbm.sb_message_id}` | [jump]("
-                        + jump(ctx.guild_id, sb.id, sbm.sb_message_id)
+                        + jump(ctx.guild_id, sb.channel_id, sbm.sb_message_id)
                         + ")\n"
                         if sbm and sbm.sb_message_id
                         else "Message not on starboard\n"

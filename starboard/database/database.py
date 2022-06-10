@@ -59,7 +59,7 @@ class Database(apgorm.Database):
 
         print("Loading autostar channels...")
         self.asc = {
-            a.id
+            a.channel_id
             for a in await aschannel.AutoStarChannel.fetch_query().fetchmany()
         }
         print("Autostar channels loaded.")

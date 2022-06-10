@@ -70,7 +70,7 @@ class ViewSettingOverrides:
             if not ov:
                 raise OverrideNotFound(self.name)
 
-            sb = await Starboard.fetch(id=ov.starboard_id)
+            sb = await Starboard.fetch(channel_id=ov.starboard_id)
 
             config = StarboardConfig(sb, [ov])
             options = pretty_sb_config(config, bot, ov.overrides.keys())
@@ -79,8 +79,8 @@ class ViewSettingOverrides:
             embed = bot.embed(
                 title=f"Override {self.name}",
                 description=(
-                    f"These are the settings for <#{sb.id}> in the channels "
-                    f"{cs}."
+                    f"These are the settings for <#{sb.channel_id}> in the "
+                    f"channels {cs}."
                 ),
             )
 

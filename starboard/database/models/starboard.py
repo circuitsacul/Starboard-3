@@ -105,7 +105,7 @@ def validate_sb_changes(**changes: Any) -> None:
 class Starboard(apgorm.Model):
     __slots__: Iterable[str] = ()
 
-    id = types.Numeric().field().with_converter(DecimalC)
+    channel_id = types.Numeric().field().with_converter(DecimalC)
     guild_id = types.Numeric().field().with_converter(DecimalC)
 
     webhook_id = types.Numeric().nullablefield().with_converter(NullDecimalC)
@@ -157,6 +157,6 @@ class Starboard(apgorm.Model):
     cooldown_period = types.SmallInt().field(default=5)
 
     # ForeignKeys & PrimaryKey
-    guild_id_fk = apgorm.ForeignKey(guild_id, Guild.id)
+    guild_id_fk = apgorm.ForeignKey(guild_id, Guild.guild_id)
 
-    primary_key = (id,)
+    primary_key = (channel_id,)

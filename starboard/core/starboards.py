@@ -52,14 +52,14 @@ async def refresh_message(
     force: bool = False,
     premium: bool | None = None,
 ) -> None:
-    if orig_message.id in LOCK:
+    if orig_message.message_id in LOCK:
         return
 
-    LOCK.add(orig_message.id)
+    LOCK.add(orig_message.message_id)
     try:
         if premium is None:
             premium = (
-                await Guild.fetch(id=orig_message.guild_id)
+                await Guild.fetch(guild_id=orig_message.guild_id)
             ).premium_end is not None
 
         await orig_message.refetch()
@@ -68,12 +68,12 @@ async def refresh_message(
         else:
             await _refresh_message(bot, orig_message, sbids, force, premium)
     finally:
-        LOCK.remove(orig_message.id)
+        LOCK.remove(orig_message.message_id)
 
 
 async def _handle_trashed_message(bot: Bot, orig_message: Message) -> None:
     starboards = {
-        sb.id: sb
+        sb.channel_id: sb
         for sb in await Starboard.fetch_query()
         .where(guild_id=orig_message.guild_id)
         .fetchmany()
@@ -81,7 +81,7 @@ async def _handle_trashed_message(bot: Bot, orig_message: Message) -> None:
     for sid, sb in starboards.items():
         config = await get_config(sb, orig_message.channel_id)
         sbmsg = await SBMessage.exists(
-            message_id=orig_message.id, starboard_id=sid
+            message_id=orig_message.message_id, starboard_id=sid
         )
         if not (sbmsg and sbmsg.sb_message_id):
             continue
@@ -119,7 +119,7 @@ async def _refresh_message(
     if sbids:
         _s = (
             await Starboard.fetch_query()
-            .where(Starboard.id.eq(sql(sbids).any))
+            .where(Starboard.channel_id.eq(sql(sbids).any))
             .where(prem_locked=False)
             .fetchmany()
         )
@@ -152,22 +152,25 @@ async def _refresh_message_for_starboard(
 ) -> None:
     if orig_msg.is_nsfw:
         sbchannel = await bot.cache.gof_guild_channel_wnsfw(
-            config.starboard.id
+            config.starboard.channel_id
         )
         if sbchannel is None or sbchannel.is_nsfw is False:
             return
 
     orig_msg_obj = await bot.cache.gof_message(
-        orig_msg.channel_id, orig_msg.id
+        orig_msg.channel_id, orig_msg.message_id
     )
 
-    points = await _get_points(orig_msg.id, config.starboard.id)
+    points = await _get_points(
+        orig_msg.message_id, config.starboard.channel_id
+    )
     action = _get_action(
         orig_msg, orig_msg_obj, config, points, orig_msg_obj is None
     )
 
     sbmsg = await SBMessage.exists(
-        message_id=orig_msg.id, starboard_id=config.starboard.id
+        message_id=orig_msg.message_id,
+        starboard_id=config.starboard.channel_id,
     )
     if (
         sbmsg is not None
@@ -178,7 +181,8 @@ async def _refresh_message_for_starboard(
         return
     if not sbmsg:
         sbmsg = await SBMessage(
-            message_id=orig_msg.id, starboard_id=config.starboard.id
+            message_id=orig_msg.message_id,
+            starboard_id=config.starboard.channel_id,
         ).create()
     if sbmsg.sb_message_id is not None:
         sbmsg_obj = await bot.cache.gof_message(
@@ -339,7 +343,7 @@ async def _send(
 
     with suppress(hikari.ForbiddenError, hikari.NotFoundError):
         return await bot.rest.create_message(
-            config.starboard.id,
+            config.starboard.channel_id,
             content,
             embeds=embeds or hikari.UNDEFINED,
             user_mentions=(author_id,),
@@ -367,7 +371,7 @@ async def _webhook(
 
     try:
         wh = await bot.rest.create_webhook(
-            config.starboard.id,
+            config.starboard.channel_id,
             name="Starboard",
             avatar=bot.me.avatar_url or hikari.UNDEFINED,
             reason="This starboard has use_webhook set to True.",
@@ -435,7 +439,7 @@ def _get_action(
         add_trib = None
 
     # check if forced
-    if config.starboard.id in orig_msg.forced_to:
+    if config.starboard.channel_id in orig_msg.forced_to:
         add_trib = True
 
     # return

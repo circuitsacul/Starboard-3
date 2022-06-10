@@ -63,7 +63,7 @@ async def is_vote_valid_for(
 
     # check cooldown
     if config.cooldown_enabled and COOLDOWN.update_ratelimit(
-        (voter.id, config.starboard.id),
+        (voter.id, config.starboard.channel_id),
         config.cooldown_period,
         config.cooldown_count,
     ):
@@ -71,7 +71,7 @@ async def is_vote_valid_for(
 
     # check age filters
     now = datetime.datetime.now(datetime.timezone.utc)
-    created_at = hikari.Snowflake(orig_message.id).created_at
+    created_at = hikari.Snowflake(orig_message.message_id).created_at
     age = (now - created_at).total_seconds()
 
     if config.newer_than and age > config.newer_than:
@@ -85,7 +85,7 @@ async def is_vote_valid_for(
     assert guild
 
     adder_perms = await get_permissions(
-        guild, set(voter.role_ids), config.starboard.id
+        guild, set(voter.role_ids), config.starboard.channel_id
     )
     if not adder_perms.vote:
         return False
@@ -97,7 +97,7 @@ async def is_vote_valid_for(
         # the author left
         author_roles = {guild.id}
     author_perms = await get_permissions(
-        guild, author_roles, config.starboard.id
+        guild, author_roles, config.starboard.channel_id
     )
     return author_perms.recv_votes
 

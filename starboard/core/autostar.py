@@ -55,7 +55,7 @@ async def handle_message(event: hikari.MessageCreateEvent) -> None:
     ):
         return
 
-    asc = await AutoStarChannel.exists(id=event.channel_id)
+    asc = await AutoStarChannel.exists(channel_id=event.channel_id)
     if not asc:
         bot.database.asc.discard(event.channel_id)
         return

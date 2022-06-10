@@ -80,7 +80,7 @@ async def refretch_roles(ctx: crescent.Context, user: hikari.User) -> None:
         raise StarboardError("I couldn't find that member.")
 
     prids = {
-        p.id
+        p.role_id
         for p in await PosRole.fetch_query()
         .where(guild_id=ctx.guild_id)
         .fetchmany()
@@ -138,11 +138,11 @@ class CreatePosRole:
             raise StarboardError("That role cannot be used as an PosRole.")
 
         # check if exists
-        if await PosRole.exists(id=self.role.id):
+        if await PosRole.exists(role_id=self.role.id):
             raise StarboardError(f"**{self.role}** is already a PosRole.")
 
         # check if it's an XPRole
-        if await XPRole.exists(id=self.role.id):
+        if await XPRole.exists(role_id=self.role.id):
             raise StarboardError(
                 f"**{self.role}** is an XPRole. A role cannot be a PosRole "
                 "and an XPRole."
@@ -157,7 +157,7 @@ class CreatePosRole:
         # create the posrole
         try:
             await PosRole(
-                id=self.role.id,
+                role_id=self.role.id,
                 guild_id=ctx.guild_id,
                 max_members=self.members,
             ).create()
@@ -187,7 +187,7 @@ class SetPosRoleMembers:
     async def callback(self, ctx: crescent.Context) -> None:
         assert ctx.guild_id
 
-        pr = await PosRole.exists(id=self.posrole.id)
+        pr = await PosRole.exists(role_id=self.posrole.id)
         if not pr:
             raise StarboardError(f"**{self.posrole}** is not a PosRole.")
 
@@ -212,7 +212,11 @@ class DeletePosRole:
     posrole = crescent.option(hikari.Role, "The PosRole to delete")
 
     async def callback(self, ctx: crescent.Context) -> None:
-        ret = await PosRole.delete_query().where(id=self.posrole.id).execute()
+        ret = (
+            await PosRole.delete_query()
+            .where(role_id=self.posrole.id)
+            .execute()
+        )
         if not ret:
             raise StarboardError(f"**{self.posrole}** is not a PosRole.")
 
@@ -238,7 +242,7 @@ async def view_posroles(ctx: crescent.Context) -> None:
     embed = bot.embed(
         title="PosRoles",
         description="\n".join(
-            f"<@&{r.id}>: {r.max_members} members" for r in pr
+            f"<@&{r.role_id}>: {r.max_members} members" for r in pr
         ),
     ).set_footer("Note: PosRoles are a premium-only feature")
     await ctx.respond(embed=embed)

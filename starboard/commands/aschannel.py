@@ -77,7 +77,7 @@ class CreateAutoStar:
 
         try:
             await AutoStarChannel(
-                id=self.channel.id, guild_id=ctx.guild_id
+                channel_id=self.channel.id, guild_id=ctx.guild_id
             ).create()
         except UniqueViolationError:
             raise StarboardError(
@@ -126,7 +126,7 @@ class DeleteAutoStar:
 
         res = (
             await AutoStarChannel.delete_query()
-            .where(id=chid, guild_id=ctx.guild_id)
+            .where(channel_id=chid, guild_id=ctx.guild_id)
             .execute()
         )
         if not res:
@@ -155,7 +155,7 @@ class ViewAutoStar:
         bot = cast("Bot", ctx.app)
 
         if self.channel:
-            asc = await AutoStarChannel.exists(id=self.channel.id)
+            asc = await AutoStarChannel.exists(channel_id=self.channel.id)
             if not asc:
                 raise ASCNotFound(self.channel.id)
 
@@ -194,9 +194,9 @@ class ViewAutoStar:
 
             lines: list[str] = []
             for asc in ascs:
-                channel = bot.cache.get_guild_channel(asc.id)
+                channel = bot.cache.get_guild_channel(asc.channel_id)
                 if not channel:
-                    name = f"Deleted Channel {asc.id}"
+                    name = f"Deleted Channel {asc.channel_id}"
                 else:
                     assert channel.name
                     name = channel.name
@@ -248,7 +248,7 @@ class EditAutoStar:
         params = self.__dict__.copy()
         del params["channel"]
 
-        asc = await AutoStarChannel.exists(id=self.channel.id)
+        asc = await AutoStarChannel.exists(channel_id=self.channel.id)
         if not asc:
             raise ASCNotFound(self.channel.id)
 
@@ -261,7 +261,7 @@ class EditAutoStar:
             setattr(asc, k, v)
 
         await asc.save()
-        await ctx.respond(f"Updated settings for <#{asc.id}>.")
+        await ctx.respond(f"Updated settings for <#{asc.channel_id}>.")
 
 
 emojis = autostar.sub_group("emojis", "Modify emojis for an autostar channel")
@@ -279,13 +279,13 @@ class SetEmoji:
 
     async def callback(self, ctx: crescent.Context) -> None:
         assert ctx.guild_id
-        asc = await AutoStarChannel.exists(id=self.channel.id)
+        asc = await AutoStarChannel.exists(channel_id=self.channel.id)
         if not asc:
             raise ASCNotFound(self.channel.id)
 
         emojis = any_emoji_list(self.emojis)
 
-        guild = await Guild.fetch(id=ctx.guild_id)
+        guild = await Guild.fetch(guild_id=ctx.guild_id)
         ip = guild.premium_end is not None
         limit = CONFIG.max_asc_emojis if ip else CONFIG.np_max_asc_emojis
 
@@ -310,7 +310,7 @@ class AddEmoji:
     emoji = crescent.option(str, "The emoji to add")
 
     async def callback(self, ctx: crescent.Context) -> None:
-        asc = await AutoStarChannel.exists(id=self.channel.id)
+        asc = await AutoStarChannel.exists(channel_id=self.channel.id)
         if not asc:
             raise ASCNotFound(self.channel.id)
 
@@ -318,11 +318,12 @@ class AddEmoji:
         emojis = list(asc.emojis)
         if e in emojis:
             await ctx.respond(
-                f"{e} is already an emoji for <#{asc.id}>.", ephemeral=True
+                f"{e} is already an emoji for <#{asc.channel_id}>.",
+                ephemeral=True,
             )
             return
 
-        guild = await Guild.fetch(id=ctx.guild_id)
+        guild = await Guild.fetch(guild_id=ctx.guild_id)
         ip = guild.premium_end is not None
         limit = CONFIG.max_asc_emojis if ip else CONFIG.np_max_asc_emojis
 
@@ -349,7 +350,7 @@ class RemoveEmoji:
     emoji = crescent.option(str, "The star emoji to remove")
 
     async def callback(self, ctx: crescent.Context) -> None:
-        asc = await AutoStarChannel.exists(id=self.channel.id)
+        asc = await AutoStarChannel.exists(channel_id=self.channel.id)
         if not asc:
             raise ASCNotFound(self.channel.id)
 
@@ -357,7 +358,7 @@ class RemoveEmoji:
         emojis = list(asc.emojis)
         if e not in emojis:
             await ctx.respond(
-                f"{e} is not an emoji on <#{asc.id}>", ephemeral=True
+                f"{e} is not an emoji on <#{asc.channel_id}>", ephemeral=True
             )
             return
 

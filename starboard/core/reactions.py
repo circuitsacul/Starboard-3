@@ -93,8 +93,8 @@ async def handle_reaction_add(event: hikari.GuildReactionAddEvent) -> None:
     # data for the person who reacted
     await goc_member(event.guild_id, event.member.id, event.member.is_bot)
 
-    author = await User.fetch(id=orig_msg.author_id)
-    author_obj = await bot.cache.gof_member(event.guild_id, author.id)
+    author = await User.fetch(user_id=orig_msg.author_id)
+    author_obj = await bot.cache.gof_member(event.guild_id, author.user_id)
     valid_upvote_starboard_ids: set[int] = set()
     valid_downvote_starboard_ids: set[int] = set()
     remove_invalid: bool = True
@@ -112,7 +112,7 @@ async def handle_reaction_add(event: hikari.GuildReactionAddEvent) -> None:
             if await is_vote_valid_for(
                 bot, c, orig_msg, author, author_obj, event.member
             ):
-                id_set.add(s.id)
+                id_set.add(s.channel_id)
 
     if (
         not valid_upvote_starboard_ids
@@ -139,21 +139,21 @@ async def handle_reaction_add(event: hikari.GuildReactionAddEvent) -> None:
 
     # create a "star" for each starboard
     await add_votes(
-        orig_msg.id,
+        orig_msg.message_id,
         event.user_id,
         valid_upvote_starboard_ids,
         orig_msg.author_id,
         is_downvote=False,
     )
     await add_votes(
-        orig_msg.id,
+        orig_msg.message_id,
         event.user_id,
         valid_downvote_starboard_ids,
         orig_msg.author_id,
         is_downvote=True,
     )
 
-    guild = await Guild.fetch(id=event.guild_id)
+    guild = await Guild.fetch(guild_id=event.guild_id)
     ip = guild.premium_end is not None
 
     await refresh_message(
@@ -193,14 +193,14 @@ async def handle_reaction_remove(
         c = await get_config(s, orig_msg.channel_id)
         if not c.enabled:
             continue
-        valid_sbids.append(s.id)
+        valid_sbids.append(s.channel_id)
 
     if not valid_sbids:
         return
 
-    await remove_votes(orig_msg.id, event.user_id, valid_sbids)
+    await remove_votes(orig_msg.message_id, event.user_id, valid_sbids)
 
-    guild = await Guild.fetch(id=event.guild_id)
+    guild = await Guild.fetch(guild_id=event.guild_id)
     ip = guild.premium_end is not None
 
     await refresh_message(

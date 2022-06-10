@@ -43,9 +43,9 @@ class Vote(apgorm.Model):
     target_author_id = types.Numeric().field().with_converter(DecimalC)
     is_downvote = types.Boolean().field(default=False)
 
-    message_id_fk = apgorm.ForeignKey(message_id, Message.id)
-    starboard_id_fk = apgorm.ForeignKey(starboard_id, Starboard.id)
-    user_id_fk = apgorm.ForeignKey(user_id, User.id)
-    target_author_id_fk = apgorm.ForeignKey(target_author_id, User.id)
+    message_id_fk = apgorm.ForeignKey(message_id, Message.message_id)
+    starboard_id_fk = apgorm.ForeignKey(starboard_id, Starboard.channel_id)
+    user_id_fk = apgorm.ForeignKey(user_id, User.user_id)
+    target_author_id_fk = apgorm.ForeignKey(target_author_id, User.user_id)
 
     primary_key = (message_id, starboard_id, user_id)

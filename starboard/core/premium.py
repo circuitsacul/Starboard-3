@@ -64,7 +64,7 @@ async def _try_send(bot: Bot, channel: int, message: str) -> None:
 
 
 async def update_prem_locks(bot: Bot, guild_id: int) -> None:
-    guild = await Guild.exists(id=guild_id)
+    guild = await Guild.exists(guild_id=guild_id)
     if not guild:
         return
 
@@ -93,7 +93,7 @@ async def update_prem_locks(bot: Bot, guild_id: int) -> None:
             await sb.save()
             await _try_send(
                 bot,
-                sb.id,
+                sb.channel_id,
                 "This starboard exceeds the non-premium limit and has been "
                 "locked.",
             )
@@ -119,7 +119,7 @@ async def update_prem_locks(bot: Bot, guild_id: int) -> None:
             await asc.save()
             await _try_send(
                 bot,
-                asc.id,
+                asc.channel_id,
                 "This AutoStar channel exceeds the non-premium limit and has "
                 "been locked.",
             )
@@ -138,7 +138,7 @@ async def update_prem_locks(bot: Bot, guild_id: int) -> None:
 async def update_supporter_roles(bot: Bot, user: User) -> None:
     if not CONFIG.main_guild:
         return
-    member = await bot.cache.gof_member(CONFIG.main_guild, user.id)
+    member = await bot.cache.gof_member(CONFIG.main_guild, user.user_id)
     if not member:
         return
     if (
@@ -157,18 +157,18 @@ async def update_supporter_roles(bot: Bot, user: User) -> None:
 
 async def try_autoredeem(bot: Bot, guild: Guild) -> hikari.Member | None:
     q = Member.fetch_query()
-    q.where(guild_id=guild.id, autoredeem_enabled=True)
+    q.where(guild_id=guild.guild_id, autoredeem_enabled=True)
     ar = await q.fetchmany()
 
     for a in ar:
-        member = await bot.cache.gof_member(guild.id, a.user_id)
+        member = await bot.cache.gof_member(guild.guild_id, a.user_id)
         if member is None:
             a.autoredeem_enabled = False
             await a.save()
             continue
 
         try:
-            worked = await redeem(bot, a.user_id, guild.id, 1)
+            worked = await redeem(bot, a.user_id, guild.guild_id, 1)
         except Exception:
             traceback.print_exc()
             continue
@@ -191,10 +191,10 @@ async def redeem(bot: Bot, user_id: int, guild_id: int, months: int) -> bool:
             await con.execute("LOCK TABLE users IN EXCLUSIVE MODE")
             await con.execute("LOCK TABLE guilds IN EXCLUSIVE MODE")
             _g = await con.fetchrow(
-                "SELECT * FROM guilds WHERE id=$1 FOR UPDATE", [guild_id]
+                "SELECT * FROM guilds WHERE guild_id=$1 FOR UPDATE", [guild_id]
             )
             _u = await con.fetchrow(
-                "SELECT * FROM users WHERE id=$1 FOR UPDATE", [user_id]
+                "SELECT * FROM users WHERE user_id=$1 FOR UPDATE", [user_id]
             )
             assert _u and _g
             guild = Guild._from_raw(**_g)

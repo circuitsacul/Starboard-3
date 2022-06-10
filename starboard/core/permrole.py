@@ -52,10 +52,10 @@ async def get_permroles(guild: hikari.Guild) -> list[PermRoleConfig]:
     pr = await PermRole.fetch_query().where(guild_id=guild.id).fetchmany()
     pr_ids: set[int] = set()
     for r in pr:
-        pr_ids.add(r.id)
+        pr_ids.add(r.role_id)
         sr = (
             await PermRoleStarboard.fetch_query()
-            .where(permrole_id=r.id)
+            .where(permrole_id=r.role_id)
             .fetchmany()
         )
         configs.append(PermRoleConfig(r, sr))
@@ -63,7 +63,7 @@ async def get_permroles(guild: hikari.Guild) -> list[PermRoleConfig]:
     role_indices: dict[int, int] = {
         r.id: r.position for r in guild.get_roles().values() if r.id in pr_ids
     }
-    configs.sort(key=lambda c: role_indices.get(c.permrole.id, -1))
+    configs.sort(key=lambda c: role_indices.get(c.permrole.role_id, -1))
     return configs
 
 
@@ -78,7 +78,7 @@ async def get_permissions(
     perms = Permissions()
 
     for role in permroles:
-        if role.permrole.id not in role_ids:
+        if role.permrole.role_id not in role_ids:
             continue
 
         if role.permrole.vote is not None:
