@@ -471,18 +471,17 @@ class MessageInfo:
             .fetchmany()
         )
         for sb in sbs:
-            ch = bot.cache.get_guild_channel(sb.channel_id)
             sbm = await SBMessage.exists(
-                message_id=msg.message_id, starboard_id=sb.channel_id
+                message_id=msg.message_id, starboard_id=sb.id
             )
             config = await get_config(sb, msg.channel_id)
-
             points = sbm.last_known_point_count if sbm else 0
 
+            ch = bot.cache.get_guild_channel(sb.channel_id)
+            chname = f"#{ch.name}" if ch else "Deleted Channel"
+
             embed.add_field(
-                name=cast(
-                    str, ch.name if ch else f"Deleted Channel {sb.channel_id}"
-                ),
+                name=f"{sb.name} in {chname}",
                 value=(
                     (
                         f"Message: `{sbm.sb_message_id}` | [jump]("
