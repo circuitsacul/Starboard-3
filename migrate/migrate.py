@@ -78,6 +78,10 @@ async def migrate() -> None:
 
     app = App(newdb, olddb, bot)
 
+    print("dropping indexes...")
+    with open("migrate/drop_indexes.sql") as f:
+        await newdb.execute(f.read(), [])
+
     await _run(app, _migrate_guilds)
     await _run(app, _migrate_users)
     await _run(app, _migrate_members)
@@ -90,6 +94,10 @@ async def migrate() -> None:
     await _run(app, _migrate_posroles)
     await _run(app, _migrate_channel_bl)
     await _run(app, _migrate_role_bl)
+
+    print("creating indexes...")
+    with open("migrate/create_indexes.sql") as f:
+        await newdb.execute(f.read(), [])
 
     await bot.close()
 
