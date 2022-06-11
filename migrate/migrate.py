@@ -23,6 +23,11 @@
 # NOTE: changes
 # - guild_id of reactions (btree, allow for ordering)
 # - drop reaction id=21150258
+# Drop indexes/FKs for
+# - votes
+# - members
+# - orig messages
+# - sb messages
 
 from __future__ import annotations
 
@@ -36,8 +41,7 @@ import hikari
 import pytz
 from apgorm.connection import Connection as OrmCon
 from asyncpg.connection import Connection as ApgCon
-from hikari import RESTApp, TokenType
-from hikari.impl import RESTClientImpl
+from hikari import GatewayBot
 from tqdm import tqdm
 
 import starboard.database as newdb
@@ -54,7 +58,7 @@ CHUNK = 10_000
 class App:
     new: NewDB
     old: OldDB
-    bot: RESTClientImpl
+    bot: GatewayBot
 
 
 async def migrate() -> None:
@@ -69,22 +73,21 @@ async def migrate() -> None:
     olddb = OldDB()
     await olddb.connect()
 
-    rbot = RESTApp()
-    bot = rbot.acquire(CONFIG.discord_token, TokenType.BOT)
-    bot.start()
+    bot = GatewayBot(CONFIG.discord_token)
+    await bot.start()
 
     app = App(newdb, olddb, bot)
 
-    await _run(app, _migrate_guilds)
-    await _run(app, _migrate_users)
-    await _run(app, _migrate_members)
-    await _run(app, _migrate_autostars)
-    await _run(app, _migrate_starboards)
-    await _run(app, _migrate_orig_messages)
-    await _run(app, _migrate_starboard_messages)
-    await _run(app, _migrate_reactions)
-    await _run(app, _migrate_xproles)
-    await _run(app, _migrate_posroles)
+    # await _run(app, _migrate_guilds)
+    # await _run(app, _migrate_users)
+    # await _run(app, _migrate_members)
+    # await _run(app, _migrate_autostars)
+    # await _run(app, _migrate_starboards)
+    # await _run(app, _migrate_orig_messages)
+    # await _run(app, _migrate_starboard_messages)
+    # await _run(app, _migrate_reactions)
+    # await _run(app, _migrate_xproles)
+    # await _run(app, _migrate_posroles)
     await _run(app, _migrate_channel_bl)
     await _run(app, _migrate_role_bl)
 
@@ -92,7 +95,7 @@ async def migrate() -> None:
 
 
 async def _run(
-    app: App, func: Callable[[OrmCon, ApgCon, RESTClientImpl], Awaitable[None]]
+    app: App, func: Callable[[OrmCon, ApgCon, GatewayBot], Awaitable[None]]
 ) -> None:
     assert app.new.pool
     async with app.old.pool.acquire() as old:
@@ -102,9 +105,7 @@ async def _run(
                     await func(new, old, app.bot)
 
 
-async def _migrate_guilds(
-    new: OrmCon, old: ApgCon, bot: RESTClientImpl
-) -> None:
+async def _migrate_guilds(new: OrmCon, old: ApgCon, bot: GatewayBot) -> None:
     for oldguild in tqdm(await old.fetch("SELECT * FROM guilds"), "Guilds"):
         prem_end: datetime | None = oldguild["premium_end"]
         if prem_end:
@@ -115,9 +116,7 @@ async def _migrate_guilds(
         )
 
 
-async def _migrate_users(
-    new: OrmCon, old: ApgCon, bot: RESTClientImpl
-) -> None:
+async def _migrate_users(new: OrmCon, old: ApgCon, bot: GatewayBot) -> None:
     total = await old.fetchval("SELECT count(1) FROM users")
     count = 0
     args: list[list[Any]] = []
@@ -150,9 +149,7 @@ async def _migrate_users(
         pb.update(count)
 
 
-async def _migrate_members(
-    new: OrmCon, old: ApgCon, bot: RESTClientImpl
-) -> None:
+async def _migrate_members(new: OrmCon, old: ApgCon, bot: GatewayBot) -> None:
     total = await old.fetchval("SELECT count(1) FROM members")
     count = 0
     args: list[list[Any]] = []
@@ -187,12 +184,19 @@ async def _migrate_members(
 
 
 async def _migrate_autostars(
-    new: OrmCon, old: ApgCon, bot: RESTClientImpl
+    new: OrmCon, old: ApgCon, bot: GatewayBot
 ) -> None:
     bad_emojis: int = 0
-    for oldasc in tqdm(
-        await old.fetch("SELECT * FROM aschannels"), "AutoStar Channels"
+    for x, oldasc in enumerate(
+        tqdm(
+            await old.fetch("SELECT * FROM aschannels ORDER BY guild_id"),
+            "AutoStar Channels",
+        )
     ):
+        ch = bot.cache.get_guild_channel(int(oldasc["id"]))
+        chname = ch.name if ch else "autostar"
+        channel_name = f"{chname}-{x}"
+
         emojis = await old.fetch(
             "SELECT * FROM asemojis WHERE aschannel_id=$1", oldasc["id"]
         )
@@ -209,10 +213,11 @@ async def _migrate_autostars(
             newemojis.append(name)
 
         await new.execute(
-            "INSERT INTO aschannels (channel_id, guild_id, emojis, min_chars, "
-            "require_image, delete_invalid, prem_locked) VALUES ($1, $2, $3, "
-            "$4, $5, $6, false)",
+            "INSERT INTO aschannels (name, channel_id, guild_id, emojis, "
+            "min_chars, require_image, delete_invalid, prem_locked) VALUES "
+            "($1, $2, $3, $4, $5, $6, $7, false)",
             [
+                channel_name,
                 oldasc["id"],
                 oldasc["guild_id"],
                 newemojis,
@@ -226,12 +231,16 @@ async def _migrate_autostars(
 
 
 async def _migrate_starboards(
-    new: OrmCon, old: ApgCon, bot: RESTClientImpl
+    new: OrmCon, old: ApgCon, bot: GatewayBot
 ) -> None:
     bad_emojis: int = 0
-    for oldsb in tqdm(
-        await old.fetch("SELECT * FROM starboards"), "Starboards"
+    for x, oldsb in enumerate(
+        tqdm(await old.fetch("SELECT * FROM starboards"), "Starboards")
     ):
+        ch = bot.cache.get_guild_channel(int(oldsb["id"]))
+        chname = ch.name if ch else "starboard"
+        channel_name = f"{chname}-{x}"
+
         emojis = await old.fetch(
             "SELECT * FROM sbemojis WHERE starboard_id=$1", oldsb["id"]
         )
@@ -251,6 +260,7 @@ async def _migrate_starboards(
             newemojis.append(name)
 
         await newdb.Starboard(
+            name=channel_name,
             channel_id=oldsb["id"],
             guild_id=oldsb["guild_id"],
             required=oldsb["required"],
@@ -267,7 +277,7 @@ async def _migrate_starboards(
 
 
 async def _migrate_orig_messages(
-    new: OrmCon, old: ApgCon, bot: RESTClientImpl
+    new: OrmCon, old: ApgCon, bot: GatewayBot
 ) -> None:
     sbids_guild: dict[int, set[int]] = {}
     for sb in await new.fetchmany("SELECT * FROM starboards"):
@@ -330,7 +340,7 @@ async def _migrate_orig_messages(
 
 
 async def _migrate_starboard_messages(
-    new: OrmCon, old: ApgCon, bot: RESTClientImpl
+    new: OrmCon, old: ApgCon, bot: GatewayBot
 ) -> None:
     sbids: set[int] = {
         r["id"] for r in await old.fetch("SELECT id FROM starboards")
@@ -339,6 +349,9 @@ async def _migrate_starboard_messages(
     valid_orig_ids: set[int] = {
         r["message_id"]
         for r in await new.fetchmany("SELECT message_id FROM messages")
+    }
+    sb_chid_to_sbid: dict[int, int] = {
+        s.channel_id: s.id for s in await newdb.Starboard.fetchmany(new)
     }
 
     missing_sb: int = 0
@@ -391,7 +404,7 @@ async def _migrate_starboard_messages(
             args.append(
                 [
                     oldmsg["orig_message_id"],
-                    oldmsg["channel_id"],
+                    sb_chid_to_sbid[int(oldmsg["channel_id"])],
                     oldmsg["id"],
                     oldmsg["points"] or 0,
                 ]
@@ -406,9 +419,12 @@ async def _migrate_starboard_messages(
 
 
 async def _migrate_reactions(
-    new: OrmCon, old: ApgCon, bot: RESTClientImpl
+    new: OrmCon, old: ApgCon, bot: GatewayBot
 ) -> None:
     sb_emoji_map: dict[int, dict[int, set[str]]] = {}
+    sb_chid_to_sbid: dict[int, int] = {
+        s.channel_id: s.id for s in await newdb.Starboard.fetchmany(new)
+    }
     current_guild: int = -1
     current_guild_member_roles: dict[int, set[int]] = {}
     current_guild_role_wl: dict[int, set[int]] = {}
@@ -444,13 +460,14 @@ async def _migrate_reactions(
 
     async def do_insert():
         await new.con.copy_records_to_table(
-            "stars",
+            "votes",
             records=args,
             columns=[
                 "message_id",
                 "starboard_id",
                 "user_id",
                 "target_author_id",
+                "is_downvote",
             ],
         )
         args.clear()
@@ -503,7 +520,9 @@ async def _migrate_reactions(
                     try:
                         current_guild_member_roles = {
                             m.id: set(m.role_ids)
-                            for m in await bot.fetch_members(current_guild)
+                            for m in await bot.rest.fetch_members(
+                                current_guild
+                            )
                         }
                     except hikari.ForbiddenError:
                         left_guilds_with_bl += 1
@@ -534,7 +553,7 @@ async def _migrate_reactions(
 
                 key = (
                     oldreact["message_id"],
-                    id,
+                    sb_chid_to_sbid[id],
                     oldreact["user_id"],
                     current_guild_message_authors[oldreact["message_id"]],
                 )
@@ -542,7 +561,7 @@ async def _migrate_reactions(
                     duplicate += 1
                     continue
                 unique.add(key)
-                args.append(key)
+                args.append((*key, False))
         pb.update(count)
         count = 0
         await do_insert()
@@ -553,9 +572,7 @@ async def _migrate_reactions(
     print(f"Left guilds with blacklists: {left_guilds_with_bl}")
 
 
-async def _migrate_xproles(
-    new: OrmCon, old: ApgCon, bot: RESTClientImpl
-) -> None:
+async def _migrate_xproles(new: OrmCon, old: ApgCon, bot: GatewayBot) -> None:
     for oldxp in tqdm(await old.fetch("SELECT * FROM xproles"), "XPRoles"):
         await newdb.XPRole(
             role_id=oldxp["id"],
@@ -564,9 +581,7 @@ async def _migrate_xproles(
         ).create(new)
 
 
-async def _migrate_posroles(
-    new: OrmCon, old: ApgCon, bot: RESTClientImpl
-) -> None:
+async def _migrate_posroles(new: OrmCon, old: ApgCon, bot: GatewayBot) -> None:
     for oldpr in tqdm(await old.fetch("SELECT * FROM posroles"), "PosRoles"):
         gid = oldpr["guild_id"]
         mu = oldpr["max_users"]
@@ -578,7 +593,7 @@ async def _migrate_posroles(
 
 
 async def _migrate_channel_bl(
-    new: OrmCon, old: ApgCon, bot: RESTClientImpl
+    new: OrmCon, old: ApgCon, bot: GatewayBot
 ) -> None:
     sb: newdb.Starboard
     for x, sb in enumerate(
@@ -610,7 +625,7 @@ async def _migrate_channel_bl(
         await newdb.Override._from_raw(
             guild_id=sb.guild_id,
             name="channel-" + ("wl" if wl else "bl") + f"-{x}",
-            starboard_id=sb.channel_id,
+            starboard_id=sb.id,
             channel_ids=channels,
             _overrides=json.dumps({"enabled": wl is True}),
         ).create(new)
@@ -619,9 +634,7 @@ async def _migrate_channel_bl(
             await sb.save(new)
 
 
-async def _migrate_role_bl(
-    new: OrmCon, old: ApgCon, bot: RESTClientImpl
-) -> None:
+async def _migrate_role_bl(new: OrmCon, old: ApgCon, bot: GatewayBot) -> None:
     role_bl_and_wl = 0
 
     sb: newdb.Starboard
@@ -656,15 +669,13 @@ async def _migrate_role_bl(
                 ).create(new)
 
             if await newdb.PermRoleStarboard.exists(
-                new, permrole_id=pr.role_id, starboard_id=sb.channel_id
+                new, permrole_id=pr.role_id, starboard_id=sb.id
             ):
                 role_bl_and_wl += 1
                 return
 
             await newdb.PermRoleStarboard(
-                permrole_id=pr.role_id,
-                starboard_id=sb.channel_id,
-                give_stars=wl,
+                permrole_id=pr.role_id, starboard_id=sb.id, give_stars=wl
             ).create(new)
 
         for role in bl_roles:
