@@ -37,14 +37,14 @@ class Vote(apgorm.Model):
     __slots__: Iterable[str] = ()
 
     message_id = types.Numeric().field().with_converter(DecimalC)
-    starboard_id = types.Numeric().field().with_converter(DecimalC)
+    starboard_id = types.Int().field()
     user_id = types.Numeric().field().with_converter(DecimalC)
 
     target_author_id = types.Numeric().field().with_converter(DecimalC)
     is_downvote = types.Boolean().field(default=False)
 
     message_id_fk = apgorm.ForeignKey(message_id, Message.message_id)
-    starboard_id_fk = apgorm.ForeignKey(starboard_id, Starboard.channel_id)
+    starboard_id_fk = apgorm.ForeignKey(starboard_id, Starboard.id)
     user_id_fk = apgorm.ForeignKey(user_id, User.user_id)
     target_author_id_fk = apgorm.ForeignKey(target_author_id, User.user_id)
 

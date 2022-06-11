@@ -63,7 +63,7 @@ async def is_vote_valid_for(
 
     # check cooldown
     if config.cooldown_enabled and COOLDOWN.update_ratelimit(
-        (voter.id, config.starboard.channel_id),
+        (voter.id, config.starboard.id),
         config.cooldown_period,
         config.cooldown_count,
     ):
@@ -85,7 +85,7 @@ async def is_vote_valid_for(
     assert guild
 
     adder_perms = await get_permissions(
-        guild, set(voter.role_ids), config.starboard.channel_id
+        guild, set(voter.role_ids), config.starboard.id
     )
     if not adder_perms.vote:
         return False
@@ -97,7 +97,7 @@ async def is_vote_valid_for(
         # the author left
         author_roles = {guild.id}
     author_perms = await get_permissions(
-        guild, author_roles, config.starboard.channel_id
+        guild, author_roles, config.starboard.id
     )
     return author_perms.recv_votes
 

@@ -1,23 +1,19 @@
 from __future__ import annotations
 
-from difflib import get_close_matches
 from typing import TYPE_CHECKING, Any, cast
 
 import asyncpg
 import crescent
 import hikari
 
+from starboard.commands._converters import channel_list
 from starboard.config import CONFIG
 from starboard.core.config import StarboardConfig
 from starboard.database import Override, Starboard, validate_sb_changes
-from starboard.exceptions import (
-    OverrideNotFound,
-    StarboardError,
-    StarboardNotFound,
-)
+from starboard.exceptions import OverrideNotFound, StarboardError
 
+from ._autocomplete import override_autocomplete, starboard_autocomplete
 from ._checks import has_guild_perms
-from ._converters import channel_list
 from ._sb_config import (
     BaseEditStarboardBehavior,
     BaseEditStarboardEmbedStyle,
@@ -38,20 +34,6 @@ overrides = crescent.Group(
 )
 
 
-async def override_autocomplete(
-    ctx: crescent.Context, option: hikari.AutocompleteInteractionOption
-) -> list[hikari.CommandChoice]:
-    if not ctx.guild_id:
-        return []
-    prefix = cast(str, option.value).lower()
-    ovs = await Override.fetch_query().where(guild_id=ctx.guild_id).fetchmany()
-    ov_names = [ov.name for ov in ovs]
-    return [
-        hikari.CommandChoice(name=name, value=name)
-        for name in get_close_matches(prefix, ov_names, 10, 0.2)
-    ]
-
-
 @plugin.include
 @overrides.child
 @crescent.command(name="view", description="View setting overrides")
@@ -70,7 +52,7 @@ class ViewSettingOverrides:
             if not ov:
                 raise OverrideNotFound(self.name)
 
-            sb = await Starboard.fetch(channel_id=ov.starboard_id)
+            sb = await Starboard.fetch(id=ov.starboard_id)
 
             config = StarboardConfig(sb, [ov])
             options = pretty_sb_config(config, bot, ov.overrides.keys())
@@ -79,7 +61,7 @@ class ViewSettingOverrides:
             embed = bot.embed(
                 title=f"Override {self.name}",
                 description=(
-                    f"These are the settings for <#{sb.channel_id}> in the "
+                    f"These are the settings for {sb.name} in the "
                     f"channels {cs}."
                 ),
             )
@@ -109,14 +91,16 @@ class ViewSettingOverrides:
                 )
                 return
 
+            ret: list[str] = []
+            for ov in ovs:
+                sb = await Starboard.fetch(id=ov.starboard_id)
+                ret.append(
+                    f"{ov.name}: **{len(ov.overrides)}** overwritten settings "
+                    f"for {sb.name} in {len(ov.channel_ids)} channels"
+                )
+
             embed = bot.embed(
-                title="Setting Overrides",
-                description="\n".join(
-                    f"{o.name}: **{len(o.overrides)}** overwritten settings "
-                    f"for <#{o.starboard_id}> in **{len(o.channel_ids)}** "
-                    "channels."
-                    for o in ovs
-                ),
+                title="Setting Overrides", description="\n".join(ret)
             )
 
             await ctx.respond(embed=embed)
@@ -131,7 +115,9 @@ class CreateOverride:
         str, "A list of channels that this override applies to"
     )
     starboard = crescent.option(
-        hikari.TextableGuildChannel, "The starboard this override applies to"
+        str,
+        "The starboard this override applies to",
+        autocomplete=starboard_autocomplete,
     )
     copy_from = crescent.option(
         str,
@@ -145,6 +131,8 @@ class CreateOverride:
         assert ctx.guild_id
         bot = cast("Bot", ctx.app)
 
+        starboard = await Starboard.from_name(ctx.guild_id, self.starboard)
+
         if self.copy_from is not None:
             ov = await Override.exists(
                 guild_id=ctx.guild_id, name=self.copy_from
@@ -156,7 +144,7 @@ class CreateOverride:
             ov = None
 
         count = await Override.count(
-            guild_id=ctx.guild_id, starboard_id=self.starboard.id
+            guild_id=ctx.guild_id, starboard_id=starboard.id
         )
         if count >= CONFIG.max_ov_per_starboard:
             raise StarboardError(
@@ -167,7 +155,7 @@ class CreateOverride:
         o = Override(
             guild_id=ctx.guild_id,
             name=self.name,
-            starboard_id=self.starboard.id,
+            starboard_id=starboard.id,
             channel_ids=channel_list(self.channels, bot).valid,
             _overrides=ov._overrides if ov else "{}",
         )
@@ -177,8 +165,6 @@ class CreateOverride:
             raise StarboardError(
                 f"There is already an override with the name '{self.name}'."
             )
-        except asyncpg.ForeignKeyViolationError:
-            raise StarboardNotFound(self.starboard.id)
 
         await ctx.respond(f"Created override with name '{self.name}'.")
 

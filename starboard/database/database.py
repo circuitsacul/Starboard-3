@@ -87,7 +87,9 @@ class Database(apgorm.Database):
         # patrons
         Index(patrons, patrons.discord_id, IndexType.HASH),
         # autostar channels
+        Index(aschannels, aschannels.channel_id, IndexType.HASH),
         Index(aschannels, aschannels.guild_id, IndexType.HASH),
+        Index(aschannels, aschannels.name, IndexType.HASH),
         # guild
         Index(guilds, guilds.premium_end),
         # member
@@ -109,9 +111,11 @@ class Database(apgorm.Database):
             posroles, (posroles.guild_id, posroles.max_members), unique=True
         ),
         # starboards
+        Index(starboards, starboards.channel_id, IndexType.HASH),
         Index(starboards, starboards.guild_id, IndexType.HASH),
         Index(starboards, starboards.upvote_emojis, IndexType.GIN),
         Index(starboards, starboards.downvote_emojis, IndexType.GIN),
+        Index(starboards, starboards.name, IndexType.HASH),
         # xproles
         Index(xproles, xproles.guild_id, IndexType.HASH),
         # votes

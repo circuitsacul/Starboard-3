@@ -28,7 +28,7 @@ import apgorm
 from apgorm import types
 from asyncpg import UniqueViolationError
 
-from ._converters import DecimalArrayC, DecimalC
+from ._converters import DecimalC, NonNullArray
 from .guild import Guild
 from .member import goc_member
 from .user import User
@@ -70,9 +70,9 @@ class Message(apgorm.Model):
     is_nsfw = types.Boolean().field()
 
     forced_to = (
-        types.Array(types.Numeric())
+        types.Array(types.Int())
         .field(default_factory=list)
-        .with_converter(DecimalArrayC)
+        .with_converter(NonNullArray(int))
     )
     trashed = types.Boolean().field(default=False)
     trash_reason = types.VarChar(32).nullablefield()

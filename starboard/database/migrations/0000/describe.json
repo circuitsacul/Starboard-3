@@ -135,6 +135,16 @@
             "name": "starboards",
             "fields": [
                 {
+                    "name": "id",
+                    "type_": "SERIAL",
+                    "not_null": true
+                },
+                {
+                    "name": "name",
+                    "type_": "TEXT",
+                    "not_null": true
+                },
+                {
                     "name": "channel_id",
                     "type_": "NUMERIC",
                     "not_null": true
@@ -307,10 +317,15 @@
                 }
             ],
             "pk_constraint": {
-                "name": "_starboards_channel_id_primary_key",
-                "raw_sql": "CONSTRAINT _starboards_channel_id_primary_key PRIMARY KEY ( channel_id )"
+                "name": "_starboards_id_primary_key",
+                "raw_sql": "CONSTRAINT _starboards_id_primary_key PRIMARY KEY ( id )"
             },
-            "unique_constraints": [],
+            "unique_constraints": [
+                {
+                    "name": "sb_guild_name_unique",
+                    "raw_sql": "CONSTRAINT sb_guild_name_unique UNIQUE ( guild_id , name )"
+                }
+            ],
             "check_constraints": [],
             "exclude_constraints": []
         },
@@ -334,7 +349,7 @@
                 },
                 {
                     "name": "starboard_id",
-                    "type_": "NUMERIC",
+                    "type_": "INTEGER",
                     "not_null": true
                 },
                 {
@@ -355,7 +370,7 @@
                 },
                 {
                     "name": "starboard_fk",
-                    "raw_sql": "CONSTRAINT starboard_fk FOREIGN KEY ( starboard_id ) REFERENCES starboards ( channel_id ) MATCH SIMPLE ON DELETE CASCADE ON UPDATE CASCADE"
+                    "raw_sql": "CONSTRAINT starboard_fk FOREIGN KEY ( starboard_id ) REFERENCES starboards ( id ) MATCH SIMPLE ON DELETE CASCADE ON UPDATE CASCADE"
                 }
             ],
             "pk_constraint": {
@@ -419,7 +434,7 @@
                 },
                 {
                     "name": "starboard_id",
-                    "type_": "NUMERIC",
+                    "type_": "INTEGER",
                     "not_null": true
                 },
                 {
@@ -436,7 +451,7 @@
             "fk_constraints": [
                 {
                     "name": "starboard_id_fk",
-                    "raw_sql": "CONSTRAINT starboard_id_fk FOREIGN KEY ( starboard_id ) REFERENCES starboards ( channel_id ) MATCH SIMPLE ON DELETE CASCADE ON UPDATE CASCADE"
+                    "raw_sql": "CONSTRAINT starboard_id_fk FOREIGN KEY ( starboard_id ) REFERENCES starboards ( id ) MATCH SIMPLE ON DELETE CASCADE ON UPDATE CASCADE"
                 },
                 {
                     "name": "permrole_id_fk",
@@ -454,6 +469,16 @@
         {
             "name": "aschannels",
             "fields": [
+                {
+                    "name": "id",
+                    "type_": "SERIAL",
+                    "not_null": true
+                },
+                {
+                    "name": "name",
+                    "type_": "TEXT",
+                    "not_null": true
+                },
                 {
                     "name": "channel_id",
                     "type_": "NUMERIC",
@@ -502,10 +527,15 @@
                 }
             ],
             "pk_constraint": {
-                "name": "_aschannels_channel_id_primary_key",
-                "raw_sql": "CONSTRAINT _aschannels_channel_id_primary_key PRIMARY KEY ( channel_id )"
+                "name": "_aschannels_id_primary_key",
+                "raw_sql": "CONSTRAINT _aschannels_id_primary_key PRIMARY KEY ( id )"
             },
-            "unique_constraints": [],
+            "unique_constraints": [
+                {
+                    "name": "asc_guild_name_unique",
+                    "raw_sql": "CONSTRAINT asc_guild_name_unique UNIQUE ( guild_id , name )"
+                }
+            ],
             "check_constraints": [],
             "exclude_constraints": []
         },
@@ -637,7 +667,7 @@
                 },
                 {
                     "name": "forced_to",
-                    "type_": "NUMERIC[]",
+                    "type_": "INTEGER[]",
                     "not_null": true
                 },
                 {
@@ -684,7 +714,7 @@
                 },
                 {
                     "name": "starboard_id",
-                    "type_": "NUMERIC",
+                    "type_": "INTEGER",
                     "not_null": true
                 },
                 {
@@ -705,7 +735,7 @@
                 },
                 {
                     "name": "starboard_id_fk",
-                    "raw_sql": "CONSTRAINT starboard_id_fk FOREIGN KEY ( starboard_id ) REFERENCES starboards ( channel_id ) MATCH SIMPLE ON DELETE CASCADE ON UPDATE CASCADE"
+                    "raw_sql": "CONSTRAINT starboard_id_fk FOREIGN KEY ( starboard_id ) REFERENCES starboards ( id ) MATCH SIMPLE ON DELETE CASCADE ON UPDATE CASCADE"
                 }
             ],
             "pk_constraint": {
@@ -726,7 +756,7 @@
                 },
                 {
                     "name": "starboard_id",
-                    "type_": "NUMERIC",
+                    "type_": "INTEGER",
                     "not_null": true
                 },
                 {
@@ -752,7 +782,7 @@
                 },
                 {
                     "name": "starboard_id_fk",
-                    "raw_sql": "CONSTRAINT starboard_id_fk FOREIGN KEY ( starboard_id ) REFERENCES starboards ( channel_id ) MATCH SIMPLE ON DELETE CASCADE ON UPDATE CASCADE"
+                    "raw_sql": "CONSTRAINT starboard_id_fk FOREIGN KEY ( starboard_id ) REFERENCES starboards ( id ) MATCH SIMPLE ON DELETE CASCADE ON UPDATE CASCADE"
                 },
                 {
                     "name": "user_id_fk",
@@ -796,8 +826,16 @@
             "raw_sql": "INDEX _hash_index_patrons__discord_id ON patrons USING HASH ( ( discord_id ) )"
         },
         {
+            "name": "_hash_index_aschannels__channel_id",
+            "raw_sql": "INDEX _hash_index_aschannels__channel_id ON aschannels USING HASH ( ( channel_id ) )"
+        },
+        {
             "name": "_hash_index_aschannels__guild_id",
             "raw_sql": "INDEX _hash_index_aschannels__guild_id ON aschannels USING HASH ( ( guild_id ) )"
+        },
+        {
+            "name": "_hash_index_aschannels__name",
+            "raw_sql": "INDEX _hash_index_aschannels__name ON aschannels USING HASH ( ( name ) )"
         },
         {
             "name": "_btree_index_guilds__premium_end",
@@ -848,6 +886,10 @@
             "raw_sql": "UNIQUE INDEX _btree_index_posroles__guild_id_max_members ON posroles USING BTREE ( ( guild_id ) , ( max_members ) )"
         },
         {
+            "name": "_hash_index_starboards__channel_id",
+            "raw_sql": "INDEX _hash_index_starboards__channel_id ON starboards USING HASH ( ( channel_id ) )"
+        },
+        {
             "name": "_hash_index_starboards__guild_id",
             "raw_sql": "INDEX _hash_index_starboards__guild_id ON starboards USING HASH ( ( guild_id ) )"
         },
@@ -858,6 +900,10 @@
         {
             "name": "_gin_index_starboards__downvote_emojis",
             "raw_sql": "INDEX _gin_index_starboards__downvote_emojis ON starboards USING GIN ( ( downvote_emojis ) )"
+        },
+        {
+            "name": "_hash_index_starboards__name",
+            "raw_sql": "INDEX _hash_index_starboards__name ON starboards USING HASH ( ( name ) )"
         },
         {
             "name": "_hash_index_xproles__guild_id",

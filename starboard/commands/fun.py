@@ -35,9 +35,10 @@ from starboard.core.embed_message import embed_message
 from starboard.core.emojis import stored_to_emoji
 from starboard.core.leaderboard import get_leaderboard, refresh_xp
 from starboard.database import Guild, Member, Message, SBMessage, Starboard
-from starboard.exceptions import StarboardError, StarboardNotFound
+from starboard.exceptions import StarboardError
 from starboard.views import InfiniteScroll, Paginator
 
+from ._autocomplete import starboard_autocomplete
 from ._checks import guild_only
 
 if TYPE_CHECKING:
@@ -152,7 +153,9 @@ class Rank:
 )
 class Random:
     starboard = crescent.option(
-        hikari.TextableGuildChannel, "The starboard to pull from"
+        str,
+        "The starboard to get a random message from",
+        autocomplete=starboard_autocomplete,
     )
     channel = crescent.option(
         hikari.TextableGuildChannel,
@@ -178,14 +181,12 @@ class Random:
         assert ctx.guild_id
         bot = cast("Bot", ctx.app)
 
-        s = await Starboard.exists(channel_id=self.starboard.id)
-        if not s:
-            raise StarboardNotFound(self.starboard.id)
+        s = await Starboard.from_name(ctx.guild_id, self.starboard)
         if s.private:
-            raise StarboardError(f"<#{s.channel_id}> is a private starboard.")
+            raise StarboardError(f"{s.name} is a private starboard.")
 
         q = SBMessage.fetch_query()
-        q.where(starboard_id=self.starboard.id)
+        q.where(starboard_id=s.id)
         q.where(SBMessage.sb_message_id.is_null.not_)
 
         sbq = Message.fetch_query()
@@ -229,7 +230,7 @@ class Random:
             config.ping_author,
             ret.last_known_point_count,
             orig.frozen,
-            s.channel_id in orig.forced_to,
+            s.id in orig.forced_to,
             guild.premium_end is not None,
             config.attachments_list,
             config.jump_to_message,
@@ -247,7 +248,9 @@ class Random:
 )
 class MostStarred:
     starboard = crescent.option(
-        hikari.TextableGuildChannel, "The starboard to pull from"
+        str,
+        "The starboard to get the most starred messages from",
+        autocomplete=starboard_autocomplete,
     )
     channel = crescent.option(
         hikari.TextableGuildChannel,
@@ -273,12 +276,12 @@ class MostStarred:
         assert ctx.guild_id is not None
         bot = cast("Bot", ctx.app)
 
-        s = await Starboard.exists(channel_id=self.starboard.id)
-        if not s:
-            raise StarboardNotFound(self.starboard.id)
+        s = await Starboard.from_name(ctx.guild_id, self.starboard)
+        if s.private:
+            raise StarboardError(f"{s.name} is a private starboard.")
 
         q = SBMessage.fetch_query()
-        q.where(starboard_id=self.starboard.id)
+        q.where(starboard_id=s.id)
         q.where(SBMessage.sb_message_id.is_null.not_)
 
         sbq = Message.fetch_query()
@@ -320,7 +323,7 @@ class MostStarred:
                 config.ping_author,
                 sql_msg.last_known_point_count,
                 orig.frozen,
-                s.channel_id in orig.forced_to,
+                s.id in orig.forced_to,
                 guild.premium_end is not None,
                 config.attachments_list,
                 config.jump_to_message,

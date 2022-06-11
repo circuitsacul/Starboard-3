@@ -84,7 +84,7 @@ class StarboardConfig:
 
 
 async def get_config(sb: Starboard, channel_id: int) -> StarboardConfig:
-    ov = await fetch_overrides(sb.channel_id, channel_id)
+    ov = await fetch_overrides(sb.id, channel_id)
     return StarboardConfig(sb, ov)
 
 

@@ -41,6 +41,7 @@ from starboard.database import (
 from starboard.exceptions import StarboardError
 from starboard.views import Confirm
 
+from ._autocomplete import asc_autocomplete, starboard_autocomplete
 from ._checks import guild_only, has_guild_perms
 
 if TYPE_CHECKING:
@@ -88,61 +89,81 @@ async def refresh_prem_lock(ctx: crescent.Context) -> None:
 @locks.child
 @crescent.hook(guild_only)
 @crescent.command(
-    name="move",
-    description="Move a lock from one starboard or AutoStar channel to "
-    "another",
+    name="move-autostar",
+    description="Move a lock from one autostar channel to another",
 )
-class MovePremLock:
-    ch_from = crescent.option(
-        hikari.TextableGuildChannel,
-        "The channel to move the lock from",
+class MoveAscPremLock:
+    asc_from = crescent.option(
+        str,
+        "The starboard to move the lock from",
+        autocomplete=asc_autocomplete,
         name="from",
     )
-    ch_to = crescent.option(
-        hikari.TextableGuildChannel,
-        "The channel to move the lock to",
+    asc_to = crescent.option(
+        str,
+        "The starboard to move the lock to",
+        autocomplete=asc_autocomplete,
         name="to",
     )
 
     async def callback(self, ctx: crescent.Context) -> None:
-        # first, see if ch_from is a starboard
-        ch_from: Starboard | AutoStarChannel | None
-        ch_from = await Starboard.exists(channel_id=self.ch_from.id)
-        is_sb = True
+        assert ctx.guild_id
+        asc_from = await AutoStarChannel.from_name(ctx.guild_id, self.asc_from)
+        asc_to = await AutoStarChannel.from_name(ctx.guild_id, self.asc_to)
 
-        if ch_from is None:
-            is_sb = False
-            ch_from = await AutoStarChannel.exists(channel_id=self.ch_from.id)
+        if not asc_from.prem_locked:
+            raise StarboardError(f"'{asc_from.name}' is not locked.")
+        if asc_to.prem_locked:
+            raise StarboardError(f"'{asc_to.name}' is already locked.")
 
-        if ch_from is None:
-            raise StarboardError(
-                f"<#{self.ch_from.id}> is not a starboard or AutoStar channel."
-            )
+        asc_from.prem_locked = False
+        asc_to.prem_locked = True
+        await asc_from.save()
+        await asc_to.save()
 
-        ch_to: Starboard | AutoStarChannel | None
-        if is_sb:
-            ch_to = await Starboard.exists(channel_id=self.ch_to.id)
-            if ch_to is None:
-                raise StarboardError(f"<#{self.ch_to.id}> is not a starboard.")
-        else:
-            ch_to = await AutoStarChannel.exists(channel_id=self.ch_to.id)
-            if ch_to is None:
-                raise StarboardError(
-                    f"<#{self.ch_to.id}> is not an AutoStar channel."
-                )
-
-        if ch_from.prem_locked is False:
-            raise StarboardError(f"<#{self.ch_from.id}> is not locked.")
-
-        if ch_to.prem_locked is True:
-            raise StarboardError(f"<#{self.ch_to.id}> is already locked.")
-
-        ch_from.prem_locked = False
-        ch_to.prem_locked = True
-        await ch_from.save()
-        await ch_to.save()
         await ctx.respond(
-            f"Moved the lock from <#{self.ch_from.id}> to <#{self.ch_to.id}>."
+            f"Lock moved from '{asc_from.name}' to '{asc_to.name}'."
+        )
+
+
+@plugin.include
+@locks.child
+@crescent.hook(guild_only)
+@crescent.command(
+    name="move-starboard",
+    description="Move a lock from one starboard to another",
+)
+class MoveSbPremLock:
+    sb_from = crescent.option(
+        str,
+        "The starboard to move the lock from",
+        autocomplete=starboard_autocomplete,
+        name="from",
+    )
+    sb_to = crescent.option(
+        str,
+        "The starboard to move the lock to",
+        autocomplete=starboard_autocomplete,
+        name="to",
+    )
+
+    async def callback(self, ctx: crescent.Context) -> None:
+        assert ctx.guild_id
+        sb_from = await Starboard.from_name(ctx.guild_id, self.sb_from)
+        sb_to = await Starboard.from_name(ctx.guild_id, self.sb_to)
+
+        if not sb_from.prem_locked:
+            raise StarboardError(f"'{sb_from.name}' is not locked.")
+        if sb_to.prem_locked:
+            raise StarboardError(f"'{sb_to.name}' is already locked.")
+
+        sb_from.prem_locked = False
+        sb_to.prem_locked = True
+        await sb_from.save()
+        await sb_to.save()
+
+        await ctx.respond(
+            f"Lock moved from '{sb_from.name}' to '{sb_to.name}'."
         )
 
 

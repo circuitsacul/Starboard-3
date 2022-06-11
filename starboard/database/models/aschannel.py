@@ -25,18 +25,21 @@ from __future__ import annotations
 from typing import Iterable
 
 import apgorm
-from apgorm import types
+from apgorm import Unique, types
 
 from starboard.config import CONFIG
+from starboard.exceptions import ASCNotFound
 
 from ._converters import DecimalC, NonNullArray
-from ._validators import num_range
+from ._validators import num_range, str_len
 from .guild import Guild
 
 
 class AutoStarChannel(apgorm.Model):
     __slots__: Iterable[str] = ()
 
+    id = types.Serial().field()
+    name = types.Text().field()
     channel_id = types.Numeric().field().with_converter(DecimalC)
     guild_id = types.Numeric().field().with_converter(DecimalC)
 
@@ -54,8 +57,21 @@ class AutoStarChannel(apgorm.Model):
 
     guild_id_fk = apgorm.ForeignKey(guild_id, Guild.guild_id)
 
-    primary_key = (channel_id,)
+    asc_guild_name_unique = Unique(guild_id, name)
+
+    primary_key = (id,)
 
     # validators:
     min_chars.add_validator(num_range("min-chars", 0, CONFIG.max_minchars))
     max_chars.add_validator(num_range("max-chars", 0, CONFIG.max_maxchars))
+    name.add_validator(
+        str_len("name", CONFIG.min_asc_name, CONFIG.max_asc_name)
+    )
+
+    # methods
+    @staticmethod
+    async def from_name(guild_id: int, name: str) -> AutoStarChannel:
+        if asc := await AutoStarChannel.exists(guild_id=guild_id, name=name):
+            return asc
+        else:
+            raise ASCNotFound(name)

@@ -32,5 +32,5 @@ plugin = crescent.Plugin("autostar-events")
 
 @plugin.include
 @crescent.event
-async def on_msg(event: hikari.MessageCreateEvent) -> None:
+async def on_msg(event: hikari.GuildMessageCreateEvent) -> None:
     await autostar.handle_message(event)

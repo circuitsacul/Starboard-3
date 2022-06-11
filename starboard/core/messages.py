@@ -62,7 +62,7 @@ async def get_sbmsg_content(
         )
 
     frozen = sql_orig_msg.frozen
-    forced = config.starboard.channel_id in sql_orig_msg.forced_to
+    forced = config.starboard.id in sql_orig_msg.forced_to
 
     if dis_orig_msg is not None:
         c, e, es = await embed_message(

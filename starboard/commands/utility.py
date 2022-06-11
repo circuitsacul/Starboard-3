@@ -28,16 +28,17 @@ import crescent
 import hikari
 from hikari import Permissions
 
+from starboard.commands._converters import msg_ch_id, orig_msg_from_link
 from starboard.core.config import get_config
 from starboard.core.messages import get_orig_message
 from starboard.core.starboards import refresh_message
 from starboard.database import Message, SBMessage, Starboard, goc_message
-from starboard.exceptions import StarboardError, StarboardNotFound
+from starboard.exceptions import StarboardError
 from starboard.utils import jump
 from starboard.views import Paginator
 
+from ._autocomplete import starboard_autocomplete
 from ._checks import has_guild_perms
-from ._converters import msg_ch_id, orig_msg_from_link
 
 if TYPE_CHECKING:
     from starboard.bot import Bot
@@ -237,12 +238,14 @@ class ForceMessage:
         str, "The message to force", name="message-link"
     )
     starboard = crescent.option(
-        hikari.TextableGuildChannel,
+        str,
         "The starboard to force the message to",
+        autocomplete=starboard_autocomplete,
         default=None,
     )
 
     async def callback(self, ctx: crescent.Context) -> None:
+        assert ctx.guild_id
         bot = cast("Bot", ctx.app)
         msgid, chid = msg_ch_id(self.message_link)
         msg = await get_orig_message(msgid)
@@ -266,14 +269,12 @@ class ForceMessage:
             )
 
         if self.starboard:
-            sb = await Starboard.exists(channel_id=self.starboard.id)
-            if not sb:
-                raise StarboardNotFound(self.starboard.id)
-            sbids = [sb.channel_id]
+            sb = await Starboard.from_name(ctx.guild_id, self.starboard)
+            sbids = [sb.id]
         else:
             assert ctx.guild_id
             sbids = [
-                sb.channel_id
+                sb.id
                 for sb in await Starboard.fetch_query()
                 .where(guild_id=ctx.guild_id)
                 .fetchmany()
@@ -303,12 +304,14 @@ class UnforceMessage:
         str, "The message to unforce", name="message-link"
     )
     starboard = crescent.option(
-        hikari.TextableGuildChannel,
-        "The starboard to unforce from",
+        str,
+        "The starboard to unforce the message from",
+        autocomplete=starboard_autocomplete,
         default=None,
     )
 
     async def callback(self, ctx: crescent.Context) -> None:
+        assert ctx.guild_id
         msg = await orig_msg_from_link(self.message_link)
         if not msg.forced_to:
             raise StarboardError(
@@ -316,22 +319,21 @@ class UnforceMessage:
             )
 
         if self.starboard:
+            sb = await Starboard.from_name(ctx.guild_id, self.starboard)
             ft = set(msg.forced_to)
-            if self.starboard.id not in ft:
+            if sb.id not in ft:
                 raise StarboardError(
                     "That message is not forced to that starboard."
                 )
 
-            ft.remove(self.starboard.id)
+            ft.remove(sb.id)
             msg.forced_to = list(ft)
             await msg.save()
-
-            sbids = [self.starboard.id]
+            sbids = [sb.id]
 
         else:
             msg.forced_to = []
             await msg.save()
-
             sbids = None
 
         await ctx.respond("Message unforced.", ephemeral=True)
@@ -347,7 +349,7 @@ async def force_message(
     bot = cast("Bot", ctx.app)
 
     sbids = [
-        sb.channel_id
+        sb.id
         for sb in await Starboard.fetch_query()
         .where(guild_id=ctx.guild_id)
         .fetchmany()
@@ -469,18 +471,17 @@ class MessageInfo:
             .fetchmany()
         )
         for sb in sbs:
-            ch = bot.cache.get_guild_channel(sb.channel_id)
             sbm = await SBMessage.exists(
-                message_id=msg.message_id, starboard_id=sb.channel_id
+                message_id=msg.message_id, starboard_id=sb.id
             )
             config = await get_config(sb, msg.channel_id)
-
             points = sbm.last_known_point_count if sbm else 0
 
+            ch = bot.cache.get_guild_channel(sb.channel_id)
+            chname = f"#{ch.name}" if ch else "Deleted Channel"
+
             embed.add_field(
-                name=cast(
-                    str, ch.name if ch else f"Deleted Channel {sb.channel_id}"
-                ),
+                name=f"{sb.name} in {chname}",
                 value=(
                     (
                         f"Message: `{sbm.sb_message_id}` | [jump]("

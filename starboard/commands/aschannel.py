@@ -30,12 +30,13 @@ from asyncpg import UniqueViolationError
 
 from starboard.config import CONFIG
 from starboard.database import AutoStarChannel, Guild, goc_guild
-from starboard.exceptions import ASCNotFound, StarboardError
+from starboard.exceptions import StarboardError
 from starboard.undefined import UNDEF
 from starboard.views import Confirm
 
+from ._autocomplete import asc_autocomplete
 from ._checks import has_guild_perms
-from ._converters import any_emoji_list, any_emoji_str, disid
+from ._converters import any_emoji_list
 from ._utils import optiond, pretty_emoji_str
 
 if TYPE_CHECKING:
@@ -59,6 +60,7 @@ class CreateAutoStar:
     channel = crescent.option(
         hikari.TextableGuildChannel, "The channel to make an autostar channel"
     )
+    name = crescent.option(str, "The name of the autostar channel")
 
     async def callback(self, ctx: crescent.Context) -> None:
         bot = cast("Bot", ctx.app)
@@ -77,39 +79,34 @@ class CreateAutoStar:
 
         try:
             await AutoStarChannel(
-                channel_id=self.channel.id, guild_id=ctx.guild_id
+                channel_id=self.channel.id,
+                guild_id=ctx.guild_id,
+                name=self.name,
             ).create()
         except UniqueViolationError:
             raise StarboardError(
-                f"<#{self.channel.id}> is already an autostar channel."
+                f"An autostar channel with the name '{self.name}' already "
+                "exists."
             )
 
         bot.database.asc.add(self.channel.id)
-
-        await ctx.respond(f"<#{self.channel.id}> is now an autostar channel.")
+        await ctx.respond(
+            f"Created autostar channel '{self.name}' in <#{self.channel.id}>."
+        )
 
 
 @plugin.include
 @autostar.child
 @crescent.command(name="delete", description="Delete an autostar channel")
 class DeleteAutoStar:
-    channel = crescent.option(
-        hikari.TextableGuildChannel,
-        "The autostar channel to delete",
-        default=None,
-    )
-    channel_id = crescent.option(
-        str, "The autostar channel to delete, by ID", default=None
+    autostar = crescent.option(
+        str, "The autostar channel to delete", autocomplete=asc_autocomplete
     )
 
     async def callback(self, ctx: crescent.Context) -> None:
-        bot = cast("Bot", ctx.app)
+        assert ctx.guild_id
 
-        chid = self.channel.id if self.channel else disid(self.channel_id)
-        if not chid:
-            raise StarboardError(
-                "Please specify either a channel or channel id."
-            )
+        asc = await AutoStarChannel.from_name(ctx.guild_id, self.autostar)
 
         confirm = Confirm(ctx.user.id, danger=True)
         msg = await ctx.respond(
@@ -124,18 +121,10 @@ class DeleteAutoStar:
             await msg.edit("Cancelled.", components=[])
             return
 
-        res = (
-            await AutoStarChannel.delete_query()
-            .where(channel_id=chid, guild_id=ctx.guild_id)
-            .execute()
+        await asc.delete()
+        await msg.edit(
+            f"Deleted autostar channel '{asc.name}'.", components=[]
         )
-        if not res:
-            await msg.edit(ASCNotFound(chid).msg, components=[])
-            return
-
-        bot.database.asc.discard(chid)
-
-        await msg.edit(f"Deleted autostar channel <#{chid}>", components=[])
 
 
 @plugin.include
@@ -144,9 +133,10 @@ class DeleteAutoStar:
     name="view", description="View the configuration for autostar channels"
 )
 class ViewAutoStar:
-    channel = crescent.option(
-        hikari.TextableGuildChannel,
-        "The autostar channel to view settings for",
+    autostar = crescent.option(
+        str,
+        "The autostar channel to view",
+        autocomplete=asc_autocomplete,
         default=None,
     )
 
@@ -154,11 +144,8 @@ class ViewAutoStar:
         assert ctx.guild_id
         bot = cast("Bot", ctx.app)
 
-        if self.channel:
-            asc = await AutoStarChannel.exists(channel_id=self.channel.id)
-            if not asc:
-                raise ASCNotFound(self.channel.id)
-
+        if self.autostar:
+            asc = await AutoStarChannel.from_name(ctx.guild_id, self.autostar)
             es = pretty_emoji_str(*asc.emojis, bot=bot)
             maxc = asc.max_chars if asc.max_chars is not None else "none"
             notes: list[str] = []
@@ -168,9 +155,11 @@ class ViewAutoStar:
                     "is locked. If you believe this is a mistake, please run "
                     "`/premium locks refresh`."
                 )
+            ch = bot.cache.get_guild_channel(asc.channel_id)
+            chname = f"#{ch.name}" if ch else "Deleted Channel"
             await ctx.respond(
                 embed=bot.embed(
-                    title=self.channel.name,
+                    title=f"{asc.name} in {chname}",
                     description=(
                         f"emojis: {es}\n"
                         f"min-chars: {asc.min_chars}\n"
@@ -196,11 +185,12 @@ class ViewAutoStar:
             for asc in ascs:
                 channel = bot.cache.get_guild_channel(asc.channel_id)
                 if not channel:
-                    name = f"Deleted Channel {asc.channel_id}"
+                    chname = f"Deleted Channel {asc.channel_id}"
                 else:
                     assert channel.name
-                    name = channel.name
+                    chname = f"#{channel.name}"
 
+                name = f"{asc.name} in {chname}"
                 if asc.prem_locked:
                     name = f"{name} (Locked)"
 
@@ -215,10 +205,31 @@ class ViewAutoStar:
 
 @plugin.include
 @autostar.child
+@crescent.command(name="rename", description="Rename an autostar channel")
+class RenameAutoStar:
+    autostar = crescent.option(
+        str, "The autostar channel to rename", autocomplete=asc_autocomplete
+    )
+    name = crescent.option(str, "The new name of the autostar channel")
+
+    async def callback(self, ctx: crescent.Context) -> None:
+        assert ctx.guild_id
+
+        asc = await AutoStarChannel.from_name(ctx.guild_id, self.autostar)
+        asc.name = self.name
+        await asc.save()
+
+        await ctx.respond(
+            f"Renamed autostar channel '{self.autostar}' to '{self.name}'."
+        )
+
+
+@plugin.include
+@autostar.child
 @crescent.command(name="edit", description="Edit an autostar channel")
 class EditAutoStar:
-    channel = crescent.option(
-        hikari.TextableGuildChannel, "The autostar channel to edit"
+    autostar = crescent.option(
+        str, "The autostar channel to edit", autocomplete=asc_autocomplete
     )
 
     min_chars = optiond(
@@ -245,12 +256,12 @@ class EditAutoStar:
     )
 
     async def callback(self, ctx: crescent.Context) -> None:
+        assert ctx.guild_id
+
         params = self.__dict__.copy()
         del params["channel"]
 
-        asc = await AutoStarChannel.exists(channel_id=self.channel.id)
-        if not asc:
-            raise ASCNotFound(self.channel.id)
+        asc = await AutoStarChannel.from_name(ctx.guild_id, self.autostar)
 
         if params.get("max_chars") == -1:
             params["max_chars"] = None
@@ -261,28 +272,22 @@ class EditAutoStar:
             setattr(asc, k, v)
 
         await asc.save()
-        await ctx.respond(f"Updated settings for <#{asc.channel_id}>.")
-
-
-emojis = autostar.sub_group("emojis", "Modify emojis for an autostar channel")
+        await ctx.respond(f"Updated settings for '{asc.name}'.")
 
 
 @plugin.include
-@emojis.child
-@crescent.command(name="set", description="Set the emojis")
+@autostar.child
+@crescent.command(name="set-emojis", description="Set the emojis")
 class SetEmoji:
-    channel = crescent.option(
-        hikari.TextableGuildChannel,
-        "The autostar channel to set the emojis for",
+    autostar = crescent.option(
+        str, "The autostar channel to edit", autocomplete=asc_autocomplete
     )
     emojis = crescent.option(str, "A list of emojis to use")
 
     async def callback(self, ctx: crescent.Context) -> None:
         assert ctx.guild_id
-        asc = await AutoStarChannel.exists(channel_id=self.channel.id)
-        if not asc:
-            raise ASCNotFound(self.channel.id)
 
+        asc = await AutoStarChannel.from_name(ctx.guild_id, self.autostar)
         emojis = any_emoji_list(self.emojis)
 
         guild = await Guild.fetch(guild_id=ctx.guild_id)
@@ -296,73 +301,5 @@ class SetEmoji:
             )
 
         asc.emojis = list(emojis)
-        await asc.save()
-        await ctx.respond("Done.")
-
-
-@plugin.include
-@emojis.child
-@crescent.command(name="add", description="Add an emoji")
-class AddEmoji:
-    channel = crescent.option(
-        hikari.TextableGuildChannel, "The autostar channel to add the emoji to"
-    )
-    emoji = crescent.option(str, "The emoji to add")
-
-    async def callback(self, ctx: crescent.Context) -> None:
-        asc = await AutoStarChannel.exists(channel_id=self.channel.id)
-        if not asc:
-            raise ASCNotFound(self.channel.id)
-
-        e = any_emoji_str(self.emoji)
-        emojis = list(asc.emojis)
-        if e in emojis:
-            await ctx.respond(
-                f"{e} is already an emoji for <#{asc.channel_id}>.",
-                ephemeral=True,
-            )
-            return
-
-        guild = await Guild.fetch(guild_id=ctx.guild_id)
-        ip = guild.premium_end is not None
-        limit = CONFIG.max_asc_emojis if ip else CONFIG.np_max_asc_emojis
-
-        if len(emojis) >= limit:
-            raise StarboardError(
-                f"You can only have up to {limit} emojis per autostar channel."
-                + (" Get premium to increase this limit." if not ip else "")
-            )
-
-        emojis.append(e)
-        asc.emojis = emojis
-        await asc.save()
-        await ctx.respond("Done.")
-
-
-@plugin.include
-@emojis.child
-@crescent.command(name="remove", description="Remove an emoji")
-class RemoveEmoji:
-    channel = crescent.option(
-        hikari.TextableGuildChannel,
-        "The autostar channel to remove the emoji from",
-    )
-    emoji = crescent.option(str, "The star emoji to remove")
-
-    async def callback(self, ctx: crescent.Context) -> None:
-        asc = await AutoStarChannel.exists(channel_id=self.channel.id)
-        if not asc:
-            raise ASCNotFound(self.channel.id)
-
-        e = any_emoji_str(self.emoji)
-        emojis = list(asc.emojis)
-        if e not in emojis:
-            await ctx.respond(
-                f"{e} is not an emoji on <#{asc.channel_id}>", ephemeral=True
-            )
-            return
-
-        emojis.remove(e)
-        asc.emojis = emojis
         await asc.save()
         await ctx.respond("Done.")
