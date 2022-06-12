@@ -85,43 +85,48 @@ class Database(apgorm.Database):
 
     indexes = [
         # patrons
-        Index(patrons, patrons.discord_id, IndexType.HASH),
+        Index(patrons, patrons.discord_id, IndexType.BTREE),
         # autostar channels
-        Index(aschannels, aschannels.channel_id, IndexType.HASH),
-        Index(aschannels, aschannels.guild_id, IndexType.HASH),
-        Index(aschannels, aschannels.name, IndexType.HASH),
+        Index(aschannels, aschannels.channel_id, IndexType.BTREE),
+        Index(aschannels, aschannels.guild_id, IndexType.BTREE),
+        Index(aschannels, aschannels.name, IndexType.BTREE),
         # guild
-        Index(guilds, guilds.premium_end),
+        Index(guilds, guilds.premium_end, IndexType.BTREE),
         # member
-        Index(members, members.guild_id, IndexType.HASH),
-        Index(members, members.autoredeem_enabled, IndexType.HASH),
-        Index(members, members.xp),
+        Index(members, members.guild_id, IndexType.BTREE),
+        Index(members, members.autoredeem_enabled, IndexType.BTREE),
+        Index(members, members.xp, IndexType.BTREE),
         # overrides
-        Index(overrides, (overrides.guild_id, overrides.name), unique=True),
-        Index(overrides, overrides.starboard_id, IndexType.HASH),
+        Index(
+            overrides,
+            (overrides.guild_id, overrides.name),
+            IndexType.BTREE,
+            unique=True,
+        ),
+        Index(overrides, overrides.starboard_id, IndexType.BTREE),
         Index(overrides, overrides.channel_ids, IndexType.GIN),
         # sbmessages
         Index(sb_messages, sb_messages.sb_message_id, unique=True),
         Index(sb_messages, sb_messages.last_known_point_count),
-        Index(sb_messages, sb_messages.starboard_id, IndexType.HASH),
+        Index(sb_messages, sb_messages.starboard_id, IndexType.BTREE),
         # permroles
-        Index(permroles, permroles.guild_id, IndexType.HASH),
+        Index(permroles, permroles.guild_id, IndexType.BTREE),
         # posroles
         Index(
             posroles, (posroles.guild_id, posroles.max_members), unique=True
         ),
         # starboards
-        Index(starboards, starboards.channel_id, IndexType.HASH),
-        Index(starboards, starboards.guild_id, IndexType.HASH),
+        Index(starboards, starboards.channel_id, IndexType.BTREE),
+        Index(starboards, starboards.guild_id, IndexType.BTREE),
         Index(starboards, starboards.upvote_emojis, IndexType.GIN),
         Index(starboards, starboards.downvote_emojis, IndexType.GIN),
-        Index(starboards, starboards.name, IndexType.HASH),
+        Index(starboards, starboards.name, IndexType.BTREE),
         # xproles
-        Index(xproles, xproles.guild_id, IndexType.HASH),
+        Index(xproles, xproles.guild_id, IndexType.BTREE),
         # votes
-        Index(votes, votes.starboard_id, IndexType.HASH),
-        Index(votes, votes.user_id, IndexType.HASH),
-        Index(votes, votes.message_id, IndexType.HASH),
-        Index(votes, votes.target_author_id, IndexType.HASH),
-        Index(votes, votes.is_downvote, IndexType.HASH),
+        Index(votes, votes.starboard_id, IndexType.BTREE),
+        Index(votes, votes.user_id, IndexType.BTREE),
+        Index(votes, votes.message_id, IndexType.BTREE),
+        Index(votes, votes.target_author_id, IndexType.BTREE),
+        Index(votes, votes.is_downvote, IndexType.BTREE),
     ]
