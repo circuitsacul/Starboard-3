@@ -110,7 +110,8 @@ class DeleteAutoStar:
 
         confirm = Confirm(ctx.user.id, danger=True)
         msg = await ctx.respond(
-            "Are you sure? All data will be lost **permanently**.",
+            "Are you sure? All data for this autostar channel will be lost "
+            "**permanently**.",
             components=confirm.build(),
             ensure_message=True,
         )
