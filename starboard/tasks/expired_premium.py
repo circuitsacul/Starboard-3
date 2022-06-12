@@ -24,10 +24,8 @@ from __future__ import annotations
 
 import asyncio
 import traceback
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import TYPE_CHECKING
-
-import pytz
 
 from starboard.config import CONFIG
 from starboard.core.notifications import notify
@@ -52,7 +50,7 @@ async def check_expired_premium(bot: Bot) -> None:
 
 
 async def _check_expired_premium(bot) -> None:
-    now = datetime.now(pytz.UTC)
+    now = datetime.now(timezone.utc)
 
     q = Guild.fetch_query()
     q.where(Guild.premium_end.is_null.not_)

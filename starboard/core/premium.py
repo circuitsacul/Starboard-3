@@ -24,11 +24,10 @@ from __future__ import annotations
 
 import traceback
 from contextlib import suppress
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import TYPE_CHECKING
 
 import hikari
-import pytz
 
 from starboard.config import CONFIG
 from starboard.database import (
@@ -210,7 +209,7 @@ async def redeem(bot: Bot, user_id: int, guild_id: int, months: int) -> bool:
 
             # update guild
             delta = timedelta(days=CONFIG.days_per_month * months)
-            from_now = datetime.now(pytz.UTC) + delta
+            from_now = datetime.now(timezone.utc) + delta
             if guild.premium_end:
                 from_curr = guild.premium_end + delta
                 new = max(from_curr, from_now)

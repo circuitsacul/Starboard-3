@@ -33,12 +33,11 @@ from __future__ import annotations
 
 import json
 from dataclasses import dataclass
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Any, Awaitable, Callable
 
 import emoji
 import hikari
-import pytz
 from apgorm.connection import Connection as OrmCon
 from asyncpg.connection import Connection as ApgCon
 from hikari import GatewayBot
@@ -117,7 +116,7 @@ async def _migrate_guilds(new: OrmCon, old: ApgCon, bot: GatewayBot) -> None:
     for oldguild in tqdm(await old.fetch("SELECT * FROM guilds"), "Guilds"):
         prem_end: datetime | None = oldguild["premium_end"]
         if prem_end:
-            prem_end = prem_end.replace(tzinfo=pytz.UTC)
+            prem_end = prem_end.replace(tzinfo=timezone.utc)
         await new.execute(
             "INSERT INTO guilds (guild_id, premium_end) VALUES ($1, $2)",
             [oldguild["id"], prem_end],
