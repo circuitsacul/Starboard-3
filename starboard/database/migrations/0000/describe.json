@@ -826,16 +826,12 @@
             "raw_sql": "INDEX _btree_index_patrons__discord_id ON patrons USING BTREE ( ( discord_id ) )"
         },
         {
+            "name": "_btree_index_aschannels__guild_id_name",
+            "raw_sql": "INDEX _btree_index_aschannels__guild_id_name ON aschannels USING BTREE ( ( guild_id ) , ( name ) )"
+        },
+        {
             "name": "_btree_index_aschannels__channel_id",
             "raw_sql": "INDEX _btree_index_aschannels__channel_id ON aschannels USING BTREE ( ( channel_id ) )"
-        },
-        {
-            "name": "_btree_index_aschannels__guild_id",
-            "raw_sql": "INDEX _btree_index_aschannels__guild_id ON aschannels USING BTREE ( ( guild_id ) )"
-        },
-        {
-            "name": "_btree_index_aschannels__name",
-            "raw_sql": "INDEX _btree_index_aschannels__name ON aschannels USING BTREE ( ( name ) )"
         },
         {
             "name": "_btree_index_guilds__premium_end",
@@ -886,12 +882,12 @@
             "raw_sql": "UNIQUE INDEX _btree_index_posroles__guild_id_max_members ON posroles USING BTREE ( ( guild_id ) , ( max_members ) )"
         },
         {
-            "name": "_btree_index_starboards__channel_id",
-            "raw_sql": "INDEX _btree_index_starboards__channel_id ON starboards USING BTREE ( ( channel_id ) )"
+            "name": "_btree_index_starboards__guild_id_name",
+            "raw_sql": "INDEX _btree_index_starboards__guild_id_name ON starboards USING BTREE ( ( guild_id ) , ( name ) )"
         },
         {
-            "name": "_btree_index_starboards__guild_id",
-            "raw_sql": "INDEX _btree_index_starboards__guild_id ON starboards USING BTREE ( ( guild_id ) )"
+            "name": "_btree_index_starboards__channel_id",
+            "raw_sql": "INDEX _btree_index_starboards__channel_id ON starboards USING BTREE ( ( channel_id ) )"
         },
         {
             "name": "_gin_index_starboards__upvote_emojis",
@@ -900,10 +896,6 @@
         {
             "name": "_gin_index_starboards__downvote_emojis",
             "raw_sql": "INDEX _gin_index_starboards__downvote_emojis ON starboards USING GIN ( ( downvote_emojis ) )"
-        },
-        {
-            "name": "_btree_index_starboards__name",
-            "raw_sql": "INDEX _btree_index_starboards__name ON starboards USING BTREE ( ( name ) )"
         },
         {
             "name": "_btree_index_xproles__guild_id",

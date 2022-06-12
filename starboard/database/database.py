@@ -87,9 +87,10 @@ class Database(apgorm.Database):
         # patrons
         Index(patrons, patrons.discord_id, IndexType.BTREE),
         # autostar channels
+        Index(
+            aschannels, (aschannels.guild_id, aschannels.name), IndexType.BTREE
+        ),
         Index(aschannels, aschannels.channel_id, IndexType.BTREE),
-        Index(aschannels, aschannels.guild_id, IndexType.BTREE),
-        Index(aschannels, aschannels.name, IndexType.BTREE),
         # guild
         Index(guilds, guilds.premium_end, IndexType.BTREE),
         # member
@@ -116,11 +117,12 @@ class Database(apgorm.Database):
             posroles, (posroles.guild_id, posroles.max_members), unique=True
         ),
         # starboards
+        Index(
+            starboards, (starboards.guild_id, starboards.name), IndexType.BTREE
+        ),
         Index(starboards, starboards.channel_id, IndexType.BTREE),
-        Index(starboards, starboards.guild_id, IndexType.BTREE),
         Index(starboards, starboards.upvote_emojis, IndexType.GIN),
         Index(starboards, starboards.downvote_emojis, IndexType.GIN),
-        Index(starboards, starboards.name, IndexType.BTREE),
         # xproles
         Index(xproles, xproles.guild_id, IndexType.BTREE),
         # votes
