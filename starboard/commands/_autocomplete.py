@@ -9,6 +9,14 @@ import hikari
 from starboard.database import AutoStarChannel, Override, Starboard
 
 
+def _matches(prefix: str, names: list[str]) -> list[str]:
+    return (
+        get_close_matches(prefix, names, n=10, cutoff=0.2)
+        if prefix
+        else names[:10]
+    )
+
+
 async def override_autocomplete(
     ctx: crescent.Context, option: hikari.AutocompleteInteractionOption
 ) -> list[hikari.CommandChoice]:
@@ -19,7 +27,7 @@ async def override_autocomplete(
     ov_names = [ov.name for ov in ovs]
     return [
         hikari.CommandChoice(name=name, value=name)
-        for name in get_close_matches(prefix, ov_names, 10, 0.2)
+        for name in _matches(prefix, ov_names)
     ]
 
 
@@ -35,7 +43,7 @@ async def starboard_autocomplete(
     sb_names = [sb.name for sb in sbs]
     return [
         hikari.CommandChoice(name=name, value=name)
-        for name in get_close_matches(prefix, sb_names, 10, 0.2)
+        for name in _matches(prefix, sb_names)
     ]
 
 
@@ -53,5 +61,5 @@ async def asc_autocomplete(
     asc_names = [asc.name for asc in ascs]
     return [
         hikari.CommandChoice(name=name, value=name)
-        for name in get_close_matches(prefix, asc_names, 10, 0.2)
+        for name in _matches(prefix, asc_names)
     ]
