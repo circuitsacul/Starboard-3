@@ -45,9 +45,9 @@ class Config:
     max_xp_mul: float = 10.0
     min_xp_mul: float = -10.0
     min_required: int = 1
-    max_required: int = 512
-    min_required_remove: int = -1
-    max_required_remove: int = 500
+    max_required: int = 1_000
+    min_required_remove: int = -1_000
+    max_required_remove: int = 900
     max_cooldown_period: int = 60
     max_cooldown_cap: int = 60
     max_newer_than: int = 86_400 * 7  # 1 week
