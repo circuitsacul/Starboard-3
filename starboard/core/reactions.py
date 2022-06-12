@@ -182,6 +182,9 @@ async def handle_reaction_remove(
     ):
         return
 
+    if COOLDOWN.update_ratelimit(event.guild_id):
+        return
+
     orig_msg = await get_orig_message(event.message_id)
     if not orig_msg or orig_msg.frozen:
         return
