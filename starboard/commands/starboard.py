@@ -44,6 +44,7 @@ from starboard.views import Confirm
 
 from ._autocomplete import starboard_autocomplete
 from ._checks import has_guild_perms
+from ._converters import clean_name
 from ._sb_config import (
     BaseEditStarboardBehavior,
     BaseEditStarboardEmbedStyle,
@@ -185,20 +186,20 @@ class CreateStarboard:
                 )
             )
 
+        name = clean_name(self.name)
+
         try:
-            sb = await Starboard(
-                channel_id=self.channel.id,
-                guild_id=ctx.guild_id,
-                name=self.name,
+            await Starboard(
+                channel_id=self.channel.id, guild_id=ctx.guild_id, name=name
             ).create()
         except asyncpg.UniqueViolationError:
             raise StarboardError(
-                f"A starboard with the name '{self.name}' already exists."
+                f"A starboard with the name '{name}' already exists."
             )
 
         bot.cache.invalidate_vote_emojis(ctx.guild_id)
         await ctx.respond(
-            f"Created starboard '{sb.name}' in <#{self.channel.id}>."
+            f"Created starboard '{name}' in <#{self.channel.id}>."
         )
 
 
@@ -248,15 +249,16 @@ class RenameStarboard:
         assert ctx.guild_id
         starboard = await Starboard.from_name(ctx.guild_id, self.starboard)
         old_name = starboard.name
-        starboard.name = self.name
+        name = clean_name(self.name)
+        starboard.name = name
         try:
             await starboard.save()
         except asyncpg.UniqueViolationError:
             raise StarboardError(
-                f"A starboard with the name '{self.name}' already exists."
+                f"A starboard with the name '{name}' already exists."
             )
 
-        await ctx.respond(f"Renamed starboard '{old_name}' to '{self.name}'.")
+        await ctx.respond(f"Renamed starboard '{old_name}' to '{name}'.")
 
 
 async def _update_starboard(

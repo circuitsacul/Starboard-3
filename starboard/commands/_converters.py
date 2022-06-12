@@ -47,6 +47,11 @@ def convert(key: str, dct: dict[str, Any], func: Callable[[Any], Any]) -> None:
         dct[key] = func(v)
 
 
+def clean_name(text: str) -> str:
+    text = text.lower().casefold().strip().replace(" ", "-")
+    return "".join(c for c in text if c.isalnum() or c in "-_")
+
+
 def any_emoji_str(text: str) -> str:
     with suppress(ValueError):
         return str(hikari.CustomEmoji.parse(text).id)

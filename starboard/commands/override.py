@@ -14,6 +14,7 @@ from starboard.exceptions import OverrideNotFound, StarboardError
 
 from ._autocomplete import override_autocomplete, starboard_autocomplete
 from ._checks import has_guild_perms
+from ._converters import clean_name
 from ._sb_config import (
     BaseEditStarboardBehavior,
     BaseEditStarboardEmbedStyle,
@@ -152,9 +153,10 @@ class CreateOverride:
                 "overrides per starboard."
             )
 
+        name = clean_name(self.name)
         o = Override(
             guild_id=ctx.guild_id,
-            name=self.name,
+            name=name,
             starboard_id=starboard.id,
             channel_ids=channel_list(self.channels, bot).valid,
             _overrides=ov._overrides if ov else "{}",
@@ -163,10 +165,10 @@ class CreateOverride:
             await o.create()
         except asyncpg.UniqueViolationError:
             raise StarboardError(
-                f"There is already an override with the name '{self.name}'."
+                f"There is already an override with the name '{name}'."
             )
 
-        await ctx.respond(f"Created override with name '{self.name}'.")
+        await ctx.respond(f"Created override with name '{name}'.")
 
 
 @plugin.include
@@ -319,16 +321,15 @@ class RenameOverride:
         if not ov:
             raise OverrideNotFound(self.orig)
 
-        ov.name = self.new
+        name = clean_name(self.new)
+        ov.name = name
         try:
             await ov.save()
         except asyncpg.UniqueViolationError:
             raise StarboardError(
-                f"There is already an override with the name '{self.new}'."
+                f"There is already an override with the name '{name}'."
             )
-        await ctx.respond(
-            f"Renamed the override '{self.orig}' to '{self.new}'."
-        )
+        await ctx.respond(f"Renamed the override '{self.orig}' to '{name}'.")
 
 
 @plugin.include

@@ -36,7 +36,7 @@ from starboard.views import Confirm
 
 from ._autocomplete import asc_autocomplete
 from ._checks import has_guild_perms
-from ._converters import any_emoji_list
+from ._converters import any_emoji_list, clean_name
 from ._utils import optiond, pretty_emoji_str
 
 if TYPE_CHECKING:
@@ -77,21 +77,21 @@ class CreateAutoStar:
                 + (" Get premium to increase this limit." if not ip else "")
             )
 
+        name = clean_name(self.name)
+
         try:
             await AutoStarChannel(
-                channel_id=self.channel.id,
-                guild_id=ctx.guild_id,
-                name=self.name,
+                channel_id=self.channel.id, guild_id=ctx.guild_id, name=name
             ).create()
         except UniqueViolationError:
             raise StarboardError(
-                f"An autostar channel with the name '{self.name}' already "
+                f"An autostar channel with the name '{name}' already "
                 "exists."
             )
 
         bot.database.asc.add(self.channel.id)
         await ctx.respond(
-            f"Created autostar channel '{self.name}' in <#{self.channel.id}>."
+            f"Created autostar channel '{name}' in <#{self.channel.id}>."
         )
 
 
@@ -217,11 +217,12 @@ class RenameAutoStar:
         assert ctx.guild_id
 
         asc = await AutoStarChannel.from_name(ctx.guild_id, self.autostar)
-        asc.name = self.name
+        name = clean_name(self.name)
+        asc.name = name
         await asc.save()
 
         await ctx.respond(
-            f"Renamed autostar channel '{self.autostar}' to '{self.name}'."
+            f"Renamed autostar channel '{self.autostar}' to '{name}'."
         )
 
 
