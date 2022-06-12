@@ -683,7 +683,7 @@ async def _migrate_role_bl(new: OrmCon, old: ApgCon, bot: GatewayBot) -> None:
                 return
 
             await newdb.PermRoleStarboard(
-                permrole_id=pr.role_id, starboard_id=sb.id, give_stars=wl
+                permrole_id=pr.role_id, starboard_id=sb.id, vote=wl
             ).create(new)
 
         for role in bl_roles:
