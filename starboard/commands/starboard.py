@@ -360,13 +360,13 @@ class EditStarboardStyle(BaseEditStarboardStyle):
         await ctx.respond(f"Settings for '{s.name}' updated.")
 
 
-upvote_emojis = starboards.sub_group(
+vote_emojis = starboards.sub_group(
     "emojis", "Modify upvote/downvote emojis for a starboard"
 )
 
 
 @plugin.include
-@upvote_emojis.child
+@vote_emojis.child
 @crescent.command(name="set-upvote", description="Set the upvote emojis")
 class SetUpvoteEmojis:
     starboard = crescent.option(
@@ -401,7 +401,7 @@ class SetUpvoteEmojis:
 
 
 @plugin.include
-@upvote_emojis.child
+@vote_emojis.child
 @crescent.command(name="set-downvote", description="Set the downvote emojis")
 class SetDownvoteEmojis:
     starboard = crescent.option(

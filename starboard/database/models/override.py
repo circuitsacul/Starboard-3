@@ -28,6 +28,7 @@ from typing import Any, Iterable
 from apgorm import ForeignKey, Model, types
 
 from starboard.config import CONFIG
+from starboard.exceptions import OverrideNotFound
 
 from ._converters import DecimalArrayC, DecimalC
 from ._validators import array_len, str_len
@@ -71,3 +72,10 @@ class Override(Model):
     def overrides(self, value: dict[str, Any]) -> None:
         self.__loaded_overrides = value
         self._overrides = json.dumps(value)
+
+    # methods
+    @staticmethod
+    async def from_name(guild_id: int, name: str) -> Override:
+        if ov := await Override.exists(guild_id=guild_id, name=name):
+            return ov
+        raise OverrideNotFound(name)
