@@ -41,6 +41,8 @@ import hikari
 from apgorm.connection import Connection as OrmCon
 from asyncpg.connection import Connection as ApgCon
 from hikari import GatewayBot
+from hikari.api.config import CacheComponents
+from hikari.impl.config import CacheSettings
 from tqdm import tqdm
 
 import starboard.database as newdb
@@ -72,31 +74,37 @@ async def migrate() -> None:
     olddb = OldDB()
     await olddb.connect()
 
-    bot = GatewayBot(CONFIG.discord_token)
+    bot = GatewayBot(
+        CONFIG.discord_token,
+        cache_settings=CacheSettings(
+            components=CacheComponents.GUILD_CHANNELS | CacheComponents.GUILDS
+        ),
+    )
     await bot.start()
 
     app = App(newdb, olddb, bot)
 
-    print("dropping indexes...")
-    with open("migrate/drop_indexes.sql") as f:
-        await newdb.execute(f.read(), [])
+    try:
+        print("dropping indexes...")
+        with open("migrate/drop_indexes.sql") as f:
+            await newdb.execute(f.read(), [])
 
-    await _run(app, _migrate_guilds)
-    await _run(app, _migrate_users)
-    await _run(app, _migrate_members)
-    await _run(app, _migrate_autostars)
-    await _run(app, _migrate_starboards)
-    await _run(app, _migrate_orig_messages)
-    await _run(app, _migrate_starboard_messages)
-    await _run(app, _migrate_reactions)
-    await _run(app, _migrate_xproles)
-    await _run(app, _migrate_posroles)
-    await _run(app, _migrate_channel_bl)
-    await _run(app, _migrate_role_bl)
-
-    print("creating indexes...")
-    with open("migrate/create_indexes.sql") as f:
-        await newdb.execute(f.read(), [])
+        await _run(app, _migrate_guilds)
+        await _run(app, _migrate_users)
+        await _run(app, _migrate_members)
+        await _run(app, _migrate_autostars)
+        await _run(app, _migrate_starboards)
+        await _run(app, _migrate_orig_messages)
+        await _run(app, _migrate_starboard_messages)
+        await _run(app, _migrate_reactions)
+        await _run(app, _migrate_xproles)
+        await _run(app, _migrate_posroles)
+        await _run(app, _migrate_channel_bl)
+        await _run(app, _migrate_role_bl)
+    finally:
+        print("creating indexes...")
+        with open("migrate/create_indexes.sql") as f:
+            await newdb.execute(f.read(), [])
 
     await bot.close()
 
