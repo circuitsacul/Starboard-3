@@ -110,7 +110,7 @@ class Config:
     guild_message_delete_cooldown: tuple[int, int] = (10, 10)
     guild_message_edit_cooldown: tuple[int, int] = (2, 20)
     guild_asc_cooldown: tuple[int, int] = (5, 10)
-    user_xpr_cooldown: tuple[int, int] = (10, 60)
+    user_xpr_cooldown: tuple[int, int] = (5, 60)
     guild_pr_cooldown: tuple[int, int] = (1, 60 * 5)
 
     # tasks
