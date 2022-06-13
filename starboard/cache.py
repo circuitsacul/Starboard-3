@@ -32,6 +32,7 @@ from hikari.impl.config import CacheSettings
 
 from starboard.config import CONFIG
 from starboard.database import Starboard
+from starboard.database.models.override import Override
 from starboard.undefined import UNDEF
 
 if TYPE_CHECKING:
@@ -101,9 +102,13 @@ class Cache(CacheImpl):
         _ge = self.__vote_emojis.get(gid, None)
         if _ge is None:
             sbs = await Starboard.fetch_query().where(guild_id=gid).fetchmany()
+            ovs = await Override.fetch_query().where(guild_id=gid).fetchmany()
             ge = set()
             for s in sbs:
                 ge = ge.union(s.upvote_emojis).union(s.downvote_emojis)
+            for ov in ovs:
+                ge = ge.union(ov.overrides.get("upvote_emojis", []))
+                ge = ge.union(ov.overrides.get("downvote_emojis", []))
 
             self.__vote_emojis[gid] = ge
             return ge
