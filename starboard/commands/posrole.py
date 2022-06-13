@@ -34,18 +34,17 @@ from starboard.core.posrole import update_posroles
 from starboard.database import PosRole, PosRoleMember, XPRole, goc_guild
 from starboard.exceptions import StarboardError
 
-from ._checks import has_guild_perms
+from ._checks import has_guild_perms, premium_guild
 
 if TYPE_CHECKING:
     from starboard.bot import Bot
 
 
-plugin = crescent.Plugin("posrole-commands")
-posrole = crescent.Group(
-    "posroles",
-    "Manage PosRoles",
-    [has_guild_perms(hikari.Permissions.MANAGE_ROLES)],
+plugin = crescent.Plugin(
+    "posrole-commands",
+    [has_guild_perms(hikari.Permissions.MANAGE_ROLES), premium_guild],
 )
+posrole = crescent.Group("posroles", "Manage PosRoles")
 
 
 @plugin.include
@@ -69,7 +68,6 @@ async def refresh_posroles(ctx: crescent.Context) -> None:
 
 
 @plugin.include
-@crescent.hook(has_guild_perms(hikari.Permissions.MANAGE_ROLES))
 @crescent.user_command(name="Refetch PosRoles")
 async def refretch_roles(ctx: crescent.Context, user: hikari.User) -> None:
     bot = cast("Bot", ctx.app)

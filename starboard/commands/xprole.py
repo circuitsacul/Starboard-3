@@ -32,22 +32,20 @@ from starboard.core.xprole import refresh_xpr
 from starboard.database import PosRole, XPRole, goc_guild
 from starboard.exceptions import StarboardError
 
-from ._checks import has_guild_perms
+from ._checks import has_guild_perms, premium_guild
 
 if TYPE_CHECKING:
     from starboard.bot import Bot
 
 
-plugin = crescent.Plugin("xprole-commands")
-xprole = crescent.Group(
-    "xproles",
-    "Manage XP roles",
-    [has_guild_perms(hikari.Permissions.MANAGE_ROLES)],
+plugin = crescent.Plugin(
+    "xprole-commands",
+    [has_guild_perms(hikari.Permissions.MANAGE_ROLES), premium_guild],
 )
+xprole = crescent.Group("xproles", "Manage XP roles")
 
 
 @plugin.include
-@crescent.hook(has_guild_perms(hikari.Permissions.MANAGE_ROLES))
 @crescent.user_command(name="Refresh XProles")
 async def refresh_xproles(ctx: crescent.Context, user: hikari.User) -> None:
     bot = cast("Bot", ctx.app)

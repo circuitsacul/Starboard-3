@@ -28,6 +28,7 @@ import crescent
 import hikari
 
 from starboard.config import CONFIG
+from starboard.database import Guild
 
 
 async def owner_only(ctx: crescent.Context) -> crescent.HookResult | None:
@@ -44,6 +45,20 @@ async def guild_only(ctx: crescent.Context) -> crescent.HookResult | None:
             "This command can only be used inside servers.", ephemeral=True
         )
         return crescent.HookResult(True)
+
+    return None
+
+
+async def premium_guild(ctx: crescent.Context) -> crescent.HookResult | None:
+    await guild_only(ctx)
+    assert ctx.guild_id is not None
+
+    guild = await Guild.exists(guild_id=ctx.guild_id)
+    if not guild or guild.premium_end is None:
+        await ctx.respond(
+            "This command can only be used in premium servers.", ephemeral=True
+        )
+        return crescent.HookResult(exit=True)
 
     return None
 
