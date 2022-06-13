@@ -106,7 +106,7 @@ class Config:
 
     # functionality cooldowns
     guild_vote_cooldown: tuple[int, int] = (500, 30)
-    guild_message_send_cooldown: tuple[int, int] = (10, 10)
+    guild_message_send_cooldown: tuple[int, int] = (10, 60*5)
     guild_message_delete_cooldown: tuple[int, int] = (10, 10)
     guild_message_edit_cooldown: tuple[int, int] = (2, 20)
     guild_asc_cooldown: tuple[int, int] = (5, 10)
