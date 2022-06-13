@@ -57,7 +57,7 @@ def any_emoji_str(text: str) -> str:
         return str(hikari.CustomEmoji.parse(text).id)
 
     uc = str(hikari.UnicodeEmoji.parse(text))
-    if not emoji.is_emoji(uc):  # type: ignore
+    if not emoji.is_emoji(uc):
         raise StarboardError(f"'{uc}' is not a valid emoji.")
 
     return uc

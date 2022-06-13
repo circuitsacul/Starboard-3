@@ -182,7 +182,7 @@ async def _refresh_message_for_starboard(
         ).create()
     if sbmsg.sb_message_id is not None:
         sbmsg_obj = await bot.cache.gof_message(
-            sbmsg.starboard_id, sbmsg.sb_message_id
+            config.starboard.channel_id, sbmsg.sb_message_id
         )
     else:
         sbmsg_obj = None
@@ -278,8 +278,7 @@ async def _edit(
     embeds: list[hikari.Embed] | None,
     author_id: int,
 ) -> None:
-    assert message.guild_id
-    if EDIT_COOLDOWN.update_ratelimit(message.guild_id):
+    if EDIT_COOLDOWN.update_ratelimit(config.starboard.guild_id):
         return
 
     if message.author.id != bot.me.id:
@@ -310,8 +309,7 @@ DELETE_COOLDOWN: FixedCooldown[int] = FixedCooldown(
 async def _delete(
     bot: Bot, config: StarboardConfig, message: hikari.Message
 ) -> None:
-    assert message.guild_id
-    if DELETE_COOLDOWN.update_ratelimit(message.guild_id):
+    if DELETE_COOLDOWN.update_ratelimit(config.starboard.guild_id):
         return
 
     if message.author.id == bot.me.id:

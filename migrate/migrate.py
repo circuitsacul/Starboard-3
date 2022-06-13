@@ -221,7 +221,7 @@ async def _migrate_autostars(
             try:
                 int(name)
             except ValueError:
-                if not emoji.is_emoji(name):  # type: ignore
+                if not emoji.is_emoji(name):
                     bad_emojis += 1
                     continue
 
@@ -268,7 +268,7 @@ async def _migrate_starboards(
             try:
                 int(name)
             except ValueError:
-                if not emoji.is_emoji(name):  # type: ignore
+                if not emoji.is_emoji(name):
                     bad_emojis += 1
                     continue
 

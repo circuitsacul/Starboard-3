@@ -27,7 +27,7 @@ import re
 from typing import TYPE_CHECKING, Callable, Iterable, cast
 
 import humanize
-from hikari import UNDEFINED, Message, MessageType
+from hikari import UNDEFINED, Guild, Message, MessageType
 
 from .exceptions import StarboardError
 
@@ -39,8 +39,17 @@ def jump(guild: int, channel: int, message: int) -> str:
     return f"https://discord.com/channels/{guild}/{channel}/{message}"
 
 
+def get_guild(message: Message) -> Guild:
+    bot = cast("Bot", message.app)
+    if message.guild_id:
+        assert (guild := bot.cache.get_guild(message.guild_id))
+        return guild
+    assert (channel := bot.cache.get_guild_channel(message.channel_id))
+    assert (guild := bot.cache.get_guild(channel.guild_id))
+    return guild
+
+
 def rendered_content(msg: Message) -> str | None:
-    bot = cast("Bot", msg.app)
     if msg.type in {
         MessageType.DEFAULT,
         MessageType.REPLY,
@@ -106,9 +115,7 @@ def rendered_content(msg: Message) -> str | None:
         return f"{msg.author.username} just boosted the server!"
 
     if msg.type is MessageType.USER_PREMIUM_GUILD_SUBSCRIPTION_TIER_1:
-        assert msg.guild_id
-        guild = bot.cache.get_guild(msg.guild_id)
-        assert guild
+        guild = get_guild(msg)
         if msg.content:
             return (
                 f"{msg.author.username} just boosted the server "
@@ -120,9 +127,7 @@ def rendered_content(msg: Message) -> str | None:
         )
 
     if msg.type is MessageType.USER_PREMIUM_GUILD_SUBSCRIPTION_TIER_2:
-        assert msg.guild_id
-        guild = bot.cache.get_guild(msg.guild_id)
-        assert guild
+        guild = get_guild(msg)
         if msg.content:
             return (
                 f"{msg.author.username} just boosted the server "
@@ -134,9 +139,7 @@ def rendered_content(msg: Message) -> str | None:
         )
 
     if msg.type is MessageType.USER_PREMIUM_GUILD_SUBSCRIPTION_TIER_3:
-        assert msg.guild_id
-        guild = bot.cache.get_guild(msg.guild_id)
-        assert guild
+        guild = get_guild(msg)
         if msg.content:
             return (
                 f"{msg.author.username} just boosted the server "

@@ -39,7 +39,7 @@ def stored_to_emoji(
         if custom := bot.cache.get_emoji(int(e)):
             return custom
 
-    if emoji.is_emoji(em := hikari.UnicodeEmoji.parse(e)):  # type: ignore
+    if emoji.is_emoji(em := hikari.UnicodeEmoji.parse(e)):
         return em
 
     return None
