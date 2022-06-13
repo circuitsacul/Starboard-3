@@ -39,9 +39,7 @@ if TYPE_CHECKING:
 
 
 LOCK: set[int] = set()
-COOLDOWN: FixedCooldown[int] = FixedCooldown(
-    CONFIG.pr_cooldown_period, CONFIG.pr_cooldown_cap
-)
+COOLDOWN: FixedCooldown[int] = FixedCooldown(*CONFIG.guild_pr_cooldown)
 
 
 async def update_posroles(bot: Bot, guild_id: int) -> bool:

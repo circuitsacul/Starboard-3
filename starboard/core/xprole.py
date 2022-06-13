@@ -35,9 +35,7 @@ if TYPE_CHECKING:
     from starboard.bot import Bot
 
 
-COOLDOWN: FixedCooldown[int] = FixedCooldown(
-    CONFIG.xpr_cooldown_period, CONFIG.xpr_cooldown_cap
-)
+COOLDOWN: FixedCooldown[int] = FixedCooldown(*CONFIG.user_xpr_cooldown)
 
 
 async def refresh_xpr(bot: Bot, guild_id: int, user_id: int) -> bool:

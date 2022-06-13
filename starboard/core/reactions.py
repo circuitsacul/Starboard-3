@@ -47,9 +47,7 @@ if TYPE_CHECKING:
     from starboard.bot import Bot
 
 
-COOLDOWN: FixedCooldown[int] = FixedCooldown(
-    CONFIG.guild_vote_cooldown_period, CONFIG.guild_vote_cooldown_cap
-)
+COOLDOWN: FixedCooldown[int] = FixedCooldown(*CONFIG.guild_vote_cooldown)
 
 
 async def handle_reaction_add(event: hikari.GuildReactionAddEvent) -> None:

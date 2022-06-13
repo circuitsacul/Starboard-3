@@ -94,25 +94,24 @@ class Config:
     max_xp: int = 999_999_999
     min_xp: int = -999_999_999
     leaderboard_length: int = 50
-    asc_cooldown_cap: int = 5
-    asc_cooldown_period: int = 10
-    xpr_cooldown_cap: int = 10
-    xpr_cooldown_period: int = 60
-    pr_cooldown_cap: int = 1
-    pr_cooldown_period: int = 60 * 5
     refresh_xp_cap: int = 1
     refresh_xp_period: int = 60
-    edit_cooldown_cap: int = 3
-    edit_cooldown_period: int = 20
-    guild_vote_cooldown_cap: int = 500
-    guild_vote_cooldown_period: int = 30
     credits_per_month: int = 3
     days_per_month: int = 32  # just be safe
 
-    # cooldowns
+    # command cooldowns
     random_cooldown: tuple[int, int] = (5, 10)
     moststarred_cooldown: tuple[int, int] = (1, 10)
     global_cooldown: tuple[int, int] = (10, 10)
+
+    # functionality cooldowns
+    guild_vote_cooldown: tuple[int, int] = (500, 30)
+    guild_message_send_cooldown: tuple[int, int] = (10, 10)
+    guild_message_delete_cooldown: tuple[int, int] = (10, 10)
+    guild_message_edit_cooldown: tuple[int, int] = (2, 20)
+    guild_asc_cooldown: tuple[int, int] = (5, 10)
+    user_xpr_cooldown: tuple[int, int] = (10, 60)
+    guild_pr_cooldown: tuple[int, int] = (1, 60 * 5)
 
     # tasks
     check_expired_premium_delay: int = 60 * 60

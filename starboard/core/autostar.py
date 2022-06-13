@@ -40,9 +40,7 @@ if TYPE_CHECKING:
     from starboard.bot import Bot
 
 
-COOLDOWN: FixedCooldown[int] = FixedCooldown(
-    CONFIG.asc_cooldown_period, CONFIG.asc_cooldown_cap
-)
+COOLDOWN: FixedCooldown[int] = FixedCooldown(*CONFIG.guild_asc_cooldown)
 
 
 async def handle_message(event: hikari.GuildMessageCreateEvent) -> None:
