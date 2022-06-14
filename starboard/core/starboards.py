@@ -132,15 +132,10 @@ async def _refresh_message(
         )
     configs = [await get_config(s, orig_message.channel_id) for s in _s]
 
-    tasks: list[asyncio.Task] = []
     for c in configs:
-        t = asyncio.create_task(
-            _refresh_message_for_starboard(
-                bot, orig_message, c, force, premium
-            )
+        await _refresh_message_for_starboard(
+            bot, orig_message, c, force, premium
         )
-        tasks.append(t)
-    await asyncio.gather(*tasks)
 
 
 async def _refresh_message_for_starboard(
