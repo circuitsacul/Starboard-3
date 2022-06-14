@@ -74,7 +74,10 @@ async def get_leaderboard(
     q.order_by(Member.xp, reverse=True)
     ret = await q.fetchmany(limit=limit)
 
-    return {m.user_id: MemberStats(m.xp, x + 1) for x, m in enumerate(ret)}
+    return {
+        m.user_id: MemberStats(round(m.xp, 2), x + 1)
+        for x, m in enumerate(ret)
+    }
 
 
 @dataclass
