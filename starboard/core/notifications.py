@@ -23,9 +23,9 @@
 from __future__ import annotations
 
 from contextlib import suppress
-from typing import TYPE_CHECKING, cast
+from typing import TYPE_CHECKING
 
-from hikari import ButtonStyle, ForbiddenError, NotFoundError, User
+from hikari import BadRequestError, ButtonStyle, ForbiddenError
 
 from starboard.config import CONFIG
 
@@ -33,25 +33,42 @@ if TYPE_CHECKING:
     from starboard.bot import Bot
 
 
-async def notify(user: User, text: str) -> None:
-    row = user.app.rest.build_action_row()
+async def _dm_channel(app: Bot, user_id: int) -> int | None:
+    if (ch := app.cache.get_dm_channel_id(user_id)) is not None:
+        return ch
+
+    try:
+        ch = (await app.rest.create_dm_channel(user_id)).id
+    except BadRequestError:
+        return None
+    app.cache.set_dm_channel_id(user_id, ch)
+    return ch
+
+
+async def notify(app: Bot, user_id: int, text: str) -> None:
+    row = app.rest.build_action_row()
     button = row.add_button(ButtonStyle.SECONDARY, "none.dismiss")
     button.set_label("Dismiss")
     button.add_to_container()
 
     if CONFIG.dev_notify is not None:
-        dest = await cast("Bot", user.app).cache.gof_user(CONFIG.dev_notify)
+        dest = await _dm_channel(app, CONFIG.dev_notify)
         if not dest:
             print(
                 f"Couldn't find user {CONFIG.dev_notify}, skipping "
                 "notification."
             )
             return
-        await dest.send(f"Notifying <@{user.id}> | `{user.id}`", component=row)
-        user = dest
+        await app.rest.create_message(
+            dest, f"Notifying <@{user_id}> | `{user_id}`", component=row
+        )
     elif CONFIG.development:
         print("Skipping notification (development mode)")
         return
+    else:
+        dest = await _dm_channel(app, user_id)
+        if not dest:
+            return
 
-    with suppress(ForbiddenError, NotFoundError):
-        await user.send(text, component=row)
+    with suppress(ForbiddenError):
+        await app.rest.create_message(dest, text, component=row)

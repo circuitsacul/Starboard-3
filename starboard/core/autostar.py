@@ -95,13 +95,15 @@ async def _handle_asc(
                 await message.delete()
 
             await notify(
-                message.author,
+                bot,
+                message.author.id,
                 f"Your message in <#{message.channel_id}> was deleted because "
                 "it didn't meet the requirements for that autostar channel. "
                 "Here is the content of your message:",
             )
             await notify(
-                message.author,
+                bot,
+                message.author.id,
                 message.content
                 or "Your message doesn't seem to have any text content.",
             )

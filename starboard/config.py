@@ -119,8 +119,8 @@ class Config:
     post_stats_delay: int = 60 * 10
 
     # cache
+    dm_channel_cache_size: int = 1_000
     member_cache_size: int = 1_000
-    user_null_cache_size: int = 1_000
     message_cache_size: int = 1_000
     message_null_cache_size: int = 1_000
     webhook_cache_size: int = 1_000

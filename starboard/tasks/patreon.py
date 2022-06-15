@@ -154,9 +154,7 @@ async def _notify_for_status(user: User, bot: Bot) -> None:
             "link to the support server by running `/help`."
         )
 
-    obj = await bot.cache.gof_user(user.user_id)
-    if obj is not None:
-        await notify(obj, msg)
+    await notify(bot, user.user_id, msg)
 
 
 async def _get_session() -> aiohttp.ClientSession:

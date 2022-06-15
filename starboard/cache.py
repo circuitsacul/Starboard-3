@@ -50,8 +50,10 @@ class Cache(CacheImpl):
                 | CacheComponents.MESSAGES
                 | CacheComponents.ME
                 | CacheComponents.MEMBERS
+                | CacheComponents.DM_CHANNEL_IDS
             ),
             max_messages=CONFIG.message_cache_size,
+            max_dm_channel_ids=CONFIG.dm_channel_cache_size,
         )
         super().__init__(app, settings=settings)
 
@@ -65,9 +67,6 @@ class Cache(CacheImpl):
         self.__webhooks: LFUCache[int, hikari.ExecutableWebhook] = LFUCache(
             CONFIG.webhook_cache_size
         )
-        self.__null_users: LFUCache[int, None] = LFUCache(
-            CONFIG.user_null_cache_size
-        )
 
         # db side
         self.__vote_emojis: LFUCache[int, set[str]] = LFUCache(
@@ -79,11 +78,11 @@ class Cache(CacheImpl):
 
     def clear_safe(self) -> None:
         self.__null_messages.clear()
-        self.__null_users.clear()
         self.__members.clear()
         self.__webhooks.clear()
         self.__vote_emojis.clear()
         self.clear_messages()
+        self.clear_dm_channel_ids()
 
     def clear(self) -> None:
         self.clear_safe()
@@ -129,26 +128,6 @@ class Cache(CacheImpl):
         assert isinstance(obj, hikari.ExecutableWebhook)
 
         self.__webhooks[wh_id] = obj
-        return obj
-
-    async def gof_user(
-        self, user: hikari.SnowflakeishOr[hikari.PartialUser]
-    ) -> hikari.User | None:
-        uid = int(user)
-
-        if (ic := self.get_user(uid)) is not None:
-            return ic
-
-        if (c := self.__null_users.get(uid, UNDEF.UNDEF)) is not UNDEF.UNDEF:
-            return c
-
-        try:
-            obj = await self._app.rest.fetch_user(uid)
-        except hikari.NotFoundError:
-            self.__null_users[uid] = None
-            return None
-
-        self._set_user(obj)
         return obj
 
     def get_member(

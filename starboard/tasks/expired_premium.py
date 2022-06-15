@@ -81,7 +81,8 @@ async def _check_for_server(bot: Bot, g: Guild, now: datetime) -> None:
         return
 
     await notify(
-        member.user,
+        bot,
+        member.user.id,
         f"You have autoredeem enabled in {guild.name}, so "
         f"{CONFIG.credits_per_month} credits were taken from your account to "
         "redeem premium. You can disable autoredeem by running `/premium "
