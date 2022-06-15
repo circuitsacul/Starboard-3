@@ -29,15 +29,7 @@ import hikari
 
 from starboard.config import CONFIG
 from starboard.core.premium import redeem, update_prem_locks
-from starboard.database import (
-    AutoStarChannel,
-    Guild,
-    Member,
-    Starboard,
-    User,
-    goc_guild,
-    goc_member,
-)
+from starboard.database import AutoStarChannel, Guild, Member, Starboard, User
 from starboard.exceptions import StarboardError
 from starboard.views import Confirm
 
@@ -223,7 +215,7 @@ class Redeem:
             await ctx.edit("Cancelled.", components=[])
             return
 
-        g = await goc_guild(ctx.guild_id)
+        g = await Guild.get_or_create(ctx.guild_id)
         u = await User.exists(user_id=ctx.user.id)
         if not u:
             await ctx.edit("You don't have enough credits.", components=[])
@@ -259,7 +251,7 @@ ar = prem.sub_group("autoredeem", "Manage autoredeem")
 @crescent.command(name="enable", description="Enables autoredeem for a server")
 async def enable_autoredeem(ctx: crescent.Context) -> None:
     assert ctx.guild_id
-    m = await goc_member(ctx.guild_id, ctx.user.id, ctx.user.is_bot)
+    m = await Member.get_or_create(ctx.guild_id, ctx.user.id, ctx.user.is_bot)
     if m.autoredeem_enabled:
         raise StarboardError("Autoredeem is already enabled in this server.")
     m.autoredeem_enabled = True

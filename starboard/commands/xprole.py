@@ -29,7 +29,7 @@ import hikari
 
 from starboard.config import CONFIG
 from starboard.core.xprole import refresh_xpr
-from starboard.database import PosRole, XPRole, goc_guild
+from starboard.database import Guild, PosRole, XPRole
 from starboard.exceptions import StarboardError
 
 from ._checks import has_guild_perms, premium_guild
@@ -79,7 +79,7 @@ class AddXPRole:
 
     async def callback(self, ctx: crescent.Context) -> None:
         assert ctx.guild_id
-        await goc_guild(ctx.guild_id)
+        await Guild.get_or_create(ctx.guild_id)
 
         # check if the role can be managed
         if (

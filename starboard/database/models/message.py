@@ -30,33 +30,8 @@ from asyncpg import UniqueViolationError
 
 from ._converters import DecimalC, NonNullArray
 from .guild import Guild
-from .member import goc_member
+from .member import Member
 from .user import User
-
-
-async def goc_message(
-    guild_id: int,
-    channel_id: int,
-    message_id: int,
-    is_nsfw: bool,
-    author_id: int,
-    is_author_bot: bool,
-) -> Message:
-    if (m := await Message.exists(message_id=message_id)) is not None:
-        return m
-
-    await goc_member(guild_id, author_id, is_author_bot)
-
-    try:
-        return await Message(
-            guild_id=guild_id,
-            author_id=author_id,
-            channel_id=channel_id,
-            message_id=message_id,
-            is_nsfw=is_nsfw,
-        ).create()
-    except UniqueViolationError:
-        return await Message.fetch(message_id=message_id)
 
 
 class Message(apgorm.Model):
@@ -82,3 +57,29 @@ class Message(apgorm.Model):
     author_id_fk = apgorm.ForeignKey(author_id, User.user_id)
 
     primary_key = (message_id,)
+
+    # methods
+    @staticmethod
+    async def get_or_create(
+        guild_id: int,
+        channel_id: int,
+        message_id: int,
+        is_nsfw: bool,
+        author_id: int,
+        is_author_bot: bool,
+    ) -> Message:
+        if (m := await Message.exists(message_id=message_id)) is not None:
+            return m
+
+        await Member.get_or_create(guild_id, author_id, is_author_bot)
+
+        try:
+            return await Message(
+                guild_id=guild_id,
+                author_id=author_id,
+                channel_id=channel_id,
+                message_id=message_id,
+                is_nsfw=is_nsfw,
+            ).create()
+        except UniqueViolationError:
+            return await Message.fetch(message_id=message_id)

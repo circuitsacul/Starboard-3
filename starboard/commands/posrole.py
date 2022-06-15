@@ -31,7 +31,7 @@ from asyncpg import UniqueViolationError
 
 from starboard.config import CONFIG
 from starboard.core.posrole import update_posroles
-from starboard.database import PosRole, PosRoleMember, XPRole, goc_guild
+from starboard.database import Guild, PosRole, PosRoleMember, XPRole
 from starboard.exceptions import StarboardError
 
 from ._checks import has_guild_perms, premium_guild
@@ -128,7 +128,7 @@ class CreatePosRole:
 
     async def callback(self, ctx: crescent.Context) -> None:
         assert ctx.guild_id
-        await goc_guild(ctx.guild_id)
+        await Guild.get_or_create(ctx.guild_id)
 
         # check if the role can be managed
         if (

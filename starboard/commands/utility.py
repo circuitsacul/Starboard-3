@@ -32,7 +32,7 @@ from starboard.commands._converters import msg_ch_id, orig_msg_from_link
 from starboard.core.config import get_config
 from starboard.core.messages import get_orig_message
 from starboard.core.starboards import refresh_message
-from starboard.database import Message, SBMessage, Starboard, goc_message
+from starboard.database import Message, SBMessage, Starboard
 from starboard.exceptions import StarboardError
 from starboard.utils import jump
 from starboard.views import Paginator
@@ -208,7 +208,7 @@ async def toggle_trashed(
         channel = await bot.cache.gof_guild_channel_wnsfw(message.channel_id)
         assert channel
         assert channel.is_nsfw is not None
-        msg = await goc_message(
+        msg = await Message.get_or_create(
             ctx.guild_id,
             channel.id,
             message.id,
@@ -259,7 +259,7 @@ class ForceMessage:
             assert channel
             assert channel.is_nsfw is not None
             assert ctx.guild_id
-            msg = await goc_message(
+            msg = await Message.get_or_create(
                 ctx.guild_id,
                 channel.id,
                 obj.id,
@@ -369,7 +369,7 @@ async def force_message(
         assert channel
         assert channel.is_nsfw is not None
 
-        msg = await goc_message(
+        msg = await Message.get_or_create(
             ctx.guild_id,
             channel.id,
             obj.id,

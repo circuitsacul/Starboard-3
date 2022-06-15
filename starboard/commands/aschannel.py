@@ -29,7 +29,7 @@ import hikari
 from asyncpg import UniqueViolationError
 
 from starboard.config import CONFIG
-from starboard.database import AutoStarChannel, Guild, goc_guild
+from starboard.database import AutoStarChannel, Guild
 from starboard.exceptions import StarboardError
 from starboard.undefined import UNDEF
 from starboard.views import Confirm
@@ -66,7 +66,7 @@ class CreateAutoStar:
         bot = cast("Bot", ctx.app)
         assert ctx.guild_id
 
-        guild = await goc_guild(ctx.guild_id)
+        guild = await Guild.get_or_create(ctx.guild_id)
         ip = guild.premium_end is not None
         limit = CONFIG.max_autostar if ip else CONFIG.np_max_autostar
         count = await AutoStarChannel.count(guild_id=ctx.guild_id)

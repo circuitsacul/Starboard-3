@@ -31,13 +31,7 @@ import hikari
 from starboard.commands._converters import any_emoji_list
 from starboard.config import CONFIG
 from starboard.core.config import StarboardConfig
-from starboard.database import (
-    Guild,
-    Override,
-    Starboard,
-    goc_guild,
-    validate_sb_changes,
-)
+from starboard.database import Guild, Override, Starboard, validate_sb_changes
 from starboard.exceptions import StarboardError
 from starboard.undefined import UNDEF
 from starboard.views import Confirm
@@ -171,7 +165,7 @@ class CreateStarboard:
     async def callback(self, ctx: crescent.Context) -> None:
         bot = cast("Bot", ctx.app)
         assert ctx.guild_id
-        guild = await goc_guild(ctx.guild_id)
+        guild = await Guild.get_or_create(ctx.guild_id)
         ip = guild.premium_end is not None
 
         limit = CONFIG.max_starboards if ip else CONFIG.np_max_starboards

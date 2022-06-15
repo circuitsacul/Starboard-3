@@ -33,7 +33,7 @@ from starboard.config import CONFIG
 from starboard.core.leaderboard import refresh_xp
 from starboard.core.posrole import update_posroles
 from starboard.core.xprole import refresh_xpr
-from starboard.database import Guild, Starboard, goc_member, goc_message
+from starboard.database import Guild, Member, Message, Starboard
 from starboard.database.models.user import User
 
 from .config import StarboardConfig, get_config
@@ -79,7 +79,7 @@ async def handle_reaction_add(event: hikari.GuildReactionAddEvent) -> None:
             return
         assert channel.is_nsfw is not None
 
-        orig_msg = await goc_message(
+        orig_msg = await Message.get_or_create(
             event.guild_id,
             event.channel_id,
             event.message_id,
@@ -89,7 +89,9 @@ async def handle_reaction_add(event: hikari.GuildReactionAddEvent) -> None:
         )
 
     # data for the person who reacted
-    await goc_member(event.guild_id, event.member.id, event.member.is_bot)
+    await Member.get_or_create(
+        event.guild_id, event.member.id, event.member.is_bot
+    )
 
     author = await User.fetch(user_id=orig_msg.author_id)
     author_obj = await bot.cache.gof_member(event.guild_id, author.user_id)

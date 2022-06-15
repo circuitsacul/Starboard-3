@@ -33,13 +33,7 @@ import aiohttp
 from starboard.config import CONFIG
 from starboard.core.notifications import notify
 from starboard.core.premium import update_supporter_roles
-from starboard.database import (
-    PatreonStatus,
-    Patron,
-    User,
-    goc_patron,
-    goc_user,
-)
+from starboard.database import PatreonStatus, Patron, User
 
 if TYPE_CHECKING:
     from starboard.bot import Bot
@@ -88,7 +82,7 @@ async def _update_patrons(bot: Bot) -> None:
     all_patrons = await _get_all_patrons()
     for p in all_patrons:
         if p.discord_id:
-            user = await goc_user(p.discord_id, False)
+            user = await User.get_or_create(p.discord_id, False)
             if user.patreon_status is not p.status:
                 user.patreon_status = p.status
                 await user.save()
@@ -96,7 +90,7 @@ async def _update_patrons(bot: Bot) -> None:
         else:
             user = None
 
-        patron = await goc_patron(p.patreon_id)
+        patron = await Patron.get_or_create(p.patreon_id)
         if patron.discord_id != p.discord_id:
             patron.discord_id = p.discord_id
             await patron.save()

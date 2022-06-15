@@ -32,23 +32,8 @@ from starboard.config import CONFIG
 
 from ._converters import DecimalC
 from ._validators import num_range
-from .guild import Guild, goc_guild
-from .user import User, goc_user
-
-
-async def goc_member(guild_id: int, user_id: int, is_bot: bool) -> Member:
-    if (
-        m := await Member.exists(guild_id=guild_id, user_id=user_id)
-    ) is not None:
-        return m
-
-    await goc_guild(guild_id)
-    await goc_user(user_id, is_bot)
-
-    try:
-        return await Member(guild_id=guild_id, user_id=user_id).create()
-    except UniqueViolationError:
-        return await Member.fetch(guild_id=guild_id, user_id=user_id)
+from .guild import Guild
+from .user import User
 
 
 class Member(apgorm.Model):
@@ -67,3 +52,21 @@ class Member(apgorm.Model):
     primary_key = (user_id, guild_id)
 
     xp.add_validator(num_range("XP", CONFIG.min_xp, CONFIG.max_xp))
+
+    # methods
+    @staticmethod
+    async def get_or_create(
+        guild_id: int, user_id: int, is_bot: bool
+    ) -> Member:
+        if (
+            m := await Member.exists(guild_id=guild_id, user_id=user_id)
+        ) is not None:
+            return m
+
+        await Guild.get_or_create(guild_id)
+        await User.get_or_create(user_id, is_bot)
+
+        try:
+            return await Member(guild_id=guild_id, user_id=user_id).create()
+        except UniqueViolationError:
+            return await Member.fetch(guild_id=guild_id, user_id=user_id)

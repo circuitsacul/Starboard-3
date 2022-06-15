@@ -31,13 +31,6 @@ from asyncpg import UniqueViolationError
 from ._converters import DecimalC
 
 
-async def goc_guild(guild_id: int) -> Guild:
-    try:
-        return await Guild(guild_id=guild_id).create()
-    except UniqueViolationError:
-        return await Guild.fetch(guild_id=guild_id)
-
-
 class Guild(apgorm.Model):
     __slots__: Iterable[str] = ()
 
@@ -48,3 +41,11 @@ class Guild(apgorm.Model):
 
     # primary key
     primary_key = (guild_id,)
+
+    # methods
+    @staticmethod
+    async def get_or_create(guild_id: int) -> Guild:
+        try:
+            return await Guild(guild_id=guild_id).create()
+        except UniqueViolationError:
+            return await Guild.fetch(guild_id=guild_id)

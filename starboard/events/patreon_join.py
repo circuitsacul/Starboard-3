@@ -29,7 +29,7 @@ import hikari
 
 from starboard.config import CONFIG
 from starboard.core.premium import update_supporter_roles
-from starboard.database import goc_user
+from starboard.database import User
 
 if TYPE_CHECKING:
     from starboard.bot import Bot
@@ -44,5 +44,5 @@ async def on_member_join(event: hikari.MemberCreateEvent) -> None:
     if event.guild_id is None or event.guild_id != CONFIG.main_guild:
         return
 
-    user = await goc_user(event.user.id, event.user.is_bot)
+    user = await User.get_or_create(event.user.id, event.user.is_bot)
     await update_supporter_roles(cast("Bot", event.app), user)

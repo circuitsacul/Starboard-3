@@ -31,7 +31,7 @@ import hikari
 from starboard.commands._converters import disid
 from starboard.config import CONFIG
 from starboard.core.permrole import get_permroles
-from starboard.database import PermRole, Starboard, goc_guild
+from starboard.database import Guild, PermRole, Starboard
 from starboard.database.models.permrole import PermRoleStarboard
 from starboard.exceptions import StarboardError
 from starboard.undefined import UNDEF
@@ -113,7 +113,7 @@ class CreatePermRole:
                 f"You can only have up to {CONFIG.max_permroles} PermRoles."
             )
 
-        await goc_guild(ctx.guild_id)
+        await Guild.get_or_create(ctx.guild_id)
         try:
             await PermRole(
                 role_id=self.role.id, guild_id=ctx.guild_id

@@ -31,7 +31,7 @@ from hikari_clusters import callbacks, payload
 
 from starboard.config import CONFIG
 from starboard.constants import MESSAGE_LEN
-from starboard.database import goc_user
+from starboard.database import User
 from starboard.exceptions import StarboardError
 from starboard.stats import post_stats
 from starboard.tasks.patreon import _get_all_patrons
@@ -130,7 +130,7 @@ class GiveCredits:
         except hikari.NotFoundError:
             raise StarboardError(f"No user with id {uid} was found.")
 
-        u = await goc_user(uid, obj.is_bot)
+        u = await User.get_or_create(uid, obj.is_bot)
         u.credits = u.credits + self.credits
         await u.save()
         await ctx.respond(

@@ -32,20 +32,6 @@ from asyncpg import UniqueViolationError
 from ._converters import DecimalC, NullDecimalC
 
 
-async def goc_user(user_id: int, is_bot: bool) -> User:
-    try:
-        return await User(user_id=user_id, is_bot=is_bot).create()
-    except UniqueViolationError:
-        return await User.fetch(user_id=user_id)
-
-
-async def goc_patron(patreon_id: str) -> Patron:
-    try:
-        return await Patron(patreon_id=patreon_id).create()
-    except UniqueViolationError:
-        return await Patron.fetch(patreon_id=patreon_id)
-
-
 class PatreonStatus(IntEnum):
     NONE = 0
     ACTIVE = 1
@@ -71,6 +57,14 @@ class User(apgorm.Model):
 
     primary_key = (user_id,)
 
+    # methods
+    @staticmethod
+    async def get_or_create(user_id: int, is_bot: bool) -> User:
+        try:
+            return await User(user_id=user_id, is_bot=is_bot).create()
+        except UniqueViolationError:
+            return await User.fetch(user_id=user_id)
+
 
 class Patron(apgorm.Model):
     __slots__: Iterable[str] = ()
@@ -80,3 +74,11 @@ class Patron(apgorm.Model):
     last_patreon_total_cents = types.BigInt().field(default=0)
 
     primary_key = (patreon_id,)
+
+    # methods
+    @staticmethod
+    async def get_or_create(patreon_id: str) -> Patron:
+        try:
+            return await Patron(patreon_id=patreon_id).create()
+        except UniqueViolationError:
+            return await Patron.fetch(patreon_id=patreon_id)

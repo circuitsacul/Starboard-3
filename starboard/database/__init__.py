@@ -22,15 +22,15 @@
 
 from .database import Database
 from .models.aschannel import AutoStarChannel
-from .models.guild import Guild, goc_guild
-from .models.member import Member, goc_member
-from .models.message import Message, goc_message
+from .models.guild import Guild
+from .models.member import Member
+from .models.message import Message
 from .models.override import Override
 from .models.permrole import PermRole, PermRoleStarboard
 from .models.posrole import PosRole, PosRoleMember
 from .models.sb_message import SBMessage
 from .models.starboard import Starboard, validate_sb_changes
-from .models.user import PatreonStatus, Patron, User, goc_patron, goc_user
+from .models.user import PatreonStatus, Patron, User
 from .models.vote import Vote
 from .models.xprole import XPRole
 
@@ -52,10 +52,5 @@ __all__ = (
     "Patron",
     "PatreonStatus",
     "XPRole",
-    "goc_guild",
-    "goc_member",
-    "goc_message",
-    "goc_user",
-    "goc_patron",
     "validate_sb_changes",
 )
