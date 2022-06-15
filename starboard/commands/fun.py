@@ -45,7 +45,7 @@ if TYPE_CHECKING:
     from starboard.bot import Bot
 
 
-plugin = crescent.Plugin("fun")
+plugin = crescent.Plugin()
 
 
 @plugin.include

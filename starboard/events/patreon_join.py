@@ -35,7 +35,7 @@ if TYPE_CHECKING:
     from starboard.bot import Bot
 
 
-plugin = crescent.Plugin("patreon-join-events")
+plugin = crescent.Plugin()
 
 
 @plugin.include

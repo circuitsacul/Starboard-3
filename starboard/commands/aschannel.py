@@ -43,7 +43,7 @@ if TYPE_CHECKING:
     from starboard.bot import Bot
 
 
-plugin = crescent.Plugin("aschannel")
+plugin = crescent.Plugin()
 
 
 autostar = crescent.Group(

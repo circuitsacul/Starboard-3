@@ -44,7 +44,7 @@ if TYPE_CHECKING:
     from starboard.bot import Bot
 
 
-plugin = crescent.Plugin("permrole-commands")
+plugin = crescent.Plugin()
 permrole = crescent.Group(
     "permroles",
     "Manage permroles",

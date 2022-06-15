@@ -41,11 +41,10 @@ if TYPE_CHECKING:
 
 
 plugin = crescent.Plugin(
-    "posrole-commands",
     command_hooks=[
         has_guild_perms(hikari.Permissions.MANAGE_ROLES),
         premium_guild,
-    ],
+    ]
 )
 posrole = crescent.Group("posroles", "Manage PosRoles")
 

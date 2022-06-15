@@ -34,7 +34,7 @@ if TYPE_CHECKING:
     from starboard.bot import Bot
 
 
-plugin = crescent.Plugin("link-edit-events")
+plugin = crescent.Plugin()
 
 
 @plugin.include

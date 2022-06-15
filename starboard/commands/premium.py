@@ -40,7 +40,7 @@ if TYPE_CHECKING:
     from starboard.bot import Bot
 
 
-plugin = crescent.Plugin("premium-commands")
+plugin = crescent.Plugin()
 prem = crescent.Group("premium", "Premium-related commands")
 locks = prem.sub_group(
     "locks",

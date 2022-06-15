@@ -27,7 +27,7 @@ from apgorm.exceptions import InvalidFieldValue
 
 from starboard import exceptions
 
-plugin = crescent.Plugin("error-handler")
+plugin = crescent.Plugin()
 
 
 @plugin.include

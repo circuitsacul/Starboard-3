@@ -44,7 +44,7 @@ if TYPE_CHECKING:
     from starboard.bot import Bot
 
 
-plugin = crescent.Plugin("owner")
+plugin = crescent.Plugin()
 owner = crescent.Group("owner", "Owner only commands", hooks=[owner_only])
 
 

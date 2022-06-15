@@ -33,7 +33,7 @@ if TYPE_CHECKING:
     from starboard.bot import Bot
 
 
-plugin = crescent.Plugin("base-commands")
+plugin = crescent.Plugin()
 
 
 @plugin.include

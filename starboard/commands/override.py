@@ -27,7 +27,7 @@ if TYPE_CHECKING:
     from starboard.bot import Bot
 
 
-plugin = crescent.Plugin("overrides")
+plugin = crescent.Plugin()
 overrides = crescent.Group(
     "overrides",
     "Manage setting overrides",

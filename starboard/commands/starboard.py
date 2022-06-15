@@ -51,7 +51,7 @@ if TYPE_CHECKING:
     from starboard.bot import Bot
 
 
-plugin = crescent.Plugin("starboards")
+plugin = crescent.Plugin()
 
 
 starboards = crescent.Group(

@@ -25,7 +25,7 @@ from __future__ import annotations
 import crescent
 from hikari import ComponentInteraction, InteractionCreateEvent
 
-plugin = crescent.Plugin("dismiss-event")
+plugin = crescent.Plugin()
 
 
 @plugin.include

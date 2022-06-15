@@ -27,7 +27,7 @@ import hikari
 
 from starboard.core import reactions
 
-plugin = crescent.Plugin("reaction-events")
+plugin = crescent.Plugin()
 
 
 @plugin.include

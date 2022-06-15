@@ -27,7 +27,7 @@ import hikari
 
 from starboard.core import autostar
 
-plugin = crescent.Plugin("autostar-events")
+plugin = crescent.Plugin()
 
 
 @plugin.include

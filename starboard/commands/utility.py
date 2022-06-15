@@ -45,7 +45,7 @@ if TYPE_CHECKING:
 
 
 manage_messages = crescent.hook(has_guild_perms(Permissions.MANAGE_MESSAGES))
-plugin = crescent.Plugin("utility-commands")
+plugin = crescent.Plugin()
 utils = crescent.Group(
     "utils",
     "Utility Commands",
