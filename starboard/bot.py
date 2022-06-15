@@ -114,7 +114,8 @@ class Bot(crescent.Bot):
 
     @property
     def me(self) -> hikari.OwnUser:
-        assert (u := self.get_me())
+        u = self.get_me()
+        assert u
         return u
 
     async def session(self) -> aiohttp.ClientSession:

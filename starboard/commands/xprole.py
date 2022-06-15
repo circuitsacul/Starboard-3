@@ -40,7 +40,10 @@ if TYPE_CHECKING:
 
 plugin = crescent.Plugin(
     "xprole-commands",
-    [has_guild_perms(hikari.Permissions.MANAGE_ROLES), premium_guild],
+    command_hooks=[
+        has_guild_perms(hikari.Permissions.MANAGE_ROLES),
+        premium_guild,
+    ],
 )
 xprole = crescent.Group("xproles", "Manage XP roles")
 

@@ -2,7 +2,7 @@
 
 while true
 do
-    $1 -m poetry run python -m starboard $2
+    $1 -m poetry run python -OOm starboard $2
 
     echo "Hit CTRL+C to stop..."
     sleep 5

@@ -42,10 +42,13 @@ def jump(guild: int, channel: int, message: int) -> str:
 def get_guild(message: Message) -> Guild:
     bot = cast("Bot", message.app)
     if message.guild_id:
-        assert (guild := bot.cache.get_guild(message.guild_id))
+        guild = bot.cache.get_guild(message.guild_id)
+        assert guild
         return guild
-    assert (channel := bot.cache.get_guild_channel(message.channel_id))
-    assert (guild := bot.cache.get_guild(channel.guild_id))
+    channel = bot.cache.get_guild_channel(message.channel_id)
+    assert channel
+    guild = bot.cache.get_guild(channel.guild_id)
+    assert guild
     return guild
 
 

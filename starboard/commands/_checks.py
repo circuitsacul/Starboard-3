@@ -70,7 +70,8 @@ def has_guild_perms(
         await guild_only(ctx)
         assert ctx.guild_id is not None
         assert ctx.member is not None
-        assert isinstance(member := ctx.member, hikari.InteractionMember)
+        member = ctx.member
+        assert isinstance(member, hikari.InteractionMember)
 
         guild = ctx.app.cache.get_guild(ctx.guild_id)
         assert guild is not None

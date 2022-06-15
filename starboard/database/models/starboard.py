@@ -41,7 +41,9 @@ def _validate(
     key: str, changes: dict[str, Any], func: Callable[[Any], bool]
 ) -> None:
     if key in changes:
-        assert func(changes[key])
+        ret = func(changes[key])
+        if not ret:
+            raise RuntimeError("Validation failed.")
 
 
 def delta_range(name: str, max: int) -> Callable[[int], bool]:
