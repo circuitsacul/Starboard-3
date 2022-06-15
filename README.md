@@ -8,6 +8,7 @@ The best Discord Starboard, trusted by thousands of servers.
 ## Features
  - Multiple starboards per server
  - Multiple emojis per starboard
+ - 25+ configurable options for starboards
  - Per-channel setting overrides
  - Per-role permissions
  - Autostar channels
