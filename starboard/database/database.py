@@ -121,8 +121,6 @@ class Database(apgorm.Database):
             starboards, (starboards.guild_id, starboards.name), IndexType.BTREE
         ),
         Index(starboards, starboards.channel_id, IndexType.BTREE),
-        Index(starboards, starboards.upvote_emojis, IndexType.GIN),
-        Index(starboards, starboards.downvote_emojis, IndexType.GIN),
         # xproles
         Index(xproles, xproles.guild_id, IndexType.BTREE),
         # votes

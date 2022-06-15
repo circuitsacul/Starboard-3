@@ -221,8 +221,6 @@ CREATE INDEX _btree_index_permroles__guild_id ON permroles USING BTREE ( ( guild
 CREATE UNIQUE INDEX _btree_index_posroles__guild_id_max_members ON posroles USING BTREE ( ( guild_id ) , ( max_members ) );
 CREATE INDEX _btree_index_starboards__guild_id_name ON starboards USING BTREE ( ( guild_id ) , ( name ) );
 CREATE INDEX _btree_index_starboards__channel_id ON starboards USING BTREE ( ( channel_id ) );
-CREATE INDEX _gin_index_starboards__upvote_emojis ON starboards USING GIN ( ( upvote_emojis ) );
-CREATE INDEX _gin_index_starboards__downvote_emojis ON starboards USING GIN ( ( downvote_emojis ) );
 CREATE INDEX _btree_index_xproles__guild_id ON xproles USING BTREE ( ( guild_id ) );
 CREATE INDEX _btree_index_votes__starboard_id ON votes USING BTREE ( ( starboard_id ) );
 CREATE INDEX _btree_index_votes__user_id ON votes USING BTREE ( ( user_id ) );

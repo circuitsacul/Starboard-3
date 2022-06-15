@@ -890,14 +890,6 @@
             "raw_sql": "INDEX _btree_index_starboards__channel_id ON starboards USING BTREE ( ( channel_id ) )"
         },
         {
-            "name": "_gin_index_starboards__upvote_emojis",
-            "raw_sql": "INDEX _gin_index_starboards__upvote_emojis ON starboards USING GIN ( ( upvote_emojis ) )"
-        },
-        {
-            "name": "_gin_index_starboards__downvote_emojis",
-            "raw_sql": "INDEX _gin_index_starboards__downvote_emojis ON starboards USING GIN ( ( downvote_emojis ) )"
-        },
-        {
             "name": "_btree_index_xproles__guild_id",
             "raw_sql": "INDEX _btree_index_xproles__guild_id ON xproles USING BTREE ( ( guild_id ) )"
         },
