@@ -79,7 +79,6 @@ class ViewSettingOverrides:
                 name="Behavior", value=options.behavior, inline=True
             )
 
-            await ctx.respond(embed=embed)
         else:
             q = Override.fetch_query()
             q.where(guild_id=ctx.guild_id)
@@ -103,7 +102,7 @@ class ViewSettingOverrides:
                 title="Setting Overrides", description="\n".join(ret)
             )
 
-            await ctx.respond(embed=embed)
+        await ctx.respond(embed=embed)
 
 
 @plugin.include
@@ -165,7 +164,7 @@ class CreateOverride:
         except asyncpg.UniqueViolationError:
             raise StarboardError(
                 f"There is already an override with the name '{name}'."
-            )
+            ) from None
 
         await ctx.respond(f"Created override with name '{name}'.")
 
@@ -278,10 +277,11 @@ class ResetOverrideSettings:
 
         ov = await Override.from_name(ctx.guild_id, self.name)
 
-        options = set(
+        options = {
             o.strip().strip(",").replace("-", "_")
             for o in self.options.split()
-        )
+        }
+
         ovd = ov.overrides
         c = 0
         for o in options:
@@ -320,7 +320,7 @@ class RenameOverride:
         except asyncpg.UniqueViolationError:
             raise StarboardError(
                 f"There is already an override with the name '{name}'."
-            )
+            ) from None
         await ctx.respond(f"Renamed the override '{self.orig}' to '{name}'.")
 
 
@@ -426,8 +426,9 @@ class SetUpvoteEmojis:
         if len(upvote_emojis) + len(downvote_emojis) > limit:
             raise StarboardError(
                 f"You an only have up to {limit} emojis per starboard."
-                + (" Get premium to increase this." if not ip else "")
+                + ("" if ip else " Get premium to increase this.")
             )
+
         ov_data["upvote_emojis"] = list(upvote_emojis)
         ov_data["downvote_emojis"] = list(downvote_emojis)
         ov.overrides = ov_data
@@ -463,8 +464,9 @@ class SetDownvoteEmojis:
         if len(downvote_emojis) + len(upvote_emojis) > limit:
             raise StarboardError(
                 f"You an only have up to {limit} emojis per starboard."
-                + (" Get premium to increase this." if not ip else "")
+                + ("" if ip else " Get premium to increase this.")
             )
+
         ov_data["downvote_emojis"] = list(downvote_emojis)
         ov_data["upvote_emojis"] = list(upvote_emojis)
         ov.overrides = ov_data

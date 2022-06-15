@@ -117,18 +117,18 @@ class Cache(CacheImpl):
     async def gof_webhook(
         self, webhook_id: hikari.SnowflakeishOr[hikari.PartialWebhook]
     ) -> hikari.ExecutableWebhook | None:
-        id = int(webhook_id)
-        if (c := self.__webhooks.get(id)) is not None:
+        wh_id = int(webhook_id)
+        if (c := self.__webhooks.get(wh_id)) is not None:
             return c
 
         try:
-            obj = await self._app.rest.fetch_webhook(id)
+            obj = await self._app.rest.fetch_webhook(wh_id)
         except hikari.NotFoundError:
             return None
 
         assert isinstance(obj, hikari.ExecutableWebhook)
 
-        self.__webhooks[id] = obj
+        self.__webhooks[wh_id] = obj
         return obj
 
     async def gof_user(
@@ -182,18 +182,20 @@ class Cache(CacheImpl):
         channel: hikari.SnowflakeishOr[hikari.TextableChannel],
         message: hikari.SnowflakeishOr[hikari.PartialMessage],
     ) -> hikari.Message | None:
-        id = int(message)
+        msg_id = int(message)
 
-        if ic := self.get_message(id):
+        if ic := self.get_message(msg_id):
             return ic
 
-        if (c := self.__null_messages.get(id, UNDEF.UNDEF)) is not UNDEF.UNDEF:
+        if (
+            c := self.__null_messages.get(msg_id, UNDEF.UNDEF)
+        ) is not UNDEF.UNDEF:
             return c
 
         try:
-            obj = await self._app.rest.fetch_message(channel, id)
+            obj = await self._app.rest.fetch_message(channel, msg_id)
         except hikari.NotFoundError:
-            self.__null_messages[id] = None
+            self.__null_messages[msg_id] = None
             return None
 
         self.set_message(obj)
@@ -218,9 +220,9 @@ class Cache(CacheImpl):
     def delete_message(
         self, message: hikari.SnowflakeishOr[hikari.PartialMessage], /
     ) -> hikari.Message | None:
-        id = int(message)
-        self.__null_messages[id] = None
-        return super().delete_message(id)
+        msg_id = int(message)
+        self.__null_messages[msg_id] = None
+        return super().delete_message(msg_id)
 
     def delete_member(
         self,

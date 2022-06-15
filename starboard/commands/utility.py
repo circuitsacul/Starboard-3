@@ -396,7 +396,7 @@ async def unforce_message(
     if msg is None or not msg.forced_to:
         raise StarboardError("That message is not forced to any starboards.")
 
-    msg.forced_to = list()
+    msg.forced_to = []
     await msg.save()
     await ctx.respond("Message unforced from all starboards.", ephemeral=True)
     await refresh_message(bot, msg, force=True)

@@ -59,9 +59,8 @@ async def loop_update_patrons(bot: Bot) -> None:
         shard = (CONFIG.main_guild >> 22) % bot.cluster.shard_count
         if shard not in bot.cluster.shard_ids:
             return
-    else:
-        if bot.cluster.cluster_id != 0:
-            return
+    elif bot.cluster.cluster_id != 0:
+        return
 
     try:
         while True:
@@ -184,9 +183,9 @@ async def _get_all_patrons() -> list[PatronData]:
             _p = await _fetch(next_link)
         else:
             _p = await _fetch(
-                "https://www.patreon.com/api/oauth2/v2/campaigns/{}/members?"
-                "fields[member]=campaign_lifetime_support_cents,patron_status&"
-                "include=user&fields[user]=social_connections".format(campid)
+                f"https://www.patreon.com/api/oauth2/v2/campaigns/{campid}/"
+                "members?fields[member]=campaign_lifetime_support_cents,"
+                "patron_status&include=user&fields[user]=social_connections"
             )
 
         patrons.extend(

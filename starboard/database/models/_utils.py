@@ -34,11 +34,11 @@ async def goc(
 ) -> _T:
     ins = sql(
         raw(f"INSERT INTO {model.tablename}"),
-        join(raw(","), *(raw(n) for n in create_fields.keys()), wrap=True),
+        join(raw(","), *(raw(n) for n in create_fields), wrap=True),
         raw("VALUES"),
         join(raw(","), *create_fields.values(), wrap=True),
         raw("ON CONFLICT"),
-        join(raw(","), *(raw(n) for n in get_fields.keys()), wrap=True),
+        join(raw(","), *(raw(n) for n in get_fields), wrap=True),
         raw("DO NOTHING RETURNING *"),
     )
     sel = sql(

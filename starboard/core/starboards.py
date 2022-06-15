@@ -310,15 +310,13 @@ async def _delete(
     if message.author.id == bot.me.id:
         return await message.delete()
 
+    wh = await _webhook(bot, config, False)
+    if wh is None:
+        # try anyways. will work if bot has manage_messages
+        with suppress(hikari.ForbiddenError):
+            await message.delete()
     else:
-        wh = await _webhook(bot, config, False)
-        if wh is not None:
-            await wh.delete_message(message)
-
-        else:
-            # try anyways. will work if bot has manage_messages
-            with suppress(hikari.ForbiddenError):
-                await message.delete()
+        await wh.delete_message(message)
 
 
 SEND_COOLDOWN: FixedCooldown[int] = FixedCooldown(

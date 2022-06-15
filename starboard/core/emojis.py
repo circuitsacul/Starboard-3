@@ -46,6 +46,4 @@ def stored_to_emoji(
 
 
 def emoji_to_stored(e: hikari.CustomEmoji | hikari.UnicodeEmoji) -> str:
-    if isinstance(e, hikari.CustomEmoji):
-        return str(e.id)
-    return str(e)
+    return str(e.id) if isinstance(e, hikari.CustomEmoji) else str(e)

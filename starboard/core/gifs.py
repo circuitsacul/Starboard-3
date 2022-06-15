@@ -45,11 +45,9 @@ CACHE: LFUCache[str, str | None] = LFUCache(5_000)
 
 
 def _get_gif_id(url: str) -> Optional[tuple[str, str]]:
-    tenor_result = TENOR_PATTERN.match(url)
-    if tenor_result:
+    if tenor_result := TENOR_PATTERN.match(url):
         return tenor_result.groupdict()["id"], "tenor"
-    giphy_result = GIPHY_PATTERN.match(url)
-    if giphy_result:
+    if giphy_result := GIPHY_PATTERN.match(url):
         return giphy_result.groupdict()["id"], "giphy"
     return None
 

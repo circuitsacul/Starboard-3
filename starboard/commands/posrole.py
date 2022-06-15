@@ -166,7 +166,7 @@ class CreatePosRole:
             raise StarboardError(
                 "There is already a PosRole with max-members set to "
                 f"{self.members}."
-            )
+            ) from None
         await ctx.respond(f"**{self.role}** is now a PosRole.")
 
 
@@ -199,7 +199,7 @@ class SetPosRoleMembers:
             raise StarboardError(
                 "There is already a PosRole with max-members set to "
                 f"{self.members}."
-            )
+            ) from None
         await ctx.respond(
             f"Set the maximum members for **{self.posrole}** to "
             f"{self.members}."

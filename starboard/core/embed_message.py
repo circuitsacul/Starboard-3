@@ -45,7 +45,7 @@ def get_raw_message_text(
 ) -> str:
     text = ""
     if display_emoji:
-        text += display_emoji.mention + " "
+        text += f"{display_emoji.mention} "
 
     text += f"**{point_count} |** <#{channel_id}>"
 
@@ -175,8 +175,7 @@ async def _get_gifv(bot: Bot, embed: hikari.Embed) -> str | None:
 
 
 def _extract_main_content(message: hikari.Message) -> str | None:
-    content = rendered_content(message)
-    if content:
+    if content := rendered_content(message):
         return truncate(content, EMBED_DESC_LEN)
     return None
 

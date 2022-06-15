@@ -30,14 +30,10 @@ import apgorm
 
 class NullDecimalC(apgorm.Converter["Decimal | None", "int | None"]):
     def from_stored(self, value: Decimal | None) -> int | None:
-        if value is None:
-            return value
-        return int(value)
+        return value if value is None else int(value)
 
     def to_stored(self, value: int | None) -> Decimal | None:
-        if value is None:
-            return value
-        return Decimal(value)
+        return value if value is None else Decimal(value)
 
 
 class DecimalC(apgorm.Converter[Decimal, int]):

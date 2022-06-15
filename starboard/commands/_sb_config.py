@@ -227,11 +227,11 @@ def _parse_cooldown(text: str) -> tuple[int, float]:
     try:
         count = int(_c)
     except ValueError:
-        raise StarboardError(f"{_c} is not a valid integer.")
+        raise StarboardError(f"{_c} is not a valid integer.") from None
 
     try:
         secs = int(_s)
     except ValueError:
-        raise StarboardError(f"{_s} is not a valid integer.")
+        raise StarboardError(f"{_s} is not a valid integer.") from None
 
     return count, secs

@@ -122,13 +122,13 @@ class GiveCredits:
         try:
             uid = int(self.user)
         except ValueError:
-            raise StarboardError(f"{self.user} is not a valid id.")
+            raise StarboardError(f"{self.user} is not a valid id.") from None
 
         bot = cast("Bot", ctx.app)
         try:
             obj = await bot.rest.fetch_user(uid)
         except hikari.NotFoundError:
-            raise StarboardError(f"No user with id {uid} was found.")
+            raise StarboardError(f"No user with id {uid} was found.") from None
 
         u = await User.get_or_create(uid, obj.is_bot)
         u.credits = u.credits + self.credits
@@ -191,10 +191,9 @@ class EvalBroadcast:
         ret = await bot.cluster.ipc.send_command(
             bot.cluster.ipc.cluster_uids, "eval", {"code": self.code}
         )
-        pages: list[str] = []
-        for rid, pl in ret.items():
-            pages.append(_parse_response(rid, pl))
-
+        pages: list[str] = [
+            _parse_response(rid, pl) for rid, pl in ret.items()
+        ]
         if not pages:
             raise StarboardError("No responses were received.")
         paginator = Paginator(ctx.user.id, pages)
@@ -224,9 +223,9 @@ class ShellCommand:
             send_to, "run_shell", {"command": self.command}
         )
 
-        pages: list[str] = []
-        for rid, pl in ret.items():
-            pages.append(_parse_response(rid, pl, block=True))
+        pages: list[str] = [
+            _parse_response(rid, pl, block=True) for rid, pl in ret.items()
+        ]
 
         if not pages:
             raise StarboardError("No responses were received.")

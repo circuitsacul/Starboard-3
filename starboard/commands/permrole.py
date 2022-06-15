@@ -72,8 +72,7 @@ async def view_permroles(ctx: crescent.Context) -> None:
 
     embed = bot.embed(title="PermRoles")
     for r in pr:
-        obj = ctx.guild.get_role(r.permrole.role_id)
-        if obj:
+        if obj := ctx.guild.get_role(r.permrole.role_id):
             name = obj.name
         else:
             name = f"Deleted Role {r.permrole.role_id}"
@@ -119,7 +118,9 @@ class CreatePermRole:
                 role_id=self.role.id, guild_id=ctx.guild_id
             ).create()
         except asyncpg.UniqueViolationError:
-            raise StarboardError(f"**{self.role}** is already a PermRole.")
+            raise StarboardError(
+                f"**{self.role}** is already a PermRole."
+            ) from None
 
         await ctx.respond(f"**{self.role}** is now a PermRole.")
 
@@ -147,12 +148,7 @@ class DeletePermRole:
                 "You can only specify either the role or the ID."
             )
 
-        roleid: int
-        if self.permrole:
-            roleid = self.permrole.id
-        else:
-            roleid = disid(self.permrole_id)
-
+        roleid = self.permrole.id if self.permrole else disid(self.permrole_id)
         ret = (
             await PermRole.delete_query()
             .where(role_id=roleid, guild_id=ctx.guild_id)
@@ -237,7 +233,9 @@ class EditPermRoleStarboard:
                 permrole_id=self.permrole.id, starboard_id=sb.id
             ).create()
         except asyncpg.ForeignKeyViolationError:
-            raise StarboardError(f"**{self.permrole}** is not a PermRole.")
+            raise StarboardError(
+                f"**{self.permrole}** is not a PermRole."
+            ) from None
         except asyncpg.UniqueViolationError:
             pr = await PermRoleStarboard.fetch(
                 permrole_id=self.permrole.id, starboard_id=sb.id

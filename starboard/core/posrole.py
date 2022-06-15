@@ -102,7 +102,7 @@ async def _get_updates(
     )
     wanted: dict[int, set[int]] = {}
     for p in posroles:
-        uids = leaderboard[0 : p.max_members]
+        uids = leaderboard[: p.max_members]
         leaderboard = leaderboard[p.max_members :]
         wanted[p.role_id] = set(uids)
 

@@ -90,12 +90,9 @@ async def is_vote_valid_for(
     if not adder_perms.vote:
         return False
 
-    author_roles: set[int]
-    if author_obj:
-        author_roles = set(author_obj.role_ids)
-    else:
-        # the author left
-        author_roles = {guild.id}
+    author_roles: set[int] = (
+        set(author_obj.role_ids) if author_obj else {guild.id}
+    )
     author_perms = await get_permissions(
         guild, author_roles, config.starboard.id
     )

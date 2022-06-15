@@ -74,7 +74,7 @@ class CreateAutoStar:
         if count >= limit:
             raise StarboardError(
                 f"You can only have up to {limit} autostar channels."
-                + (" Get premium to increase this limit." if not ip else "")
+                + ("" if ip else " Get premium to increase this limit.")
             )
 
         name = clean_name(self.name)
@@ -87,7 +87,7 @@ class CreateAutoStar:
             raise StarboardError(
                 f"An autostar channel with the name '{name}' already "
                 "exists."
-            )
+            ) from None
 
         bot.database.asc.add(self.channel.id)
         await ctx.respond(
@@ -184,13 +184,11 @@ class ViewAutoStar:
 
             lines: list[str] = []
             for asc in ascs:
-                channel = bot.cache.get_guild_channel(asc.channel_id)
-                if not channel:
-                    chname = f"Deleted Channel {asc.channel_id}"
-                else:
+                if channel := bot.cache.get_guild_channel(asc.channel_id):
                     assert channel.name
                     chname = f"#{channel.name}"
-
+                else:
+                    chname = f"Deleted Channel {asc.channel_id}"
                 name = f"{asc.name} in {chname}"
                 if asc.prem_locked:
                     name = f"{name} (Locked)"
@@ -299,7 +297,7 @@ class SetEmoji:
         if len(emojis) > limit:
             raise StarboardError(
                 f"You can only have up to {limit} emojis per autostar channel."
-                + (" Get premium to increase this limit." if not ip else "")
+                + ("" if ip else " Get premium to increase this limit.")
             )
 
         asc.emojis = list(emojis)

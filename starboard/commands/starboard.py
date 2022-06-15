@@ -98,11 +98,7 @@ class ViewStarboard:
             )
 
             for sb in all_starboards:
-                if sb.prem_locked:
-                    name = f"{sb.name} (Locked)"
-                else:
-                    name = sb.name
-
+                name = f"{sb.name} (Locked)" if sb.prem_locked else sb.name
                 emoji_str = pretty_emoji_str(*sb.upvote_emojis, bot=bot)
                 embed.add_field(
                     name=name,
@@ -114,8 +110,6 @@ class ViewStarboard:
                     ),
                     inline=True,
                 )
-            await ctx.respond(embed=embed)
-
         else:
             starboard = await Starboard.from_name(ctx.guild_id, self.starboard)
             overrides = await Override.count(starboard_id=starboard.id)
@@ -150,7 +144,7 @@ class ViewStarboard:
                 name="Behavior", value=config.behavior, inline=True
             )
 
-            await ctx.respond(embed=embed)
+        await ctx.respond(embed=embed)
 
 
 @plugin.include
@@ -173,11 +167,7 @@ class CreateStarboard:
         if count >= limit:
             raise StarboardError(
                 f"You can only have up to {limit} starboards."
-                + (
-                    " You can increase this limit with premium."
-                    if not ip
-                    else ""
-                )
+                + ("" if ip else " You can increase this limit with premium.")
             )
 
         name = clean_name(self.name)
@@ -189,7 +179,7 @@ class CreateStarboard:
         except asyncpg.UniqueViolationError:
             raise StarboardError(
                 f"A starboard with the name '{name}' already exists."
-            )
+            ) from None
 
         bot.cache.invalidate_vote_emojis(ctx.guild_id)
         await ctx.respond(
@@ -250,7 +240,7 @@ class RenameStarboard:
         except asyncpg.UniqueViolationError:
             raise StarboardError(
                 f"A starboard with the name '{name}' already exists."
-            )
+            ) from None
 
         await ctx.respond(f"Renamed starboard '{old_name}' to '{name}'.")
 
@@ -385,8 +375,9 @@ class SetUpvoteEmojis:
         if len(upvote_emojis) + len(downvote_emojis) > limit:
             raise StarboardError(
                 f"You an only have up to {limit} emojis per starboard."
-                + (" Get premium to increase this." if not ip else "")
+                + ("" if ip else " Get premium to increase this.")
             )
+
         s.upvote_emojis = list(upvote_emojis)
         s.downvote_emojis = list(downvote_emojis)
         await s.save()
@@ -420,8 +411,9 @@ class SetDownvoteEmojis:
         if len(upvote_emojis) + len(downvote_emojis) > limit:
             raise StarboardError(
                 f"You an only have up to {limit} emojis per starboard."
-                + (" Get premium to increase this." if not ip else "")
+                + ("" if ip else " Get premium to increase this.")
             )
+
         s.upvote_emojis = list(upvote_emojis)
         s.downvote_emojis = list(downvote_emojis)
         await s.save()

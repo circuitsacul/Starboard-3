@@ -76,14 +76,14 @@ def hex_color(text: str) -> int:
     try:
         return int(text.replace("#", ""), base=16)
     except ValueError:
-        raise StarboardError(f"'{text}' is not a valid hex color.")
+        raise StarboardError(f"'{text}' is not a valid hex color.") from None
 
 
 def disid(text: Any) -> int:
     try:
         return int(text)
     except (ValueError, TypeError):
-        raise StarboardError(f"'{str(text)}' is not a valid ID.")
+        raise StarboardError(f"'{str(text)}' is not a valid ID.") from None
 
 
 @overload
@@ -117,9 +117,7 @@ def none_or(
 
 
 def none_or_str(text: str) -> None | str:
-    if text.lower() in {"none", "default"}:
-        return None
-    return text
+    return None if text.lower() in {"none", "default"} else text
 
 
 QUICK_ID = re.compile(r"(?P<message_id>[0-9]+)-(?P<channel_id>[0-9]+)$")

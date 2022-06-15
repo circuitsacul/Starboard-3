@@ -92,9 +92,9 @@ class Bot(crescent.Bot):
             for module in parent.glob("*.py"):
                 if module.name.startswith("_"):
                     continue
-                name = "{}.{}".format(
-                    str(parent).replace("/", "."), module.name[:-3]
-                )
+                path = str(parent).replace("/", ".")
+                filename = module.name[:-3]
+                name = f"{path}.{filename}"
                 self.plugins.load(name)
 
         load_modules(Path("starboard/commands"))
