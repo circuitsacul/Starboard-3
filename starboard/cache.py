@@ -88,11 +88,7 @@ class Cache(CacheImpl):
         self.clear_safe()
         super().clear()
 
-    def invalidate_vote_emojis(
-        self, guild: hikari.SnowflakeishOr[hikari.PartialGuild]
-    ) -> None:
-        self.__vote_emojis.pop(int(guild), None)
-
+    # vote emojis
     async def guild_vote_emojis(
         self, guild: hikari.SnowflakeishOr[hikari.PartialGuild]
     ) -> set[str]:
@@ -113,6 +109,12 @@ class Cache(CacheImpl):
             return ge
         return _ge
 
+    def invalidate_vote_emojis(
+        self, guild: hikari.SnowflakeishOr[hikari.PartialGuild]
+    ) -> None:
+        self.__vote_emojis.pop(int(guild), None)
+
+    # webhooks
     async def gof_webhook(
         self, webhook_id: hikari.SnowflakeishOr[hikari.PartialWebhook]
     ) -> hikari.ExecutableWebhook | None:
@@ -130,14 +132,7 @@ class Cache(CacheImpl):
         self.__webhooks[wh_id] = obj
         return obj
 
-    def get_member(
-        self,
-        guild: hikari.SnowflakeishOr[hikari.PartialGuild],
-        user: hikari.SnowflakeishOr[hikari.PartialUser],
-        /,
-    ) -> hikari.Member | None:
-        return self.__members.get((int(guild), int(user)))
-
+    # members
     async def gof_member(
         self,
         guild: hikari.SnowflakeishOr[hikari.PartialGuild],
@@ -153,9 +148,48 @@ class Cache(CacheImpl):
         except hikari.NotFoundError:
             obj = None
 
-        self.__members[key] = obj
+        self._set_member_maybe_none(key, obj)
         return obj
 
+    def get_member(
+        self,
+        guild: hikari.SnowflakeishOr[hikari.PartialGuild],
+        user: hikari.SnowflakeishOr[hikari.PartialUser],
+        /,
+    ) -> hikari.Member | None:
+        return self.__members.get((int(guild), int(user)))
+
+    def delete_member(
+        self,
+        guild: hikari.SnowflakeishOr[hikari.PartialGuild],
+        user: hikari.SnowflakeishOr[hikari.PartialUser],
+        /,
+    ) -> hikari.Member | None:
+        key = (int(guild), int(user))
+        orig = self.__members.get(key)
+        if orig:
+            self.__members[key] = None
+        return orig
+
+    def update_member(
+        self, member: hikari.Member, /
+    ) -> tuple[hikari.Member | None, hikari.Member]:
+        cached = self.get_member(member.guild_id, member.user.id)
+        self.set_member(member)
+        return cached, member
+
+    def set_member(self, member: hikari.Member, /) -> None:
+        key = (int(member.guild_id), int(member.user.id))
+        self._set_member_maybe_none(key, member)
+
+    def _set_member_maybe_none(
+        self, key: tuple[int, int], member: hikari.Member | None
+    ) -> None:
+        self.__members[key] = member
+        if member:
+            self._set_user(member.user)
+
+    # messages
     async def gof_message(
         self,
         channel: hikari.SnowflakeishOr[hikari.TextableChannel],
@@ -180,6 +214,14 @@ class Cache(CacheImpl):
         self.set_message(obj)
         return obj
 
+    def delete_message(
+        self, message: hikari.SnowflakeishOr[hikari.PartialMessage], /
+    ) -> hikari.Message | None:
+        msg_id = int(message)
+        self.__null_messages[msg_id] = None
+        return super().delete_message(msg_id)
+
+    # channels
     async def gof_guild_channel_wnsfw(
         self, channel: hikari.SnowflakeishOr[hikari.PartialChannel]
     ) -> hikari.GuildChannel | None:
@@ -195,33 +237,3 @@ class Cache(CacheImpl):
         assert cached.is_nsfw is not None
         self.update_guild_channel(cached)
         return cached
-
-    def delete_message(
-        self, message: hikari.SnowflakeishOr[hikari.PartialMessage], /
-    ) -> hikari.Message | None:
-        msg_id = int(message)
-        self.__null_messages[msg_id] = None
-        return super().delete_message(msg_id)
-
-    def delete_member(
-        self,
-        guild: hikari.SnowflakeishOr[hikari.PartialGuild],
-        user: hikari.SnowflakeishOr[hikari.PartialUser],
-        /,
-    ) -> hikari.Member | None:
-        key = (int(guild), int(user))
-        orig = self.__members.get(key)
-        if orig:
-            self.__members[key] = None
-        return orig
-
-    def update_member(
-        self, member: hikari.Member, /
-    ) -> tuple[hikari.Member | None, hikari.Member]:
-        cached = self.get_member(member.guild_id, member.user.id)
-        self.set_member(member)
-        return cached, member
-
-    def set_member(self, member: hikari.Member, /) -> None:
-        key = (int(member.guild_id), int(member.user.id))
-        self.__members[key] = member
