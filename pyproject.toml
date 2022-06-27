@@ -18,13 +18,13 @@ emoji = "^1.7.0"
 types-emoji = "^1.7.1"
 hikari-miru = "^1.0.1"
 hikari-clusters = "^0.2.5"
-hikari-crescent = "^0.2.0"
+hikari-crescent = "^0.2.1"
 tqdm = "^4.64.0"
 pycooldown = "^0.1.0b8"
 apgorm = "^1.0.0-beta.11"
 humanize = "^4.1.0"
 uvloop = {version = "^0.16.0", markers = "sys_platform == 'darwin' or sys_platform == 'linux'"}
-hikari = {extras = ["speedups"], version = "^2.0.0-alpha.108"}
+hikari = {extras = ["speedups"], version = "^2.0.0-alpha.109"}
 
 [tool.poetry.dev-dependencies]
 black = "^22.3"
