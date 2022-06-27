@@ -52,7 +52,7 @@ from starboard.database import Database as NewDB
 from .old_db import Database as OldDB
 from .old_reaction_valid import is_user_blacklisted
 
-CHUNK = 10_000
+CHUNK = 1000
 
 
 @dataclass
