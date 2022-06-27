@@ -1,4 +1,4 @@
-SET maintenance_work_mem TO '8 GB';
+SET maintenance_work_mem TO '3 GB';
 SET max_parallel_maintenance_workers TO 10;
 CREATE INDEX _btree_index_members__guild_id ON members USING BTREE ( ( guild_id ) );
 CREATE INDEX _btree_index_members__autoredeem_enabled ON members USING BTREE ( ( autoredeem_enabled ) );
