@@ -78,6 +78,7 @@ class Bot(crescent.Bot):
             intents=intents,
             update_commands=False,
             command_hooks=[cooldown(*CONFIG.global_cooldown)],
+            auto_chunk_members=False,
         )
 
         self.bot_stats: dict[int, int] = {}
