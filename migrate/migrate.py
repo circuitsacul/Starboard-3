@@ -52,7 +52,7 @@ from starboard.database import Database as NewDB
 from .old_db import Database as OldDB
 from .old_reaction_valid import is_user_blacklisted
 
-CHUNK = 1000
+CHUNK = 10_000
 
 
 @dataclass
@@ -538,6 +538,7 @@ async def _migrate_reactions(
                         current_guild_role_bl[sbid] = role_bl
 
                 current_guild_check_rbl = False
+                current_guild_member_roles.clear()
                 if current_guild_role_wl or current_guild_role_bl:
                     try:
                         current_guild_member_roles = {
