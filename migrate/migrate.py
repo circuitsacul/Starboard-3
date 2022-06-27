@@ -254,7 +254,7 @@ async def _migrate_starboards(
     ):
         ch = bot.cache.get_guild_channel(int(oldsb["id"]))
         chname = ch.name if ch else "starboard"
-        channel_name = f"{chname}-{x}"
+        channel_name = f"{chname[0:20]}-{x}"
 
         emojis = await old.fetch(
             "SELECT * FROM sbemojis WHERE starboard_id=$1", oldsb["id"]
