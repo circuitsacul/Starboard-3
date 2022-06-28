@@ -74,10 +74,7 @@ async def migrate() -> None:
     olddb = OldDB()
     await olddb.connect()
 
-    intents = (
-        hikari.Intents.GUILDS
-        | hikari.Intents.GUILD_EMOJIS
-    )
+    intents = hikari.Intents.GUILDS | hikari.Intents.GUILD_EMOJIS
 
     bot = GatewayBot(
         intents=intents,
