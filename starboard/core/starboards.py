@@ -133,6 +133,8 @@ async def _refresh_message(
     configs = [await get_config(s, orig_message.channel_id) for s in _s]
 
     for c in configs:
+        if not c.enabled and c.starboard.id not in orig_message.forced_to:
+            continue
         await _refresh_message_for_starboard(
             bot, orig_message, c, force, premium
         )
