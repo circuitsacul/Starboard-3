@@ -257,7 +257,7 @@ async def _migrate_starboards(
         tqdm(await old.fetch("SELECT * FROM starboards"), "Starboards")
     ):
         ch = bot.cache.get_guild_channel(int(oldsb["id"]))
-        chname = ch.name if ch else "starboard"
+        chname = ch.name or "starboard" if ch else "starboard"
         channel_name = f"{chname[0:20]}-{x}"
 
         emojis = await old.fetch(

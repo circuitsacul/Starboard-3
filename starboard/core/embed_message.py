@@ -150,6 +150,10 @@ async def _extract_reply(
     embed: hikari.Embed,
 ) -> None:
     if (ref := message.referenced_message) is not None:
+        if not isinstance(ref, hikari.Message):
+            ref = await bot.cache.gof_message(ref.channel_id, ref.id)
+            if ref is None:
+                return None
         name, _ = await _get_name_and_avatar(
             bot, guild_id, ref.author, server_profile
         )
