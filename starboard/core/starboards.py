@@ -25,6 +25,7 @@ from __future__ import annotations
 import asyncio
 from contextlib import suppress
 from dataclasses import dataclass
+import traceback
 from typing import TYPE_CHECKING, Iterable
 
 import hikari
@@ -135,9 +136,12 @@ async def _refresh_message(
     for c in configs:
         if not c.enabled and c.starboard.id not in orig_message.forced_to:
             continue
-        await _refresh_message_for_starboard(
-            bot, orig_message, c, force, premium
-        )
+        try:
+            await _refresh_message_for_starboard(
+                bot, orig_message, c, force, premium
+            )
+        except Exception:
+            traceback.print_exc()
 
 
 async def _refresh_message_for_starboard(
