@@ -22,10 +22,12 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, cast
+import datetime
+from typing import TYPE_CHECKING, Any, Iterator, cast
 
 import crescent
 import hikari
+from apgorm import LazyList
 from apgorm import raw as r
 
 from starboard.config import CONFIG
@@ -36,6 +38,7 @@ from starboard.core.emojis import stored_to_emoji
 from starboard.core.leaderboard import get_leaderboard, refresh_xp
 from starboard.database import Guild, Member, Message, SBMessage, Starboard
 from starboard.exceptions import StarboardError
+from starboard.utils import human_to_seconds, parse_date
 from starboard.views import InfiniteScroll, Paginator
 
 from ._autocomplete import starboard_autocomplete
@@ -65,6 +68,26 @@ async def refresh_my_xp(ctx: crescent.Context) -> None:
         )
 
 
+def _build_leaderboard(
+    entries: Iterator[tuple[int, int | float]]
+) -> list[str]:
+    pages: list[str] = []
+    current_page = ""
+    for x, entry in enumerate(entries):
+        if x % 10 == 0 and x != 0:
+            pages.append(current_page)
+            current_page = ""
+
+        current_page += (
+            f"#{str(x+1).zfill(3)}: <@{entry[0]}> with {entry[1]} XP\n"
+        )
+
+    if current_page:
+        pages.append(current_page)
+
+    return pages
+
+
 @plugin.include
 @crescent.hook(guild_only)
 @crescent.command(
@@ -73,29 +96,160 @@ async def refresh_my_xp(ctx: crescent.Context) -> None:
 async def leaderboard(ctx: crescent.Context) -> None:
     assert ctx.guild_id
     bot = cast("Bot", ctx.app)
-    lb = await get_leaderboard(ctx.guild_id)
-    if not lb:
-        raise StarboardError("There is no one on the leaderboard.")
-
-    rows = [f"#{s.rank}: <@{u}> with **{s.xp}** XP" for u, s in lb.items()]
-    pages: list[str] = []
-    current_page = ""
-    for x, row in enumerate(rows):
-        if x % 10 == 0 and x != 0:
-            pages.append(current_page)
-            current_page = ""
-
-        current_page += "\n" + row
-
-    if current_page:
-        pages.append(current_page)
 
     embeds: list[hikari.Embed] = [
-        bot.embed(title="Leaderboard", description=page) for page in pages
+        bot.embed(title="Leaderboard", description=page)
+        for page in _build_leaderboard(
+            (u, s.xp) for u, s in (await get_leaderboard(ctx.guild_id)).items()
+        )
     ]
+    if not embeds:
+        raise StarboardError("There is no one on the leaderboard.")
 
     nav = Paginator(ctx.user.id, embeds)
     await nav.send(ctx.interaction)
+
+
+@plugin.include
+@crescent.hook(guild_only)
+@crescent.hook(cooldown(2, 10))
+@crescent.command(
+    name="custom-leaderboard", description="Create a custom leaderboard"
+)
+class CustomLeaderboard:
+    starboard_name = crescent.option(
+        str,
+        "The starboard to build the leaderboard for",
+        autocomplete=starboard_autocomplete,
+    )
+    limit = crescent.option(
+        int,
+        "How many people to show on the leaderboard",
+        min_value=5,
+        max_value=100,
+        default=10,
+    )
+    newer_than = crescent.option(
+        str,
+        "How new the votes must be (e.x 10 seconds)",
+        default=None,
+        name="newer-than",
+    )
+    older_than = crescent.option(
+        str,
+        "How old the votes must be (e.x 10 seconds)",
+        default=None,
+        name="older-than",
+    )
+    created_after = crescent.option(
+        str,
+        "A date that the votes must have been created after (dd-mm-yyyy)",
+        default=None,
+        name="created-after",
+    )
+    created_before = crescent.option(
+        str,
+        "A date that the votes must have been created before (dd-mm-yyyy)",
+        default=None,
+        name="created-before",
+    )
+
+    async def callback(self, ctx: crescent.Context) -> None:
+        bot = cast("Bot", ctx.app)
+        assert ctx.guild_id
+
+        newer_than = (
+            hikari.Snowflake.from_datetime(
+                (
+                    datetime.datetime.now(datetime.timezone.utc)
+                    - datetime.timedelta(
+                        seconds=human_to_seconds(self.newer_than)
+                    )
+                )
+            )
+            if self.newer_than
+            else None
+        )
+        older_than = (
+            hikari.Snowflake.from_datetime(
+                (
+                    datetime.datetime.now(datetime.timezone.utc)
+                    - datetime.timedelta(
+                        seconds=human_to_seconds(self.older_than)
+                    )
+                )
+            )
+            if self.older_than
+            else None
+        )
+        created_after = (
+            hikari.Snowflake.from_datetime(parse_date(self.created_after))
+            if self.created_after
+            else None
+        )
+        created_before = (
+            hikari.Snowflake.from_datetime(parse_date(self.created_before))
+            if self.created_before
+            else None
+        )
+
+        if created_after and newer_than:
+            raise StarboardError(
+                "You can only specify created-after *or* newer-than."
+            )
+        if created_before and older_than:
+            raise StarboardError(
+                "You can only specify created-before *or* older-than."
+            )
+
+        starboard = await Starboard.from_name(
+            ctx.guild_id, self.starboard_name
+        )
+
+        query = """
+        SELECT
+            COUNT(*) FILTER (WHERE is_downvote=false)
+                - COUNT(*) FILTER (WHERE is_downvote=true)
+                AS stars,
+            target_author_id
+        FROM votes
+            WHERE starboard_id=$1
+            AND ($3::numeric IS NULL OR message_id > $3) -- newer than
+            AND ($4::numeric IS NULL OR message_id < $4) -- older than
+        GROUP BY target_author_id
+        ORDER BY
+            COUNT(*) FILTER (WHERE is_downvote=false)
+                - COUNT(*) FILTER (WHERE is_downvote=true)
+            DESC
+        LIMIT $2
+        """
+
+        result: LazyList[Any, dict[str, Any]] = await bot.database.fetchmany(
+            query,
+            [
+                starboard.id,
+                self.limit,
+                created_after or newer_than,
+                created_before or older_than,
+            ],
+        )
+        embeds: list[hikari.Embed] = [
+            bot.embed(
+                title=f"Custom Leaderboard for '{starboard.name}'",
+                description=page,
+            )
+            for page in _build_leaderboard(
+                (
+                    entry["target_author_id"],
+                    entry["stars"] * starboard.xp_multiplier,
+                )
+                for entry in list(result)
+            )
+        ]
+        if not embeds:
+            raise StarboardError("There is nothing to display!")
+        nav = Paginator(ctx.user.id, embeds)
+        await nav.send(ctx.interaction)
 
 
 @plugin.include

@@ -318,3 +318,14 @@ def human_to_seconds(human: str) -> int:
         seconds += value * conversion_unit
 
     return seconds
+
+
+def parse_date(inp: str) -> datetime.datetime:
+    try:
+        return datetime.datetime.strptime(inp, r"%d-%m-%Y")
+    except ValueError:
+        raise StarboardError(
+            "I couldn't understand that date. Please input a date in the "
+            "dd-mm-yyyy format. For example, 31-01-2021 would be January "
+            "31st, 2021."
+        ) from None
