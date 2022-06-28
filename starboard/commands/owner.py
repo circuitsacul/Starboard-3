@@ -282,6 +282,7 @@ class RunSQL:
     async def callback(self, ctx: crescent.Context) -> None:
         bot = cast("Bot", ctx.app)
         assert bot.database.pool
+        await ctx.defer(ephemeral=True)
         try:
             async with bot.database.pool.acquire() as con:
                 async with con.transaction():
@@ -303,4 +304,4 @@ class RunSQL:
         except Exception as e:
             result = str(e)
 
-        await ctx.respond(result, ephemeral=True)
+        await ctx.followup(result)
