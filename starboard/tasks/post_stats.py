@@ -58,12 +58,12 @@ async def loop_post_stats(bot: Bot) -> None:
 
 async def loop_broadcast_stats(bot: Bot) -> None:
     while True:
-        await asyncio.sleep(CONFIG.post_stats_delay - 30)
+        await asyncio.sleep(30)
 
         await bot.cluster.ipc.send_event(
-            [bot.cluster.ipc.clusters_by_cluster_id[0].uid],
+            bot.cluster.ipc.cluster_uids,
             "cluster_stats",
             {"guild_count": len(bot.cache._guild_entries)},
         )
 
-        await asyncio.sleep(30)
+        await asyncio.sleep(CONFIG.broadcast_stats_delay)

@@ -117,6 +117,7 @@ class Config:
     check_expired_premium_delay: int = 60 * 60
     update_patreons_delay: int = 60 * 5
     post_stats_delay: int = 60 * 10
+    broadcast_stats_delay: int = 60
 
     # cache
     dm_channel_cache_size: int = 1_000
