@@ -23,9 +23,9 @@
 from __future__ import annotations
 
 import asyncio
+import traceback
 from contextlib import suppress
 from dataclasses import dataclass
-import traceback
 from typing import TYPE_CHECKING, Iterable
 
 import hikari
