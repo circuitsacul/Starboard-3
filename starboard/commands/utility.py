@@ -35,7 +35,7 @@ from starboard.core.starboards import refresh_message
 from starboard.database import Message, SBMessage, Starboard
 from starboard.exceptions import StarboardError
 from starboard.utils import jump
-from starboard.views import Paginator
+from starboard.views import Confirm, Paginator
 
 from ._autocomplete import starboard_autocomplete
 from ._checks import has_guild_perms
@@ -228,6 +228,39 @@ async def toggle_trashed(
 
 
 # FORCING
+async def validate_nsfw_force_if_needed(
+    bot: Bot, ctx: crescent.Context, sbids: list[int]
+) -> bool:
+    for sbid in sbids:
+        channel = await bot.cache.gof_guild_channel_wnsfw(sbid)
+        if channel is None:
+            continue
+
+        assert channel.is_nsfw is not None
+        if not channel.is_nsfw:
+            return await validate_nsfw_force(ctx)
+
+    return True
+
+
+async def validate_nsfw_force(ctx: crescent.Context) -> bool:
+    confirm = Confirm(ctx.user.id, True)
+
+    msg = await ctx.respond(
+        "This message is from an NSFW channel, and forcing it will cause it "
+        "to appear on non-NSFW starboards. Are you sure you want to do this?",
+        ephemeral=True,
+        components=confirm.build(),
+        ensure_message=True,
+    )
+    confirm.start(msg)
+    await confirm.wait()
+
+    if not confirm.result:
+        return False
+    return True
+
+
 @plugin.include
 @utils.child
 @crescent.command(
@@ -271,25 +304,39 @@ class ForceMessage:
         if self.starboard:
             sb = await Starboard.from_name(ctx.guild_id, self.starboard)
             sbids = [sb.id]
+            sbchids = [sb.channel_id]
         else:
             assert ctx.guild_id
-            sbids = [
-                sb.id
-                for sb in await Starboard.fetch_query()
+            sbids = []
+            sbchids = []
+            for sb in (
+                await Starboard.fetch_query()
                 .where(guild_id=ctx.guild_id)
                 .fetchmany()
-            ]
+            ):
+                sbids.append(sb.id)
+                sbchids.append(sb.channel_id)
             if not sbids:
                 raise StarboardError(
                     "This server has no starboards, so you can't force this "
                     "message."
                 )
 
+        replied = False
+        if msg.is_nsfw:
+            replied = True
+            if not await validate_nsfw_force_if_needed(bot, ctx, sbchids):
+                await ctx.edit("Cancelled.", components=[])
+                return
+
         orig_force = set(msg.forced_to)
         orig_force.update(sbids)
         msg.forced_to = list(orig_force)
         await msg.save()
-        await ctx.respond("Message forced.", ephemeral=True)
+        if replied:
+            await ctx.edit("Message forced.", components=[])
+        else:
+            await ctx.respond("Message forced.", ephemeral=True)
         await refresh_message(bot, msg, sbids, force=True)
 
 
@@ -348,12 +395,13 @@ async def force_message(
 ) -> None:
     bot = cast("Bot", ctx.app)
 
-    sbids = [
-        sb.id
-        for sb in await Starboard.fetch_query()
-        .where(guild_id=ctx.guild_id)
-        .fetchmany()
-    ]
+    sbids: list[int] = []
+    sbchids: list[int] = []
+    for sb in (
+        await Starboard.fetch_query().where(guild_id=ctx.guild_id).fetchmany()
+    ):
+        sbids.append(sb.id)
+        sbchids.append(sb.channel_id)
     if not sbids:
         raise StarboardError(
             "There are no starboards in this server, so you can't force this "
@@ -378,9 +426,19 @@ async def force_message(
             obj.author.is_bot,
         )
 
+    replied = False
+    if msg.is_nsfw:
+        replied = True
+        if not await validate_nsfw_force_if_needed(bot, ctx, sbchids):
+            await ctx.edit("Cancelled.", components=[])
+            return
+
     msg.forced_to = sbids
     await msg.save()
-    await ctx.respond("Message forced to all starboards.", ephemeral=True)
+    if replied:
+        await ctx.edit("Message forced to all starboards.", components=[])
+    else:
+        await ctx.respond("Message forced to all starboards.", ephemeral=True)
     await refresh_message(bot, msg, sbids, force=True)
 
 
