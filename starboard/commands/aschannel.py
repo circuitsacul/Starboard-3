@@ -259,7 +259,7 @@ class EditAutoStar:
         assert ctx.guild_id
 
         params = self.__dict__.copy()
-        del params["channel"]
+        del params["autostar"]
 
         asc = await AutoStarChannel.from_name(ctx.guild_id, self.autostar)
 
