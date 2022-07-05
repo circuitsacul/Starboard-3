@@ -151,7 +151,7 @@ async def _refresh_message_for_starboard(
     force: bool,
     premium: bool,
 ) -> None:
-    if orig_msg.is_nsfw and config.starboard.id not in orig_msg.forced_to:
+    if orig_msg.is_nsfw:
         sbchannel = await bot.cache.gof_guild_channel_wnsfw(
             config.starboard.channel_id
         )
