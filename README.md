@@ -17,3 +17,6 @@ The best Discord Starboard, trusted by thousands of servers.
  - Use `/starboards create channel: #starboard` to create a starboard.
  - Use `/starboards view starboard: #starboard` to view the settings.
  - Use `/starboards edit [behavior|requirements|style|embed] starboard: #starboard [options...]` to edit a starboard.
+
+## Credits
+This bot is heavily based on [TheNoob27's starboard bot](https://discordlist.gg/bot/655390915325591629).
