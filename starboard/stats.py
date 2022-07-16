@@ -36,7 +36,7 @@ BASE_URL = "https://botblock.org/api/count"
 
 async def post_stats(
     bot: Bot, guild_count: int | None = None
-) -> tuple[list[str], list[str]]:
+) -> tuple[list[str], dict[str, list[str | int]]]:
     ses = await bot.session()
     gc = guild_count or sum(bot.bot_stats.values())
     data: dict[str, str | int] = {
@@ -48,4 +48,4 @@ async def post_stats(
         ret.raise_for_status()
         data = await ret.json()
 
-    return data["success"].keys(), data["failure"].keys()  # type: ignore
+    return data["success"].keys(), data["failure"]  # type: ignore
