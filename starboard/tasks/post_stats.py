@@ -51,8 +51,7 @@ async def loop_post_stats(bot: Bot) -> None:
 
         if fail:
             bot.cluster.logger.warn(
-                "The following bot lists failed to post:\n - "
-                + "\n - ".join(fail)
+                f"Some bot lists failed to post:\n{fail!r}"
             )
 
 

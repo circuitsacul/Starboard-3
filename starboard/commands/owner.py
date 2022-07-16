@@ -99,10 +99,7 @@ class PostGuildCount:
         await ctx.defer(True)
         work, fail = await post_stats(bot, self.guilds)
         await ctx.respond(
-            "Worked:\n - "
-            + "\n - ".join(work)
-            + "\nFailed:\n - "
-            + "\n - ".join(fail),
+            "Worked:\n - " + "\n - ".join(work) + f"\nFailed:\n{fail!r}",
             ephemeral=True,
         )
 
