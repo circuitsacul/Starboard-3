@@ -1,0 +1,10 @@
+{
+    "discord_token": "token",
+    "ipc_token": "anything",
+    "db_name": "name",
+    "db_user": "user",
+    "db_password": "pass",
+    "host": "localhost",
+    "main_guild": 00000000,
+    "owners": [00000000]
+}
