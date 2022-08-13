@@ -122,7 +122,7 @@ def none_or_str(text: str) -> None | str:
 
 QUICK_ID = re.compile(r"(?P<message_id>[0-9]+)-(?P<channel_id>[0-9]+)$")
 MSG_LINK = re.compile(
-    r"^https://discord.com/channels/[0-9]+/(?P<channel_id>[0-9]+)/"
+    r"^https://discord(app)?.com/channels/[0-9]+/(?P<channel_id>[0-9]+)/"
     r"(?P<message_id>[0-9]+)$"
 )
 
