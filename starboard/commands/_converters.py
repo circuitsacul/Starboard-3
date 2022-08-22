@@ -161,12 +161,17 @@ class _ValidChannels:
     invalid: set[int]
 
 
-def validate_channels(channels: list[int], bot: Bot) -> _ValidChannels:
+def validate_channels(
+    channels: list[int], bot: Bot, categories: bool = False
+) -> _ValidChannels:
     v: set[int] = set()
     iv: set[int] = set()
     for id in channels:
         if c := bot.cache.get_guild_channel(id):
             if isinstance(c, hikari.TextableGuildChannel):
+                v.add(id)
+                continue
+            if categories and isinstance(c, hikari.GuildCategory):
                 v.add(id)
                 continue
 
@@ -178,5 +183,9 @@ def validate_channels(channels: list[int], bot: Bot) -> _ValidChannels:
 NUM = re.compile(r"(?P<id>[0-9]+)")
 
 
-def channel_list(text: str, bot: Bot) -> _ValidChannels:
-    return validate_channels([int(c["id"]) for c in NUM.finditer(text)], bot)
+def channel_list(
+    text: str, bot: Bot, categories: bool = False
+) -> _ValidChannels:
+    return validate_channels(
+        [int(c["id"]) for c in NUM.finditer(text)], bot, categories
+    )

@@ -156,7 +156,9 @@ class CreateOverride:
             guild_id=ctx.guild_id,
             name=name,
             starboard_id=starboard.id,
-            channel_ids=channel_list(self.channels, bot).valid,
+            channel_ids=channel_list(
+                self.channels, bot, categories=True
+            ).valid,
             _overrides=ov._overrides if ov else "{}",
         )
         try:
@@ -340,7 +342,9 @@ class SetOverrideChannels:
         bot = cast("Bot", ctx.app)
 
         ov = await Override.from_name(ctx.guild_id, self.name)
-        ov.channel_ids = list(channel_list(self.channels, bot).valid)
+        ov.channel_ids = list(
+            channel_list(self.channels, bot, categories=True).valid
+        )
         await ov.save()
         await ctx.respond(f"Updated the channels for override '{self.name}'.")
 
@@ -361,7 +365,7 @@ class RemoveOverrideChannels:
         bot = cast("Bot", ctx.app)
 
         ov = await Override.from_name(ctx.guild_id, self.name)
-        chlist = channel_list(self.channels, bot)
+        chlist = channel_list(self.channels, bot, categories=True)
         ov.channel_ids = list(
             set(ov.channel_ids)
             .difference(chlist.valid)
@@ -388,7 +392,9 @@ class AddOverrideChannels:
 
         ov = await Override.from_name(ctx.guild_id, self.name)
         ov.channel_ids = list(
-            set(ov.channel_ids).union(channel_list(self.channels, bot).valid)
+            set(ov.channel_ids).union(
+                channel_list(self.channels, bot, categories=True).valid
+            )
         )
         await ov.save()
         await ctx.respond(f"Updated the channels for override '{self.name}'.")
