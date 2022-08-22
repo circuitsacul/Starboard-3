@@ -25,8 +25,8 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Any, Iterable
 
 from apgorm import join, raw, sql
-from starboard.bot import Bot
 
+from starboard.bot import Bot
 from starboard.database import Override
 
 if TYPE_CHECKING:
