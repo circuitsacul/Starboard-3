@@ -65,7 +65,7 @@ async def handle_reaction_add(event: hikari.GuildReactionAddEvent) -> None:
 
     orig_chid = orig_msg.channel_id if orig_msg else event.channel_id
     up_configs, down_configs = await _get_configs_for_emoji(
-        emoji_str, event.guild_id, orig_chid
+        bot, emoji_str, event.guild_id, orig_chid
     )
     if not (up_configs or down_configs):
         return
@@ -189,7 +189,7 @@ async def handle_reaction_remove(
         return
 
     up_sb, down_sb = await _get_configs_for_emoji(
-        emoji_str, event.guild_id, orig_msg.channel_id
+        bot, emoji_str, event.guild_id, orig_msg.channel_id
     )
     valid_sbids = [sb.starboard.id for sb in up_sb + down_sb]
     if not (up_sb or down_sb):
@@ -225,7 +225,7 @@ def _get_emoji_str_from_event(
 
 
 async def _get_configs_for_emoji(
-    emoji_str: str, guild_id: int, channel_id: int
+    bot: Bot, emoji_str: str, guild_id: int, channel_id: int
 ) -> tuple[list[StarboardConfig], list[StarboardConfig]]:
     starboards = (
         await Starboard.fetch_query().where(guild_id=guild_id).fetchmany()
@@ -234,7 +234,7 @@ async def _get_configs_for_emoji(
     downvote_configs: list[StarboardConfig] = []
 
     for sb in starboards:
-        config = await get_config(sb, channel_id)
+        config = await get_config(bot, sb, channel_id)
         if not config.enabled:
             continue
         if emoji_str in config.upvote_emojis:

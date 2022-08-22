@@ -80,7 +80,7 @@ async def _handle_trashed_message(bot: Bot, orig_message: Message) -> None:
         .fetchmany()
     }
     for sid, sb in starboards.items():
-        config = await get_config(sb, orig_message.channel_id)
+        config = await get_config(bot, sb, orig_message.channel_id)
         sbmsg = await SBMessage.exists(
             message_id=orig_message.message_id, starboard_id=sid
         )
@@ -131,7 +131,7 @@ async def _refresh_message(
             .where(prem_locked=False)
             .fetchmany()
         )
-    configs = [await get_config(s, orig_message.channel_id) for s in _s]
+    configs = [await get_config(bot, s, orig_message.channel_id) for s in _s]
 
     for c in configs:
         if not c.enabled and c.starboard.id not in orig_message.forced_to:
