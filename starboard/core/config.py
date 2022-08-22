@@ -24,8 +24,9 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any, Iterable
 
-from apgorm import raw, sql
+from apgorm import join, raw, sql
 
+from starboard.bot import Bot
 from starboard.database import Override
 
 if TYPE_CHECKING:
@@ -83,15 +84,30 @@ class StarboardConfig:
     cooldown_period: int
 
 
-async def get_config(sb: Starboard, channel_id: int) -> StarboardConfig:
-    ov = await fetch_overrides(sb.id, channel_id)
+async def get_config(
+    bot: Bot, sb: Starboard, channel_id: int
+) -> StarboardConfig:
+    ov = await fetch_overrides(bot, sb.id, channel_id)
     return StarboardConfig(sb, ov)
 
 
-async def fetch_overrides(sb: int, ch: int) -> Iterable[Override]:
+async def fetch_overrides(bot: Bot, sb: int, ch: int) -> Iterable[Override]:
+    # check if the channel has a parent
+    channel = bot.cache.get_guild_channel(ch)
+
     q = Override.fetch_query()
     q.where(starboard_id=sb)
+    if channel and channel.parent_id:
+        match_list = join(raw(","), ch, channel.parent_id)
+    else:
+        match_list = sql(ch)
+
     q.where(
-        sql(Override.channel_ids, raw("&& array["), ch, raw("]::numeric[]"))
+        sql(
+            Override.channel_ids,
+            raw("&& array["),
+            match_list,
+            raw("]::numeric[]"),
+        )
     )
     return await q.fetchmany()

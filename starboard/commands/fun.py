@@ -368,7 +368,7 @@ class Random:
         if not obj:
             raise StarboardError("Something went wrong.")
 
-        config = await get_config(s, obj.channel_id)
+        config = await get_config(bot, s, obj.channel_id)
 
         guild = await Guild.fetch(guild_id=ctx.guild_id)
 
@@ -454,7 +454,7 @@ class MostStarred:
         q.order_by(SBMessage.last_known_point_count, True)
         cursor = q.cursor()
 
-        config = await get_config(s, ctx.guild_id)
+        config = await get_config(bot, s, ctx.guild_id)
         guild = await Guild.fetch(guild_id=ctx.guild_id)
 
         async def next_page() -> tuple[list[hikari.Embed], str]:
