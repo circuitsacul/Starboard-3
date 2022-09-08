@@ -22,7 +22,7 @@
 
 from __future__ import annotations
 
-from typing import Any, Callable, Optional, Sequence
+from typing import Any, Callable, Sequence
 
 import emoji
 from apgorm.exceptions import InvalidFieldValue
@@ -55,7 +55,7 @@ def str_len(name: str, min: int, max: int) -> Callable[[str], bool]:
 
 def num_range(
     name: str, min: int | float | None, max: int | float | None
-) -> Callable[[Optional[int | float]], bool]:
+) -> Callable[[int | float | None], bool]:
     def validator(value: int | float | None) -> bool:
         if value is None:
             return True
@@ -69,9 +69,7 @@ def num_range(
     return validator
 
 
-def array_len(
-    name: str, max: int
-) -> Callable[[Optional[Sequence[Any]]], bool]:
+def array_len(name: str, max: int) -> Callable[[Sequence[Any] | None], bool]:
     def validator(value: Sequence[Any] | None) -> bool:
         if value and len(value) > max:
             raise InvalidFieldValue(f"You can have up to {max} {name}.")

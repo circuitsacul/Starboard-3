@@ -22,7 +22,7 @@
 
 from __future__ import annotations
 
-from typing import Awaitable, Callable, Optional
+from typing import Awaitable, Callable
 
 import crescent
 import hikari
@@ -31,7 +31,7 @@ from starboard.config import CONFIG
 from starboard.database import Guild
 
 
-async def owner_only(ctx: crescent.Context) -> Optional[crescent.HookResult]:
+async def owner_only(ctx: crescent.Context) -> crescent.HookResult | None:
     if ctx.user.id not in CONFIG.owners:
         await ctx.respond("Only owners can use this command.", ephemeral=True)
         return crescent.HookResult(True)
@@ -39,7 +39,7 @@ async def owner_only(ctx: crescent.Context) -> Optional[crescent.HookResult]:
     return None
 
 
-async def guild_only(ctx: crescent.Context) -> Optional[crescent.HookResult]:
+async def guild_only(ctx: crescent.Context) -> crescent.HookResult | None:
     if not ctx.guild_id:
         await ctx.respond(
             "This command can only be used inside servers.", ephemeral=True
@@ -49,9 +49,7 @@ async def guild_only(ctx: crescent.Context) -> Optional[crescent.HookResult]:
     return None
 
 
-async def premium_guild(
-    ctx: crescent.Context,
-) -> Optional[crescent.HookResult]:
+async def premium_guild(ctx: crescent.Context) -> crescent.HookResult | None:
     await guild_only(ctx)
     assert ctx.guild_id is not None
 
@@ -67,8 +65,8 @@ async def premium_guild(
 
 def has_guild_perms(
     perms: hikari.Permissions,
-) -> Callable[[crescent.Context], Awaitable[Optional[crescent.HookResult]]]:
-    async def check(ctx: crescent.Context) -> Optional[crescent.HookResult]:
+) -> Callable[[crescent.Context], Awaitable[crescent.HookResult | None]]:
+    async def check(ctx: crescent.Context) -> crescent.HookResult | None:
         await guild_only(ctx)
         assert ctx.guild_id is not None
         assert ctx.member is not None

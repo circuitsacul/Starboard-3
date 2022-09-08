@@ -23,7 +23,7 @@
 from __future__ import annotations
 
 import re
-from typing import TYPE_CHECKING, Any, Optional, cast
+from typing import TYPE_CHECKING, Any, cast
 
 from cachetools import LFUCache
 
@@ -44,7 +44,7 @@ GIPHY_PATTERN = re.compile(
 CACHE: LFUCache[str, str | None] = LFUCache(5_000)
 
 
-def _get_gif_id(url: str) -> Optional[tuple[str, str]]:
+def _get_gif_id(url: str) -> tuple[str, str] | None:
     if tenor_result := TENOR_PATTERN.match(url):
         return tenor_result.groupdict()["id"], "tenor"
     if giphy_result := GIPHY_PATTERN.match(url):
@@ -61,7 +61,7 @@ async def _get(bot: Bot, url: str, *args, **kwargs) -> dict[Any, Any]:
     return data
 
 
-async def _get_tenor(bot: Bot, gifid: str) -> Optional[str]:
+async def _get_tenor(bot: Bot, gifid: str) -> str | None:
     if not CONFIG.tenor_token:
         return None
 
@@ -78,7 +78,7 @@ async def _get_tenor(bot: Bot, gifid: str) -> Optional[str]:
     return res
 
 
-async def _get_giphy(bot: Bot, gifid: str) -> Optional[str]:
+async def _get_giphy(bot: Bot, gifid: str) -> str | None:
     if not CONFIG.giphy_token:
         return None
 
@@ -96,7 +96,7 @@ async def _get_giphy(bot: Bot, gifid: str) -> Optional[str]:
     return res
 
 
-async def get_gif_url(bot: Bot, url: str) -> Optional[str]:
+async def get_gif_url(bot: Bot, url: str) -> str | None:
     """Gets the direct Tenor or Giphy URL for GIF.
 
     Args:
@@ -104,7 +104,7 @@ async def get_gif_url(bot: Bot, url: str) -> Optional[str]:
         url (str): The URL provided by Discord.
 
     Returns:
-        Optional[str]: The direct URL to the GIF.
+        str | None: The direct URL to the GIF.
     """
 
     result = _get_gif_id(url)
