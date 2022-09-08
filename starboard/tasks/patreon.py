@@ -80,22 +80,19 @@ async def _update_patrons(bot: Bot) -> None:
     # sync the database with the list of patrons from Patreon
     all_patrons = await _get_all_patrons()
     for p in all_patrons:
-        if p.discord_id:
-            user = await User.get_or_create(p.discord_id, False)
-            if user.patreon_status is not p.status:
-                user.patreon_status = p.status
-                await user.save()
-                await _notify_for_status(user, bot)
-        else:
-            user = None
-
         patron = await Patron.get_or_create(p.patreon_id)
         if patron.discord_id != p.discord_id:
             patron.discord_id = p.discord_id
             await patron.save()
 
-        if not user:
+        if not p.discord_id:
             continue
+
+        user = await User.get_or_create(p.discord_id, False)
+        if user.patreon_status is not p.status:
+            user.patreon_status = p.status
+            await user.save()
+            await _notify_for_status(user, bot)
 
         if patron.last_patreon_total_cents != p.total_cents:
             difference = p.total_cents - patron.last_patreon_total_cents
