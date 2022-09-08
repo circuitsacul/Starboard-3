@@ -88,18 +88,8 @@ class Bot(crescent.Bot):
         self.database = Database()
 
         miru.load(self)
-
-        def load_modules(parent: Path):
-            for module in parent.glob("*.py"):
-                if module.name.startswith("_"):
-                    continue
-                path = str(parent).replace("/", ".")
-                filename = module.name[:-3]
-                name = f"{path}.{filename}"
-                self.plugins.load(name)
-
-        load_modules(Path("starboard/commands"))
-        load_modules(Path("starboard/events"))
+        self.plugins.load_folder("starboard.commands")
+        self.plugins.load_folder("starboard.events")
 
     @property
     def cache(self) -> Cache:
