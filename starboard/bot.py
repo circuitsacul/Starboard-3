@@ -29,7 +29,6 @@ import traceback
 from contextlib import redirect_stdout
 from datetime import datetime
 from io import StringIO
-from pathlib import Path
 from textwrap import indent
 from typing import Any
 
@@ -88,18 +87,8 @@ class Bot(crescent.Bot):
         self.database = Database()
 
         miru.load(self)
-
-        def load_modules(parent: Path):
-            for module in parent.glob("*.py"):
-                if module.name.startswith("_"):
-                    continue
-                path = str(parent).replace("/", ".")
-                filename = module.name[:-3]
-                name = f"{path}.{filename}"
-                self.plugins.load(name)
-
-        load_modules(Path("starboard/commands"))
-        load_modules(Path("starboard/events"))
+        self.plugins.load_folder("starboard.commands")
+        self.plugins.load_folder("starboard.events")
 
     @property
     def cache(self) -> Cache:
@@ -166,7 +155,7 @@ class Bot(crescent.Bot):
             t.cancel()
         await asyncio.gather(*self._tasks, return_exceptions=True)
         await self.database.cleanup()
-        self.cluster.logger.info("Cleaned up!")
+        print("Cleaned up!")
 
     def embed(
         self,

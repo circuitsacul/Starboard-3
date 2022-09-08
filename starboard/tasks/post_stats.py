@@ -50,9 +50,7 @@ async def loop_post_stats(bot: Bot) -> None:
             continue
 
         if fail:
-            bot.cluster.logger.warn(
-                f"Some bot lists failed to post:\n{fail!r}"
-            )
+            print(f"Warning: Some bot lists failed to post:\n{fail!r}")
 
 
 async def loop_broadcast_stats(bot: Bot) -> None:
@@ -60,7 +58,7 @@ async def loop_broadcast_stats(bot: Bot) -> None:
         await asyncio.sleep(30)
 
         await bot.cluster.ipc.send_event(
-            bot.cluster.ipc.cluster_uids,
+            bot.cluster.ipc.clusters,
             "cluster_stats",
             {"guild_count": len(bot.cache._guild_entries)},
         )
