@@ -186,7 +186,7 @@ class EvalBroadcast:
         bot = cast("Bot", ctx.app)
 
         ret = await bot.cluster.ipc.send_command(
-            bot.cluster.ipc.cluster_uids, "eval", {"code": self.code}
+            bot.cluster.ipc.clusters, "eval", {"code": self.code}
         )
         pages: list[str] = [
             _parse_response(rid, pl) for rid, pl in ret.items()
@@ -212,7 +212,7 @@ class ShellCommand:
         bot = cast("Bot", ctx.app)
 
         if self.broadcast:
-            send_to = bot.cluster.ipc.server_uids
+            send_to = set(bot.cluster.ipc.servers)
         else:
             send_to = {bot.cluster.server_uid}
 
@@ -241,9 +241,7 @@ async def reconnect_clusters(ctx: crescent.Context) -> None:
     bot = cast("Bot", ctx.app)
     await ctx.respond("Reconnecting all clusters...", ephemeral=True)
     await asyncio.sleep(1)
-    await bot.cluster.ipc.send_event(
-        bot.cluster.ipc.cluster_uids, "cluster_stop"
-    )
+    await bot.cluster.ipc.send_event(bot.cluster.ipc.clusters, "cluster_stop")
 
 
 @plugin.include
@@ -253,12 +251,12 @@ async def reconnect_clusters(ctx: crescent.Context) -> None:
 )
 async def restart_bot(ctx: crescent.Context) -> None:
     bot = cast("Bot", ctx.app)
-    if not bot.cluster.ipc.brain_uid:
+    if not bot.cluster.ipc.brain:
         await ctx.respond("Brain UID is undefined...", ephemeral=True)
         return
     await ctx.respond("Restarting bot...", ephemeral=True)
     await asyncio.sleep(1)
-    await bot.cluster.ipc.send_event([bot.cluster.ipc.brain_uid], "shutdown")
+    await bot.cluster.ipc.send_event(bot.cluster.ipc.brain, "shutdown")
 
 
 class Rollback(Exception):

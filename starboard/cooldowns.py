@@ -22,7 +22,7 @@
 
 from __future__ import annotations
 
-from typing import Awaitable, Callable
+from typing import Awaitable, Callable, Optional
 
 from crescent import Context, HookResult
 from crescent.ext.cooldowns import BucketCallbackT
@@ -43,7 +43,12 @@ def _user_bucket(ctx: Context) -> int:
 
 def cooldown(
     capacity: int, period: float, *, bucket: BucketCallbackT = _user_bucket
-) -> Callable[[Context], Awaitable[HookResult | None]]:
-    return _cooldown(
+) -> Callable[[Context], Awaitable[Optional[HookResult]]]:
+    call = _cooldown(
         capacity, period, bucket=bucket, callback=_cooldown_callback
     )
+
+    async def wrap(ctx: Context) -> Optional[HookResult]:
+        return await call(ctx)
+
+    return wrap

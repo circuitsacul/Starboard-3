@@ -166,7 +166,7 @@ class Bot(crescent.Bot):
             t.cancel()
         await asyncio.gather(*self._tasks, return_exceptions=True)
         await self.database.cleanup()
-        self.cluster.logger.info("Cleaned up!")
+        print("Cleaned up!")
 
     def embed(
         self,

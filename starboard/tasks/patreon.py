@@ -52,7 +52,7 @@ class PatronData:
 
 async def loop_update_patrons(bot: Bot) -> None:
     if CONFIG.patreon_token is None:
-        bot.cluster.ipc.logger.warning("No patreon token set.")
+        print("Warning: No patreon token set.")
         return
 
     if CONFIG.main_guild:
