@@ -222,18 +222,35 @@ class Cache(CacheImpl):
         return super().delete_message(msg_id)
 
     # channels
-    async def gof_guild_channel_wnsfw(
+    async def gof_guild_channel_nsfw(
         self, channel: hikari.SnowflakeishOr[hikari.PartialChannel]
-    ) -> hikari.GuildChannel | None:
-        cached = self.get_guild_channel(channel)
-        if cached is None:
-            return None
+    ) -> bool | None:
+        cached: (
+            hikari.PermissibleGuildChannel | hikari.GuildThreadChannel | None
+        ) = self.get_guild_channel(channel)
+        if cached is None or cached.is_nsfw is None:
+            try:
+                _ret = await self._app.rest.fetch_channel(channel)
+            except hikari.NotFoundError:
+                return None
+            assert isinstance(
+                _ret,
+                (hikari.PermissibleGuildChannel, hikari.GuildThreadChannel),
+            )
 
-        if cached.is_nsfw is None:
-            _ret = await self._app.rest.fetch_channel(channel)
-            assert isinstance(_ret, hikari.GuildChannel)
+            if _ret.type in {
+                hikari.ChannelType.GUILD_NEWS_THREAD,
+                hikari.ChannelType.GUILD_PUBLIC_THREAD,
+                hikari.ChannelType.GUILD_PRIVATE_THREAD,
+            }:
+                assert _ret.parent_id is not None
+                parent_nsfw = await self.gof_guild_channel_nsfw(_ret.parent_id)
+                assert parent_nsfw is not None
+                _ret.is_nsfw = parent_nsfw
+
             cached = _ret
+            if isinstance(cached, hikari.PermissibleGuildChannel):
+                self.update_guild_channel(cached)
 
         assert cached.is_nsfw is not None
-        self.update_guild_channel(cached)
-        return cached
+        return cached.is_nsfw

@@ -27,6 +27,7 @@ from typing import Awaitable, Callable
 import crescent
 import hikari
 
+from starboard.bot import Bot
 from starboard.config import CONFIG
 from starboard.database import Guild
 
@@ -72,6 +73,7 @@ def has_guild_perms(
         assert ctx.member is not None
         member = ctx.member
         assert isinstance(member, hikari.InteractionMember)
+        assert isinstance(ctx.app, Bot)
 
         guild = ctx.app.cache.get_guild(ctx.guild_id)
         assert guild is not None
