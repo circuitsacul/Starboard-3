@@ -84,7 +84,7 @@ async def migrate() -> None:
         ),
         auto_chunk_members=False,
     )
-    await bot.start(shard_ids={0, 1, 2, 3, 4, 5, 6, 7}, shard_count=8)
+    await bot.start(shard_ids=[0, 1, 2, 3, 4, 5, 6, 7], shard_count=8)
 
     app = App(newdb, olddb, bot)
 

@@ -76,11 +76,6 @@ async def embed_message(
     jump_to_message: bool,
     replied_to: bool,
 ) -> tuple[str, hikari.Embed, list[hikari.Embed]]:
-    channel = await bot.cache.gof_guild_channel_wnsfw(message.channel_id)
-    assert channel is not None
-    nsfw = channel.is_nsfw
-    assert nsfw is not None
-
     name, avatar = await _get_name_and_avatar(
         bot, guild_id, message.author, server_profile
     )

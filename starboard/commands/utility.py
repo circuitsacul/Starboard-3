@@ -205,14 +205,15 @@ async def toggle_trashed(
 
     if msg is None:
         assert ctx.guild_id
-        channel = await bot.cache.gof_guild_channel_wnsfw(message.channel_id)
-        assert channel
-        assert channel.is_nsfw is not None
+        channel_nsfw = await bot.cache.gof_guild_channel_nsfw(
+            message.channel_id
+        )
+        assert channel_nsfw is not None
         msg = await Message.get_or_create(
             ctx.guild_id,
-            channel.id,
+            message.channel_id,
             message.id,
-            channel.is_nsfw,
+            channel_nsfw,
             message.author.id,
             message.author.is_bot,
         )
@@ -255,15 +256,16 @@ class ForceMessage:
             if not obj:
                 raise StarboardError("I couldn't find that message.")
 
-            channel = await bot.cache.gof_guild_channel_wnsfw(obj.channel_id)
-            assert channel
-            assert channel.is_nsfw is not None
+            channel_nsfw = await bot.cache.gof_guild_channel_nsfw(
+                obj.channel_id
+            )
+            assert channel_nsfw is not None
             assert ctx.guild_id
             msg = await Message.get_or_create(
                 ctx.guild_id,
-                channel.id,
+                obj.channel_id,
                 obj.id,
-                channel.is_nsfw,
+                channel_nsfw,
                 obj.author.id,
                 obj.author.is_bot,
             )
@@ -365,15 +367,14 @@ async def force_message(
         assert ctx.guild_id
         obj = await bot.cache.gof_message(message.channel_id, message.id)
         assert obj
-        channel = await bot.cache.gof_guild_channel_wnsfw(obj.channel_id)
-        assert channel
-        assert channel.is_nsfw is not None
+        channel_nsfw = await bot.cache.gof_guild_channel_nsfw(obj.channel_id)
+        assert channel_nsfw is not None
 
         msg = await Message.get_or_create(
             ctx.guild_id,
-            channel.id,
+            obj.channel_id,
             obj.id,
-            channel.is_nsfw,
+            channel_nsfw,
             obj.author.id,
             obj.author.is_bot,
         )
