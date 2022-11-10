@@ -25,7 +25,6 @@ from __future__ import annotations
 import asyncio
 import traceback
 from dataclasses import dataclass
-from math import ceil
 from typing import TYPE_CHECKING, Any
 
 import aiohttp
@@ -97,7 +96,7 @@ async def _update_patrons(bot: Bot) -> None:
         if patron.last_patreon_total_cents != p.total_cents:
             difference = p.total_cents - patron.last_patreon_total_cents
             patron.last_patreon_total_cents = p.total_cents
-            user.credits = ceil(user.credits + difference / 100)
+            user.credits = round(user.credits + difference / 100)
             await user.save()
             await patron.save()
 
