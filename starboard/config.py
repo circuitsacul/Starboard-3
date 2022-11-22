@@ -165,7 +165,7 @@ class Config:
     giphy_token: str | None = None
     patreon_token: str | None = None
 
-    def save(self):
+    def save(self) -> None:
         path = Path("config.json")
 
         dct = asdict(self)

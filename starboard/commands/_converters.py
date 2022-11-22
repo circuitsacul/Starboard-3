@@ -101,7 +101,9 @@ def none_or(
 
 
 def none_or(
-    func: Callable[[str], _T], noneval: _N = None, nonefirst: bool = True
+    func: Callable[[str], _T],
+    noneval: _N | None = None,
+    nonefirst: bool = True,
 ) -> Callable[[str], _T | _N | None]:
     def wrapper(text: str) -> _T | _N | None:
         if nonefirst and text.lower() in {"none", "default"}:
