@@ -454,7 +454,6 @@ class MostStarred:
         q.order_by(SBMessage.last_known_point_count, True)
         cursor = q.cursor()
 
-        config = await get_config(bot, s, ctx.guild_id)
         guild = await Guild.fetch(guild_id=ctx.guild_id)
 
         async def next_page() -> tuple[list[hikari.Embed], str]:
@@ -465,6 +464,7 @@ class MostStarred:
             obj = await bot.cache.gof_message(orig.channel_id, orig.message_id)
             assert obj is not None
 
+            config = await get_config(bot, s, orig.channel_id)
             raw, e, es = await embed_message(
                 bot,
                 obj,
