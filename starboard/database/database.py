@@ -42,7 +42,7 @@ from .models import (
 
 
 class Database(apgorm.Database):
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__("starboard/database/migrations")
 
         self.asc: set[int] = set()
