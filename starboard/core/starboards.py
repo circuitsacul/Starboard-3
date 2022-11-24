@@ -155,9 +155,11 @@ async def _refresh_message_for_starboard(
         orig_msg.channel_id, orig_msg.message_id
     )
 
+    nsfw = await bot.cache.gof_guild_channel_nsfw(config.starboard.channel_id)
+    nsfw = False if nsfw is None else nsfw
     points = await _get_points(orig_msg.message_id, config.starboard.id)
     action = _get_action(
-        orig_msg, orig_msg_obj, config, points, orig_msg_obj is None
+        orig_msg, orig_msg_obj, config, points, orig_msg_obj is None, nsfw
     )
 
     sbmsg = await SBMessage.exists(
@@ -421,8 +423,13 @@ def _get_action(
     config: StarboardConfig,
     points: int,
     deleted: bool,
+    nsfw: bool,
 ) -> _Actions:
     add_trib: bool | None = None
+
+    # check nsfw
+    if not nsfw and orig_msg.is_nsfw:
+        return _Actions(False, True)
 
     # check points
     if points >= config.required:
