@@ -36,7 +36,7 @@ PAGE = Tuple[List[hikari.Embed], str]
 
 class InfiniteScroll(miru.View):
     def __init__(
-        self, user_id: int, next_page: Callable[[], Awaitable[PAGE]]
+        self, user_id: int, next_page: Callable[[], Awaitable[PAGE | None]]
     ) -> None:
         self.user_id = user_id
         self.next_page = next_page
@@ -62,10 +62,15 @@ class InfiniteScroll(miru.View):
         self.index = index
         while self.index > (len(self.cached_pages) - 1):
             try:
-                self.cached_pages.append(await self.next_page())
+                page = await self.next_page()
             except Exception:
+                continue
+
+            if page is None:
                 self.index = len(self.cached_pages) - 1
                 return None
+
+            self.cached_pages.append(page)
         return self.cached_pages[self.index]
 
     async def finish(self) -> None:

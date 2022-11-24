@@ -330,10 +330,24 @@ class Random:
         min_value=1,
         name="max-points",
     )
+    allow_nsfw = crescent.option(
+        bool,
+        "Whether to allow messages from NSFW channels",
+        default=False,
+        name="allow-nsfw",
+    )
 
     async def callback(self, ctx: crescent.Context) -> None:
         assert ctx.guild_id
+        assert ctx.channel
         bot = cast("Bot", ctx.app)
+
+        if self.allow_nsfw and not ctx.channel.is_nsfw:
+            await ctx.respond(
+                "To show NSFW messages, run this command in an NSFW channel.",
+                ephemeral=True,
+            )
+            return
 
         s = await Starboard.from_name(ctx.guild_id, self.starboard)
         if s.private:
@@ -346,6 +360,8 @@ class Random:
         sbq = Message.fetch_query()
         sbq.where(message_id=SBMessage.message_id)
         sbq.where(trashed=False)
+        if not self.allow_nsfw:
+            sbq.where(is_nsfw=False)
         if self.channel:
             sbq.where(channel_id=self.channel.id)
 
@@ -425,10 +441,24 @@ class MostStarred:
         min_value=1,
         name="max-points",
     )
+    allow_nsfw = crescent.option(
+        bool,
+        "Whether to allow messages from NSFW channels",
+        default=False,
+        name="allow-nsfw",
+    )
 
     async def callback(self, ctx: crescent.Context) -> None:
         assert ctx.guild_id is not None
+        assert ctx.channel
         bot = cast("Bot", ctx.app)
+
+        if self.allow_nsfw and not ctx.channel.is_nsfw:
+            await ctx.respond(
+                "To show NSFW messages, run this command in an NSFW channel.",
+                ephemeral=True,
+            )
+            return
 
         s = await Starboard.from_name(ctx.guild_id, self.starboard)
         if s.private:
@@ -441,6 +471,8 @@ class MostStarred:
         sbq = Message.fetch_query()
         sbq.where(message_id=SBMessage.message_id)
         sbq.where(trashed=False)
+        if not self.allow_nsfw:
+            sbq.where(is_nsfw=False)
         if self.channel:
             sbq.where(channel_id=self.channel.id)
 
@@ -456,10 +488,13 @@ class MostStarred:
 
         guild = await Guild.fetch(guild_id=ctx.guild_id)
 
-        async def next_page() -> tuple[list[hikari.Embed], str]:
+        async def next_page() -> tuple[list[hikari.Embed], str] | None:
             assert s is not None
 
-            sql_msg = await cursor.__anext__()
+            try:
+                sql_msg = await cursor.__anext__()
+            except StopAsyncIteration:
+                return None
             orig = await Message.fetch(message_id=sql_msg.message_id)
             obj = await bot.cache.gof_message(orig.channel_id, orig.message_id)
             assert obj is not None
