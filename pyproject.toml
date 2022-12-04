@@ -2,6 +2,12 @@
 line-length=79
 skip-magic-trailing-comma=true
 
+[tool.ruff]
+extend-select = [
+    # isort
+    "I001"
+]
+
 [tool.poetry]
 name = "starboard"
 version = "0.0.0"
@@ -26,11 +32,10 @@ humanize = "^4.1.0"
 uvloop = {version = "^0.17.0", markers = "sys_platform == 'darwin' or sys_platform == 'linux'"}
 hikari = {extras = ["speedups"], version = "^2.0.0.dev112"}
 
-[tool.poetry.dev-dependencies]
+[tool.poetry.group.dev.dependencies]
+ruff = "^0.0.152"
 black = "^22.3"
-isort = "^5.9.3"
 mypy = "^0.991"
-flake8 = "^5.0.4"
 pytest = "^7.1.2"
 pytest-cov = "^3.0.0"
 nox = "^2022.1.7"
