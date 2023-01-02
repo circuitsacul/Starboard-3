@@ -82,6 +82,7 @@ class Cache(CacheImpl):
 
     def clear_safe(self) -> None:
         self.__null_messages.clear()
+        self.__null_channels.clear()
         self.__members.clear()
         self.__webhooks.clear()
         self.__vote_emojis.clear()
