@@ -124,6 +124,7 @@ class Config:
     member_cache_size: int = 1_000
     message_cache_size: int = 1_000
     message_null_cache_size: int = 1_000
+    channel_null_cache_size: int = 1_000
     webhook_cache_size: int = 1_000
     vote_emoji_cache_size: int = 1_000
 
