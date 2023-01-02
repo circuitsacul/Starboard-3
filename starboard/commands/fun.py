@@ -339,10 +339,12 @@ class Random:
 
     async def callback(self, ctx: crescent.Context) -> None:
         assert ctx.guild_id
-        assert ctx.channel
         bot = cast("Bot", ctx.app)
 
-        if self.allow_nsfw and not ctx.channel.is_nsfw:
+        channel_is_nsfw = await bot.cache.gof_guild_channel_nsfw(
+            ctx.channel_id
+        )
+        if self.allow_nsfw and not channel_is_nsfw:
             await ctx.respond(
                 "To show NSFW messages, run this command in an NSFW channel.",
                 ephemeral=True,
@@ -450,10 +452,12 @@ class MostStarred:
 
     async def callback(self, ctx: crescent.Context) -> None:
         assert ctx.guild_id is not None
-        assert ctx.channel
         bot = cast("Bot", ctx.app)
 
-        if self.allow_nsfw and not ctx.channel.is_nsfw:
+        channel_is_nsfw = await bot.cache.gof_guild_channel_nsfw(
+            ctx.channel_id
+        )
+        if self.allow_nsfw and not channel_is_nsfw:
             await ctx.respond(
                 "To show NSFW messages, run this command in an NSFW channel.",
                 ephemeral=True,

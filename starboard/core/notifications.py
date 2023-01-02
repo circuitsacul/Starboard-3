@@ -46,7 +46,7 @@ async def _dm_channel(app: Bot, user_id: int) -> int | None:
 
 
 async def notify(app: Bot, user_id: int, text: str) -> None:
-    row = app.rest.build_action_row()
+    row = app.rest.build_message_action_row()
     button = row.add_button(ButtonStyle.SECONDARY, "none.dismiss")
     button.set_label("Dismiss")
     button.add_to_container()
