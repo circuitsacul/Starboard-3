@@ -26,31 +26,36 @@ from typing import Sequence
 
 import hikari
 import miru
-from miru.ext.nav import NavigatorView, buttons
+from miru.ext.nav import FirstButton as _FirstButton
+from miru.ext.nav import IndicatorButton as _IndicatorButton
+from miru.ext.nav import LastButton as _LastButton
+from miru.ext.nav import NavigatorView
+from miru.ext.nav import NextButton as _NextButton
+from miru.ext.nav import PrevButton as _PrevButton
 
 
-class FirstButton(buttons.FirstButton):
+class FirstButton(_FirstButton):
     def __init__(self, *args, **kwargs) -> None:
         kwargs["label"] = "<<"
         kwargs["emoji"] = None
         super().__init__(*args, **kwargs)
 
 
-class PrevButton(buttons.PrevButton):
+class PrevButton(_PrevButton):
     def __init__(self, *args, **kwargs) -> None:
         kwargs["label"] = "<"
         kwargs["emoji"] = None
         super().__init__(*args, **kwargs)
 
 
-class NextButton(buttons.NextButton):
+class NextButton(_NextButton):
     def __init__(self, *args, **kwargs) -> None:
         kwargs["label"] = ">"
         kwargs["emoji"] = None
         super().__init__(*args, **kwargs)
 
 
-class LastButton(buttons.LastButton):
+class LastButton(_LastButton):
     def __init__(self, *args, **kwargs) -> None:
         kwargs["label"] = ">>"
         kwargs["emoji"] = None
@@ -67,7 +72,7 @@ class Paginator(NavigatorView):
             buttons=[
                 FirstButton(),
                 PrevButton(),
-                buttons.IndicatorButton(),
+                _IndicatorButton(),
                 NextButton(),
                 LastButton(),
             ],

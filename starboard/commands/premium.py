@@ -66,7 +66,7 @@ async def refresh_prem_lock(ctx: crescent.Context) -> None:
         ephemeral=True,
         ensure_message=True,
     )
-    conf.start(msg)
+    await conf.start(msg)
     await conf.wait()
 
     if not conf.result:
@@ -208,7 +208,7 @@ class Redeem:
             ensure_message=True,
             ephemeral=True,
         )
-        conf.start(m)
+        await conf.start(m)
         await conf.wait()
 
         if not conf.result:
@@ -310,7 +310,7 @@ async def clear_autoredeem(ctx: crescent.Context) -> None:
         components=conf.build(),
         ensure_message=True,
     )
-    conf.start(m)
+    await conf.start(m)
     await conf.wait()
 
     if not conf.result:

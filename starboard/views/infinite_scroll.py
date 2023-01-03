@@ -40,38 +40,38 @@ class InfiniteScroll(miru.View):
     ) -> None:
         self.user_id = user_id
         self.next_page = next_page
-        self.index = 0
+        self.current_page = 0
         self.cached_pages: list[PAGE] = []
         super().__init__()
 
-    async def wait(self) -> None:
+    async def wait(self, timeout: float | None = None) -> None:
         bot = cast("Bot", self.app)
         assert bot.cluster.stop_future
         await asyncio.wait(
             (
-                asyncio.create_task(super().wait()),
+                asyncio.create_task(super().wait(timeout)),
                 asyncio.create_task(bot.cluster.join()),
             ),
             return_when=asyncio.FIRST_COMPLETED,
         )
 
-    async def get_page(self, index: int) -> PAGE | None:
-        if index < 0:
+    async def get_page(self, current_page: int) -> PAGE | None:
+        if current_page < 0:
             return None
 
-        self.index = index
-        while self.index > (len(self.cached_pages) - 1):
+        self.current_page = current_page
+        while self.current_page > (len(self.cached_pages) - 1):
             try:
                 page = await self.next_page()
             except Exception:
                 continue
 
             if page is None:
-                self.index = len(self.cached_pages) - 1
+                self.current_page = len(self.cached_pages) - 1
                 return None
 
             self.cached_pages.append(page)
-        return self.cached_pages[self.index]
+        return self.cached_pages[self.current_page]
 
     async def finish(self) -> None:
         for item in self.children:
@@ -102,13 +102,13 @@ class InfiniteScroll(miru.View):
 
     @miru.button(label="<", custom_id="infinite-scroll:prev")
     async def prev(self, btn: miru.Button, ctx: miru.Context) -> None:
-        page = await self.get_page(self.index - 1)
+        page = await self.get_page(self.current_page - 1)
         if page:
             await self.set_page(page, ctx)
 
     @miru.button(label=">", custom_id="infinite-scroll:next")
     async def next(self, btn: miru.Button, ctx: miru.Context) -> None:
-        page = await self.get_page(self.index + 1)
+        page = await self.get_page(self.current_page + 1)
         if page:
             await self.set_page(page, ctx)
 

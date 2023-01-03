@@ -115,7 +115,7 @@ class DeleteAutoStar:
             components=confirm.build(),
             ensure_message=True,
         )
-        confirm.start(msg)
+        await confirm.start(msg)
         await confirm.wait()
 
         if not confirm.result:

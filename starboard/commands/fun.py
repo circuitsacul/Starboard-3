@@ -536,7 +536,7 @@ class MostStarred:
             components=paginator.build(),
             ensure_message=True,
         )
-        paginator.start(initial)
+        await paginator.start(initial)
         try:
             await paginator.wait()
         finally:
