@@ -52,7 +52,7 @@ async def ping_command(ctx: crescent.Context) -> None:
 @crescent.command(name="help", description="Get help with starboard")
 async def help_command(ctx: crescent.Context) -> None:
     bot = cast("Bot", ctx.app)
-    act = bot.rest.build_action_row()
+    act = bot.rest.build_message_action_row()
     if CONFIG.bot_invite:
         (
             act.add_button(hikari.ButtonStyle.LINK, CONFIG.bot_invite)

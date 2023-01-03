@@ -144,18 +144,26 @@ async def _extract_reply(
     server_profile: bool,
     embed: hikari.Embed,
 ) -> None:
-    if (ref := message.referenced_message) is not None:
-        if not isinstance(ref, hikari.Message):
-            ref = await bot.cache.gof_message(ref.channel_id, ref.id)
-            if ref is None:
-                return None
-        name, _ = await _get_name_and_avatar(
-            bot, guild_id, ref.author, server_profile
-        )
-        embed.add_field(
-            name=f"Replying To {name}",
-            value=_extract_main_content(ref) or "*file only*",
-        )
+    if (ref := message.message_reference) is not None:
+        if ref.id is None:
+            return None
+
+        ref_obj = message.referenced_message
+        if ref_obj is None or not isinstance(ref_obj, hikari.Message):
+            ref_obj = await bot.cache.gof_message(ref.channel_id, ref.id)
+
+        if ref_obj is not None:
+            name, _ = await _get_name_and_avatar(
+                bot, guild_id, ref_obj.author, server_profile
+            )
+            content = _extract_main_content(ref_obj) or "*File only.*"
+        else:
+            name, content = (
+                "Deleted Message",
+                "*Original message was deleted.*",
+            )
+
+        embed.add_field(name=f"Replying To {name}", value=content)
 
 
 def _is_rich(embed: hikari.Embed) -> bool:

@@ -63,14 +63,14 @@ def rendered_content(msg: Message) -> str | None:
 
     if msg.type is MessageType.RECIPIENT_ADD:
         # NOTE: fails to handle DM Groups
-        assert msg.mentions.users is not UNDEFINED
-        target = next(iter(msg.mentions.users.values()))
+        assert msg.user_mentions is not UNDEFINED
+        target = next(iter(msg.user_mentions.values()))
         return f"{msg.author.username} added {target.username} to the thread."
 
     if msg.type is MessageType.RECIPIENT_REMOVE:
         # NOTE: fails to handle DM Groups
-        assert msg.mentions.users is not UNDEFINED
-        target = next(iter(msg.mentions.users.values()))
+        assert msg.user_mentions is not UNDEFINED
+        target = next(iter(msg.user_mentions.values()))
         return (
             f"{msg.author.username} removed {target.username} from the thread."
         )
