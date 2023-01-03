@@ -92,35 +92,23 @@ async def get_config(
     return StarboardConfig(sb, ov)
 
 
+async def qualified_channel_ids(bot: Bot, ch: int) -> list[int]:
+    channels: list[int] = []
+
+    while True:
+        channels.append(ch)
+
+        channel = await bot.cache.gof_channel(ch)
+        if isinstance(channel, hikari.GuildChannel) and channel.parent_id:
+            ch = channel.parent_id
+            continue
+
+        print(channels)
+        return channels
+
+
 async def fetch_overrides(bot: Bot, sb: int, ch: int) -> Iterable[Override]:
-    # check if the channel has a parent
-    channel = bot.cache.get_guild_channel(ch)
-    if not channel:
-        # probably a thread
-        maybe_thread = await bot.rest.fetch_channel(ch)
-        assert isinstance(maybe_thread, hikari.TextableGuildChannel)
-        if maybe_thread and maybe_thread.type in {
-            hikari.ChannelType.GUILD_NEWS_THREAD,
-            hikari.ChannelType.GUILD_PUBLIC_THREAD,
-            hikari.ChannelType.GUILD_PRIVATE_THREAD,
-        }:
-            assert maybe_thread.parent_id is not None
-            thread_parent = bot.cache.get_guild_channel(maybe_thread.parent_id)
-            assert thread_parent
-            if thread_parent.parent_id is not None:
-                match_list = join(
-                    raw(","),
-                    ch,
-                    maybe_thread.parent_id,
-                    thread_parent.parent_id,
-                )
-            else:
-                match_list = join(raw(","), ch, maybe_thread.parent_id)
-    else:
-        if channel and channel.parent_id:
-            match_list = join(raw(","), ch, channel.parent_id)
-        else:
-            match_list = sql(ch)
+    match_list = join(raw(","), *await qualified_channel_ids(bot, ch))
 
     q = Override.fetch_query()
     q.where(starboard_id=sb)
