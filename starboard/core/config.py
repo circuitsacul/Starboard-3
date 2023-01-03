@@ -103,7 +103,6 @@ async def qualified_channel_ids(bot: Bot, ch: int) -> list[int]:
             ch = channel.parent_id
             continue
 
-        print(channels)
         return channels
 
 
