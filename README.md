@@ -3,7 +3,7 @@ The best Discord Starboard, trusted by thousands of servers.
 
  - [Invite Starboard](https://dsc.gg/starboard)
  - [Get Support](https://dsc.gg/starhelp)
- - [Documentation](https://docs.starboard.best)
+ - [Documentation](https://starboard.best)
 
 ## Features
  - Multiple starboards per server
