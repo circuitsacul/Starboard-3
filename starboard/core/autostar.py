@@ -46,10 +46,8 @@ COOLDOWN: FixedCooldown[int] = FixedCooldown(*CONFIG.guild_asc_cooldown)
 async def handle_message(event: hikari.GuildMessageCreateEvent) -> None:
     bot = cast("Bot", event.app)
 
-    if (
-        event.message.author.is_bot
-        or event.channel_id not in bot.database.asc
-        or COOLDOWN.update_ratelimit(event.guild_id)
+    if event.channel_id not in bot.database.asc or COOLDOWN.update_ratelimit(
+        event.guild_id
     ):
         return
 
