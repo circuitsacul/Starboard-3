@@ -1,3 +1,5 @@
+Archived, see https://github.com/circuitsacul/starboard-4 instead.
+
 # Starboard
 The best Discord Starboard, trusted by thousands of servers.
 
