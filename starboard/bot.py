@@ -24,7 +24,6 @@ from __future__ import annotations
 
 import asyncio
 import os
-import subprocess
 import traceback
 from contextlib import redirect_stdout
 from datetime import datetime
@@ -36,21 +35,11 @@ import aiohttp
 import crescent
 import hikari
 import miru
-from hikari_clusters import (
-    Brain,
-    Cluster,
-    ClusterLauncher,
-    Server,
-    commands,
-    events,
-    payload,
-)
 
 from .cache import Cache
-from .config import CONFIG, Config
+from .config import CONFIG
 from .cooldowns import cooldown
 from .database import Database
-from .tasks import expired_premium, patreon, post_stats
 
 if os.name != "nt":
     import uvloop  # type: ignore
@@ -59,8 +48,6 @@ if os.name != "nt":
 
 
 class Bot(crescent.Bot):
-    cluster: Cluster
-
     def __init__(self) -> None:
         intents = (
             hikari.Intents.GUILD_MESSAGE_REACTIONS
@@ -114,40 +101,17 @@ class Bot(crescent.Bot):
         return self._aiohttp_session
 
     async def start(self, **kwargs) -> None:
-        self.cluster.ipc.commands.include(BOT_CMD)
-        self.cluster.ipc.commands.cmd_kwargs["bot"] = self
-        self.cluster.ipc.events.include(BOT_EVENT)
-        self.cluster.ipc.events.event_kwargs["bot"] = self
-
         await self.database.connect(
-            migrate=self.cluster.cluster_id == 0,
+            migrate=True,
             host=CONFIG.db_host,
             database=CONFIG.db_name,
             user=CONFIG.db_user,
             password=CONFIG.db_password,
         )
 
-        # tasks
-        self._tasks.append(
-            asyncio.create_task(expired_premium.check_expired_premium(self))
-        )
-        self._tasks.append(
-            asyncio.create_task(patreon.loop_update_patrons(self))
-        )
-        self._tasks.append(
-            asyncio.create_task(post_stats.loop_post_stats(self))
-        )
-        self._tasks.append(
-            asyncio.create_task(post_stats.loop_broadcast_stats(self))
-        )
+        await super().start(**kwargs)
 
-        await super().start(
-            **kwargs, activity=hikari.Activity(name="Mention me for help")
-        )
-
-        if self.cluster.cluster_id == 0:
-            print("Posting commands...")
-            await self._command_handler.register_commands()
+        await self._command_handler.register_commands()
 
     async def close(self) -> None:
         await super().close()
@@ -191,64 +155,3 @@ class Bot(crescent.Bot):
                 return "```py\n" + traceback.format_exc() + "\n```", None
 
         return f.getvalue(), result
-
-
-def get_brain(config: Config) -> Brain:
-    return Brain(
-        token=config.ipc_token,
-        host=config.host,
-        port=config.port,
-        total_servers=config.total_servers,
-        clusters_per_server=config.clusters_per_server,
-        shards_per_cluster=config.shards_per_cluster,
-        certificate_path=config.certificate_path,
-    )
-
-
-def _get_cluster_launcher() -> ClusterLauncher:
-    return ClusterLauncher(bot_class=Bot)
-
-
-def get_server(config: Config) -> Server:
-    server = Server(
-        host=config.host,
-        port=config.port,
-        token=config.ipc_token,
-        cluster_launcher=_get_cluster_launcher(),
-        certificate_path=config.certificate_path,
-    )
-    server.ipc.commands.include(SERVER_CMD)
-    return server
-
-
-BOT_CMD = commands.CommandGroup()
-
-
-@BOT_CMD.add("eval")
-async def eval_cmd(pl: payload.COMMAND, bot: Bot) -> payload.DATA:
-    assert pl.data.data
-    out, ret = await bot.exec_code(pl.data.data["code"], {"_bot": bot})
-    return {"result": f"Return:\n{ret}\n\nOutput:\n{out}"}
-
-
-BOT_EVENT = events.EventGroup()
-
-
-@BOT_EVENT.add("cluster_stats")
-async def set_cluster_stats(pl: payload.EVENT, bot: Bot) -> None:
-    assert pl.data.data
-    bot.bot_stats[pl.author] = pl.data.data["guild_count"]
-
-
-SERVER_CMD = commands.CommandGroup()
-
-
-@SERVER_CMD.add("run_shell")
-async def run_shell(pl: payload.COMMAND) -> payload.DATA:
-    assert pl.data.data
-    command = pl.data.data["command"]
-    p = subprocess.Popen(
-        command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE
-    )
-    out, err = p.communicate()
-    return {"result": (out or err).decode()}

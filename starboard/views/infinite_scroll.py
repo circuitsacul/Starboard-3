@@ -22,14 +22,10 @@
 
 from __future__ import annotations
 
-import asyncio
-from typing import TYPE_CHECKING, Awaitable, Callable, List, Tuple, cast
+from typing import Awaitable, Callable, List, Tuple
 
 import hikari
 import miru
-
-if TYPE_CHECKING:
-    from starboard.bot import Bot
 
 PAGE = Tuple[List[hikari.Embed], str]
 
@@ -43,17 +39,6 @@ class InfiniteScroll(miru.View):
         self.current_page = 0
         self.cached_pages: list[PAGE] = []
         super().__init__()
-
-    async def wait(self, timeout: float | None = None) -> None:
-        bot = cast("Bot", self.app)
-        assert bot.cluster.stop_future
-        await asyncio.wait(
-            (
-                asyncio.create_task(super().wait(timeout)),
-                asyncio.create_task(bot.cluster.join()),
-            ),
-            return_when=asyncio.FIRST_COMPLETED,
-        )
 
     async def get_page(self, current_page: int) -> PAGE | None:
         if current_page < 0:

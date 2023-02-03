@@ -22,21 +22,16 @@
 
 from __future__ import annotations
 
-import asyncio
 from typing import TYPE_CHECKING, cast
 
 import crescent
 import hikari
-from hikari_clusters import callbacks, payload
 
 from starboard.config import CONFIG
 from starboard.constants import MESSAGE_LEN
 from starboard.database import User
 from starboard.exceptions import StarboardError
-from starboard.stats import post_stats
-from starboard.tasks.patreon import _get_all_patrons
-from starboard.utils import paginate, trunc_list, truncate
-from starboard.views import Paginator
+from starboard.utils import trunc_list
 
 from ._checks import owner_only
 
@@ -46,62 +41,6 @@ if TYPE_CHECKING:
 
 plugin = crescent.Plugin()
 owner = crescent.Group("owner", "Owner only commands", hooks=[owner_only])
-
-
-def _parse_response(
-    rid: int, pl: payload.RESPONSE | callbacks.NoResponse, block: bool = False
-) -> str:
-    if isinstance(pl, callbacks.NoResponse):
-        return f"Client {rid} failed to respond."
-    elif isinstance(pl.data, payload.ResponseNotFound):
-        return f"Client {pl.author} could not find the command."
-
-    if isinstance(pl.data, payload.ResponseTraceback):
-        res = pl.data.traceback
-    else:
-        assert pl.data.data is not None
-        res = pl.data.data["result"]
-
-    if not block:
-        res = f"Client {pl.author} responded with:\n\n{res}"
-        res = truncate(res, MESSAGE_LEN)
-    else:
-        res = f"Client {pl.author} responded with:\n```\n{res}"
-        res = truncate(res, MESSAGE_LEN - 4)
-        res += "\n```"
-    return res
-
-
-@plugin.include
-@owner.child
-@crescent.command(
-    name="patrons", description="List patrons", guild=CONFIG.main_guild
-)
-class ListPatrons:
-    async def callback(self, ctx: crescent.Context) -> None:
-        p = await _get_all_patrons()
-        paginator = Paginator(ctx.user.id, list(paginate(repr(p), 2000)))
-        await paginator.send(ctx.interaction)
-
-
-@plugin.include
-@owner.child
-@crescent.command(
-    name="post-stats",
-    description="Manually post guild count",
-    guild=CONFIG.main_guild,
-)
-class PostGuildCount:
-    guilds = crescent.option(int, "The guild count to post")
-
-    async def callback(self, ctx: crescent.Context) -> None:
-        bot = cast("Bot", ctx.app)
-        await ctx.defer(True)
-        work, fail = await post_stats(bot, self.guilds)
-        await ctx.respond(
-            "Worked:\n - " + "\n - ".join(work) + f"\nFailed:\n{fail!r}",
-            ephemeral=True,
-        )
 
 
 @plugin.include
@@ -170,93 +109,6 @@ class Eval:
                 name="Return", value=repr(obj)
             )
         )
-
-
-@plugin.include
-@owner.child
-@crescent.command(
-    name="evall",
-    description="Broadcast eval to all clusters",
-    guild=CONFIG.main_guild,
-)
-class EvalBroadcast:
-    code = crescent.option(str, "Code to evaluate")
-
-    async def callback(self, ctx: crescent.Context) -> None:
-        bot = cast("Bot", ctx.app)
-
-        ret = await bot.cluster.ipc.send_command(
-            bot.cluster.ipc.clusters, "eval", {"code": self.code}
-        )
-        pages: list[str] = [
-            _parse_response(rid, pl) for rid, pl in ret.items()
-        ]
-        if not pages:
-            raise StarboardError("No responses were received.")
-        paginator = Paginator(ctx.user.id, pages)
-        await paginator.send(ctx.interaction, ephemeral=True)
-
-
-@plugin.include
-@owner.child
-@crescent.command(
-    name="shell", description="Run a shell command", guild=CONFIG.main_guild
-)
-class ShellCommand:
-    command = crescent.option(str, "The command to run")
-    broadcast = crescent.option(
-        bool, "Whether or not to broadcast to all servers", default=False
-    )
-
-    async def callback(self, ctx: crescent.Context) -> None:
-        bot = cast("Bot", ctx.app)
-
-        if self.broadcast:
-            send_to = set(bot.cluster.ipc.servers)
-        else:
-            send_to = {bot.cluster.server_uid}
-
-        ret = await bot.cluster.ipc.send_command(
-            send_to, "run_shell", {"command": self.command}
-        )
-
-        pages: list[str] = [
-            _parse_response(rid, pl, block=True) for rid, pl in ret.items()
-        ]
-
-        if not pages:
-            raise StarboardError("No responses were received.")
-        paginator = Paginator(ctx.user.id, pages)
-        await paginator.send(ctx.interaction, ephemeral=True)
-
-
-@plugin.include
-@owner.child
-@crescent.command(
-    name="reconnect",
-    description="Reconnect all clusters",
-    guild=CONFIG.main_guild,
-)
-async def reconnect_clusters(ctx: crescent.Context) -> None:
-    bot = cast("Bot", ctx.app)
-    await ctx.respond("Reconnecting all clusters...", ephemeral=True)
-    await asyncio.sleep(1)
-    await bot.cluster.ipc.send_event(bot.cluster.ipc.clusters, "cluster_stop")
-
-
-@plugin.include
-@owner.child
-@crescent.command(
-    name="restart", description="Restart the bot", guild=CONFIG.main_guild
-)
-async def restart_bot(ctx: crescent.Context) -> None:
-    bot = cast("Bot", ctx.app)
-    if not bot.cluster.ipc.brain:
-        await ctx.respond("Brain UID is undefined...", ephemeral=True)
-        return
-    await ctx.respond("Restarting bot...", ephemeral=True)
-    await asyncio.sleep(1)
-    await bot.cluster.ipc.send_event(bot.cluster.ipc.brain, "shutdown")
 
 
 class Rollback(Exception):

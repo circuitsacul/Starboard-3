@@ -43,7 +43,7 @@ async def ping_command(ctx: crescent.Context) -> None:
     guild = bot.cache.get_guild(ctx.guild_id) if ctx.guild_id else None
     shard = guild.shard_id if guild else 0
     await ctx.respond(
-        f"Pong! Cluster {bot.cluster.cluster_id}, shard {shard}, "
+        f"Pong! Shard {shard}, "
         f"{bot.heartbeat_latency*1000:.0f} ms latency."
     )
 
