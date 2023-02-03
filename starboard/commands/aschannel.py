@@ -28,7 +28,6 @@ import crescent
 import hikari
 from asyncpg import UniqueViolationError
 
-from starboard.config import CONFIG
 from starboard.database import AutoStarChannel, Guild
 from starboard.exceptions import StarboardError
 from starboard.undefined import UNDEF
@@ -66,17 +65,7 @@ class CreateAutoStar:
         bot = cast("Bot", ctx.app)
         assert ctx.guild_id
 
-        guild = await Guild.get_or_create(ctx.guild_id)
-        ip = guild.premium_end is not None
-        limit = CONFIG.max_autostar if ip else CONFIG.np_max_autostar
-        count = await AutoStarChannel.count(guild_id=ctx.guild_id)
-
-        if count >= limit:
-            raise StarboardError(
-                f"You can only have up to {limit} autostar channels."
-                + ("" if ip else " Get premium to increase this limit.")
-            )
-
+        await Guild.get_or_create(ctx.guild_id)
         name = clean_name(self.name)
 
         try:
@@ -233,17 +222,12 @@ class EditAutoStar:
     )
 
     min_chars = optiond(
-        int,
-        "The minimum length of messages",
-        name="min-chars",
-        max_value=CONFIG.max_minchars,
-        min_value=0,
+        int, "The minimum length of messages", name="min-chars", min_value=0
     )
     max_chars = optiond(
         int,
         "The maximum length of messages (use -1 to disable)",
         name="max-chars",
-        max_value=CONFIG.max_maxchars,
         min_value=-1,
     )
     require_image = optiond(
@@ -289,16 +273,6 @@ class SetEmoji:
 
         asc = await AutoStarChannel.from_name(ctx.guild_id, self.autostar)
         emojis = any_emoji_list(self.emojis)
-
-        guild = await Guild.fetch(guild_id=ctx.guild_id)
-        ip = guild.premium_end is not None
-        limit = CONFIG.max_asc_emojis if ip else CONFIG.np_max_asc_emojis
-
-        if len(emojis) > limit:
-            raise StarboardError(
-                f"You can only have up to {limit} emojis per autostar channel."
-                + ("" if ip else " Get premium to increase this limit.")
-            )
 
         asc.emojis = list(emojis)
         await asc.save()

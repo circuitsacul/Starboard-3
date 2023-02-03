@@ -27,11 +27,9 @@ from typing import Any, Iterable
 
 from apgorm import ForeignKey, Model, types
 
-from starboard.config import CONFIG
 from starboard.exceptions import OverrideNotFound
 
 from ._converters import DecimalArrayC, DecimalC
-from ._validators import array_len, str_len
 from .guild import Guild
 from .starboard import Starboard
 
@@ -57,10 +55,6 @@ class Override(Model):
 
     guild_fk = ForeignKey(guild_id, Guild.guild_id)
     starboard_fk = ForeignKey(starboard_id, Starboard.id)
-
-    # validators
-    channel_ids.add_validator(array_len("channels", CONFIG.max_ov_channels))
-    name.add_validator(str_len("name", CONFIG.min_ov_name, CONFIG.max_ov_name))
 
     @property
     def overrides(self) -> dict[str, Any]:

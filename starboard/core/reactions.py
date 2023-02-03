@@ -27,9 +27,7 @@ from contextlib import suppress
 from typing import TYPE_CHECKING, cast
 
 import hikari
-from pycooldown import FixedCooldown
 
-from starboard.config import CONFIG
 from starboard.core.leaderboard import refresh_xp
 from starboard.core.posrole import update_posroles
 from starboard.core.xprole import refresh_xpr
@@ -45,19 +43,14 @@ if TYPE_CHECKING:
     from starboard.bot import Bot
 
 
-COOLDOWN: FixedCooldown[int] = FixedCooldown(*CONFIG.guild_vote_cooldown)
-
-
 async def handle_reaction_add(event: hikari.GuildReactionAddEvent) -> None:
     if event.member.is_bot:
         return
     bot = cast("Bot", event.app)
 
     emoji_str = _get_emoji_str_from_event(event)
-    if (
-        not emoji_str
-        or emoji_str not in await bot.cache.guild_vote_emojis(event.guild_id)
-        or COOLDOWN.update_ratelimit(event.guild_id)
+    if not emoji_str or emoji_str not in await bot.cache.guild_vote_emojis(
+        event.guild_id
     ):
         return
 
@@ -177,9 +170,6 @@ async def handle_reaction_remove(
     if not emoji_str or emoji_str not in await bot.cache.guild_vote_emojis(
         event.guild_id
     ):
-        return
-
-    if COOLDOWN.update_ratelimit(event.guild_id):
         return
 
     orig_msg = await get_orig_message(event.message_id)

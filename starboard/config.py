@@ -38,86 +38,22 @@ class Config:
     development: bool = False
     dev_notify: int | None = None
     main_guild: int | None = None
-    patron_role: int | None = None
-    donor_role: int | None = None
-
-    # starboard settings restrictions
-    max_xp_mul: float = 10.0
-    min_xp_mul: float = -10.0
-    min_required: int = 1
-    max_required: int = 500
-    min_required_remove: int = -500
-    max_required_remove: int = 490
-    max_cooldown_period: int = 60
-    max_cooldown_cap: int = 60
-    max_newer_than: int = 86_400 * 7  # 1 week
-    max_older_than: int = 86_400 * 7
-    max_vote_emojis: int = 10
-    max_starboards: int = 10
-    max_starboard_name: int = 32
-    min_starboard_name: int = 3
-
-    # autostar settings restrictions
-    max_maxchars: int = 4_000
-    max_minchars: int = 4_000
-    max_asc_emojis: int = 10
-    max_autostar: int = 10
-    max_asc_name: int = 32
-    min_asc_name: int = 3
-
-    # override settings restrictions
-    max_ov_name: int = 32
-    min_ov_name: int = 3
-    max_ov_channels: int = 100
-    max_ov_per_starboard: int = 10
-
-    # xprole restrictions
-    max_xp_roles: int = 10
-    max_xpr_xp: int = 5_000
-    min_xpr_xp: int = 5
-
-    # posrole restrictions
-    max_posroles: int = 10
-    max_pr_members: int = 1_000
-    min_pr_members: int = 1
-
-    # permrole restrictions
-    max_permroles: int = 50
-
-    # non-premium restrictions
-    np_max_starboards: int = 3
-    np_max_autostar: int = 3
-    np_max_asc_emojis: int = 3
-    np_max_vote_emojis: int = 3
 
     # functionality
     max_xp: int = 999_999_999
     min_xp: int = -999_999_999
-    leaderboard_length: int = 50
+    leaderboard_length: int = 500
     refresh_xp_cap: int = 1
     refresh_xp_period: int = 60
-    credits_per_month: int = 3
-    days_per_month: int = 32  # just be safe
+    user_xpr_cooldown: tuple[int, int] = (5, 60)
+    guild_pr_cooldown: tuple[int, int] = (1, 60 * 5)
+    guild_message_edit_cooldown: tuple[int, int] = (2, 20)
+    max_cooldown_period: int = 60
 
     # command cooldowns
     random_cooldown: tuple[int, int] = (5, 10)
     moststarred_cooldown: tuple[int, int] = (1, 10)
     global_cooldown: tuple[int, int] = (10, 10)
-
-    # functionality cooldowns
-    guild_vote_cooldown: tuple[int, int] = (500, 30)
-    guild_message_send_cooldown: tuple[int, int] = (10, 60 * 5)
-    guild_message_delete_cooldown: tuple[int, int] = (10, 10)
-    guild_message_edit_cooldown: tuple[int, int] = (2, 20)
-    guild_asc_cooldown: tuple[int, int] = (5, 10)
-    user_xpr_cooldown: tuple[int, int] = (5, 60)
-    guild_pr_cooldown: tuple[int, int] = (1, 60 * 5)
-
-    # tasks
-    check_expired_premium_delay: int = 60 * 60
-    update_patreons_delay: int = 60 * 5
-    post_stats_delay: int = 60 * 10
-    broadcast_stats_delay: int = 60
 
     # cache
     dm_channel_cache_size: int = 1_000
@@ -164,7 +100,6 @@ class Config:
     # apis
     tenor_token: str | None = None
     giphy_token: str | None = None
-    patreon_token: str | None = None
 
     def save(self) -> None:
         path = Path("config.json")

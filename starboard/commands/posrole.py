@@ -29,7 +29,6 @@ import hikari
 from apgorm import sql
 from asyncpg import UniqueViolationError
 
-from starboard.config import CONFIG
 from starboard.core.posrole import update_posroles
 from starboard.database import Guild, PosRole, PosRoleMember, XPRole
 from starboard.exceptions import StarboardError
@@ -118,11 +117,7 @@ async def refretch_roles(ctx: crescent.Context, user: hikari.User) -> None:
 class CreatePosRole:
     role = crescent.option(hikari.Role, "The role to use for a PosRole")
     members = crescent.option(
-        int,
-        "How many users can have this role",
-        min_value=CONFIG.min_pr_members,
-        max_value=CONFIG.max_pr_members,
-        name="max-members",
+        int, "How many users can have this role", name="max-members"
     )
 
     async def callback(self, ctx: crescent.Context) -> None:
@@ -146,12 +141,6 @@ class CreatePosRole:
             raise StarboardError(
                 f"**{self.role}** is an XPRole. A role cannot be a PosRole "
                 "and an XPRole."
-            )
-
-        # check if they've reached the limit for PosRoles
-        if await PosRole.count(guild_id=ctx.guild_id) >= CONFIG.max_posroles:
-            raise StarboardError(
-                f"You can only have up to {CONFIG.max_posroles} PosRoles."
             )
 
         # create the posrole
@@ -178,10 +167,7 @@ class CreatePosRole:
 class SetPosRoleMembers:
     posrole = crescent.option(hikari.Role, "The PosRole to modify")
     members = crescent.option(
-        int,
-        "The maximum members that can have this PosRole",
-        min_value=CONFIG.min_pr_members,
-        max_value=CONFIG.max_pr_members,
+        int, "The maximum members that can have this PosRole"
     )
 
     async def callback(self, ctx: crescent.Context) -> None:

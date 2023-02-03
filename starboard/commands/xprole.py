@@ -27,7 +27,6 @@ from typing import TYPE_CHECKING, cast
 import crescent
 import hikari
 
-from starboard.config import CONFIG
 from starboard.core.xprole import refresh_xpr
 from starboard.database import Guild, PosRole, XPRole
 from starboard.exceptions import StarboardError
@@ -71,8 +70,6 @@ class AddXPRole:
     xp = crescent.option(
         int,
         "How much XP is required for a user to gain this XPRole",
-        min_value=CONFIG.min_xpr_xp,
-        max_value=CONFIG.max_xpr_xp,
         name="required-xp",
     )
 
@@ -97,12 +94,6 @@ class AddXPRole:
             raise StarboardError(
                 f"**{self.role}** is a Posrole. A role cannot be a PosRole "
                 "and an XPRole."
-            )
-
-        # check if they've reached the limit for XPRoles
-        if await XPRole.count(guild_id=ctx.guild_id) >= CONFIG.max_xp_roles:
-            raise StarboardError(
-                f"You can only have up to {CONFIG.max_xp_roles} XPRoles."
             )
 
         # create the xprole

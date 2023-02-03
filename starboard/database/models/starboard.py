@@ -33,7 +33,7 @@ from starboard.exceptions import StarboardNotFound
 from starboard.utils import seconds_to_human
 
 from ._converters import DecimalC, NonNullArray, NullDecimalC
-from ._validators import num_range, str_len, valid_emoji
+from ._validators import num_range, valid_emoji
 from .guild import Guild
 
 
@@ -62,47 +62,13 @@ def delta_range(name: str, max: int) -> Callable[[int], bool]:
 
 def validate_sb_changes(**changes: Any) -> None:
     _validate(
-        "required",
-        changes,
-        num_range("required", CONFIG.min_required, CONFIG.max_required),
-    )
-    _validate(
-        "required_remove",
-        changes,
-        num_range(
-            "required-remove",
-            CONFIG.min_required_remove,
-            CONFIG.max_required_remove,
-        ),
-    )
-    _validate(
         "cooldown_period",
         changes,
         num_range(
             "the cooldown period (seconds)", None, CONFIG.max_cooldown_period
         ),
     )
-    _validate(
-        "cooldown_count",
-        changes,
-        num_range(
-            "the capacity of the cooldown (count)",
-            None,
-            CONFIG.max_cooldown_cap,
-        ),
-    )
     _validate("display_emoji", changes, valid_emoji)
-    _validate(
-        "xp_multiplier",
-        changes,
-        num_range("xp-multiplier", CONFIG.min_xp_mul, CONFIG.max_xp_mul),
-    )
-    _validate(
-        "older_than", changes, delta_range("older-than", CONFIG.max_older_than)
-    )
-    _validate(
-        "newer_than", changes, delta_range("newer-than", CONFIG.max_newer_than)
-    )
 
 
 class Starboard(apgorm.Model):
@@ -167,11 +133,6 @@ class Starboard(apgorm.Model):
     guild_id_fk = apgorm.ForeignKey(guild_id, Guild.guild_id)
 
     primary_key = (id,)
-
-    # Checks
-    name.add_validator(
-        str_len("name", CONFIG.min_starboard_name, CONFIG.max_starboard_name)
-    )
 
     # methods
     @staticmethod

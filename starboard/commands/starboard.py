@@ -29,7 +29,6 @@ import crescent
 import hikari
 
 from starboard.commands._converters import any_emoji_list
-from starboard.config import CONFIG
 from starboard.core.config import StarboardConfig
 from starboard.database import Guild, Override, Starboard, validate_sb_changes
 from starboard.exceptions import StarboardError
@@ -159,16 +158,7 @@ class CreateStarboard:
     async def callback(self, ctx: crescent.Context) -> None:
         bot = cast("Bot", ctx.app)
         assert ctx.guild_id
-        guild = await Guild.get_or_create(ctx.guild_id)
-        ip = guild.premium_end is not None
-
-        limit = CONFIG.max_starboards if ip else CONFIG.np_max_starboards
-        count = await Starboard.count(guild_id=ctx.guild_id)
-        if count >= limit:
-            raise StarboardError(
-                f"You can only have up to {limit} starboards."
-                + ("" if ip else " You can increase this limit with premium.")
-            )
+        await Guild.get_or_create(ctx.guild_id)
 
         name = clean_name(self.name)
 
@@ -365,18 +355,9 @@ class SetUpvoteEmojis:
         assert ctx.guild_id
         s = await Starboard.from_name(ctx.guild_id, self.starboard)
 
-        guild = await Guild.fetch(guild_id=ctx.guild_id)
-        ip = guild.premium_end is not None
-        limit = CONFIG.max_vote_emojis if ip else CONFIG.np_max_vote_emojis
-
         upvote_emojis = any_emoji_list(self.emojis)
         downvote_emojis = set(s.downvote_emojis)
         downvote_emojis.difference_update(upvote_emojis)
-        if len(upvote_emojis) + len(downvote_emojis) > limit:
-            raise StarboardError(
-                f"You an only have up to {limit} emojis per starboard."
-                + ("" if ip else " Get premium to increase this.")
-            )
 
         s.upvote_emojis = list(upvote_emojis)
         s.downvote_emojis = list(downvote_emojis)
@@ -401,18 +382,9 @@ class SetDownvoteEmojis:
         assert ctx.guild_id
         s = await Starboard.from_name(ctx.guild_id, self.starboard)
 
-        guild = await Guild.fetch(guild_id=ctx.guild_id)
-        ip = guild.premium_end is not None
-        limit = CONFIG.max_vote_emojis if ip else CONFIG.np_max_vote_emojis
-
         downvote_emojis = any_emoji_list(self.emojis)
         upvote_emojis = set(s.upvote_emojis)
         upvote_emojis.difference_update(downvote_emojis)
-        if len(upvote_emojis) + len(downvote_emojis) > limit:
-            raise StarboardError(
-                f"You an only have up to {limit} emojis per starboard."
-                + ("" if ip else " Get premium to increase this.")
-            )
 
         s.upvote_emojis = list(upvote_emojis)
         s.downvote_emojis = list(downvote_emojis)

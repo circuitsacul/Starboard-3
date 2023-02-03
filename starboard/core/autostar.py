@@ -27,9 +27,7 @@ from contextlib import suppress
 from typing import TYPE_CHECKING, cast
 
 import hikari
-from pycooldown import FixedCooldown
 
-from starboard.config import CONFIG
 from starboard.core.notifications import notify
 from starboard.database import AutoStarChannel
 
@@ -40,15 +38,10 @@ if TYPE_CHECKING:
     from starboard.bot import Bot
 
 
-COOLDOWN: FixedCooldown[int] = FixedCooldown(*CONFIG.guild_asc_cooldown)
-
-
 async def handle_message(event: hikari.GuildMessageCreateEvent) -> None:
     bot = cast("Bot", event.app)
 
-    if event.channel_id not in bot.database.asc or COOLDOWN.update_ratelimit(
-        event.guild_id
-    ):
+    if event.channel_id not in bot.database.asc:
         return
 
     asc = (

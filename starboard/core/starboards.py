@@ -297,17 +297,9 @@ async def _edit(
         )
 
 
-DELETE_COOLDOWN: FixedCooldown[int] = FixedCooldown(
-    *CONFIG.guild_message_delete_cooldown
-)
-
-
 async def _delete(
     bot: Bot, config: StarboardConfig, message: hikari.Message
 ) -> None:
-    if DELETE_COOLDOWN.update_ratelimit(config.starboard.guild_id):
-        return
-
     if message.author.id == bot.me.id:
         return await message.delete()
 
@@ -320,11 +312,6 @@ async def _delete(
         await wh.delete_message(message)
 
 
-SEND_COOLDOWN: FixedCooldown[int] = FixedCooldown(
-    *CONFIG.guild_message_send_cooldown
-)
-
-
 async def _send(
     bot: Bot,
     config: StarboardConfig,
@@ -332,9 +319,6 @@ async def _send(
     embeds: list[hikari.Embed] | None,
     author_id: int,
 ) -> hikari.Message | None:
-    if SEND_COOLDOWN.update_ratelimit(config.starboard.guild_id):
-        return None
-
     webhook = await _webhook(bot, config)
 
     if webhook and config.use_webhook:

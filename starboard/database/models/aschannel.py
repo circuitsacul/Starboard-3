@@ -27,11 +27,9 @@ from typing import Iterable
 import apgorm
 from apgorm import Unique, types
 
-from starboard.config import CONFIG
 from starboard.exceptions import ASCNotFound
 
 from ._converters import DecimalC, NonNullArray
-from ._validators import num_range, str_len
 from .guild import Guild
 
 
@@ -60,13 +58,6 @@ class AutoStarChannel(apgorm.Model):
     asc_guild_name_unique = Unique(guild_id, name)
 
     primary_key = (id,)
-
-    # validators:
-    min_chars.add_validator(num_range("min-chars", 0, CONFIG.max_minchars))
-    max_chars.add_validator(num_range("max-chars", 0, CONFIG.max_maxchars))
-    name.add_validator(
-        str_len("name", CONFIG.min_asc_name, CONFIG.max_asc_name)
-    )
 
     # methods
     @staticmethod
