@@ -63,11 +63,16 @@ def any_emoji_str(text: str) -> str:
     return uc
 
 
-def any_emoji_list(text: str) -> set[str]:
-    ret: set[str] = set()
+def any_emoji_list(text: str) -> list[str]:
+    unique: set[str] = set()
+    ret: list[str] = list()
     for piece in text.split(" "):
         with suppress(StarboardError):
-            ret.add(any_emoji_str(piece))
+            emoji = any_emoji_str(piece)
+            if emoji in unique:
+                continue
+            unique.add(emoji)
+            ret.append(emoji)
 
     return ret
 

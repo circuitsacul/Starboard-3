@@ -356,8 +356,10 @@ class SetUpvoteEmojis:
         s = await Starboard.from_name(ctx.guild_id, self.starboard)
 
         upvote_emojis = any_emoji_list(self.emojis)
-        downvote_emojis = set(s.downvote_emojis)
-        downvote_emojis.difference_update(upvote_emojis)
+        downvote_emojis = list(s.downvote_emojis)
+
+        for emoji in upvote_emojis:
+            downvote_emojis.remove(emoji)
 
         s.upvote_emojis = list(upvote_emojis)
         s.downvote_emojis = list(downvote_emojis)
@@ -383,8 +385,10 @@ class SetDownvoteEmojis:
         s = await Starboard.from_name(ctx.guild_id, self.starboard)
 
         downvote_emojis = any_emoji_list(self.emojis)
-        upvote_emojis = set(s.upvote_emojis)
-        upvote_emojis.difference_update(downvote_emojis)
+        upvote_emojis = list(s.upvote_emojis)
+
+        for emoji in downvote_emojis:
+            upvote_emojis.remove(emoji)
 
         s.upvote_emojis = list(upvote_emojis)
         s.downvote_emojis = list(downvote_emojis)

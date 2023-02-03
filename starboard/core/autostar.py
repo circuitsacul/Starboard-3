@@ -102,11 +102,10 @@ async def _handle_asc(
         return
 
     # react
-    _emojis = {stored_to_emoji(e, bot) for e in asc.emojis}
-    _emojis.discard(None)
-    emojis = cast("set[hikari.CustomEmoji | hikari.UnicodeEmoji]", _emojis)
+    for e in (stored_to_emoji(e, bot) for e in asc.emojis):
+        if not e:
+            continue
 
-    for e in emojis:
         with suppress(
             hikari.ForbiddenError, hikari.NotFoundError, hikari.BadRequestError
         ):

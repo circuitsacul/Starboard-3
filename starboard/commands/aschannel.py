@@ -274,6 +274,6 @@ class SetEmoji:
         asc = await AutoStarChannel.from_name(ctx.guild_id, self.autostar)
         emojis = any_emoji_list(self.emojis)
 
-        asc.emojis = list(emojis)
+        asc.emojis = emojis
         await asc.save()
         await ctx.respond("Done.")
